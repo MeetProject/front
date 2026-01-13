@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import NewMeetingButton from './_components/NewMeetingButton';
+
 export default function Page() {
   return (
     <div className='flex size-full flex-col'>
@@ -13,7 +15,7 @@ export default function Page() {
             Project Meet로 어디서나 연결하고 공동작업하고 기념일을 축하할 수 있습니다.
           </div>
           <div className='flex flex-wrap items-center gap-6'>
-            <button>새로 만들기</button>
+            <NewMeetingButton />
             <button>참가하기</button>
           </div>
           <div className='mt-8 w-full border-t border-solid border-[#747775] pt-4 text-xs'>
