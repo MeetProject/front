@@ -44,7 +44,7 @@
   
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular;
-  --font-google-sans: "Google Sans", "Google Sans Text", "Roboto", "Arial", sans-serif;
+  --font-google-sans: var(--font-google-sans), ui-sans-serif, system-ui;
 
   --breakpoint-sm: 480px;
   --breakpoint-sm-md: 600px;
@@ -57,10 +57,10 @@
   --color-black-87: rgba(0, 0, 0, 0.87);
   --color-custom-gray: #1f1f1f;
 
-  --text-1-5xl: 22px;
-  --text-1-5xl--line-height: 30px;
-  --text-4-5xl: 44px;
-  --text-4-5xl--line-height: 1;
+  --text-1.5xl: 22px;
+  --text-1.5xl--line-height: 30px;
+  --text-4.5xl: 44px;
+  --text-4.5xl--line-height: 1;
 
   --width-device-select-box-sm: calc(100vw - 160px);
   --width-device-select-box-sm-md: calc(100vw - 320px);

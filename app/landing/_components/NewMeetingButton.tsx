@@ -19,8 +19,9 @@ export default function NewMeetingButton() {
       router.push(`/${id}`);
     } catch {
       const { addAlert } = useAlertStore.getState();
-      setIsPending(false);
       addAlert('방 생성에 실패하였습니다.');
+    } finally {
+      setIsPending(false);
     }
   };
 

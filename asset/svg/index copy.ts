@@ -27,7 +27,6 @@ export { default as InfoOff } from './infoOff.svg';
 export { default as InfoOn } from './infoOn.svg';
 export { default as InviteUser } from './inviteUser.svg';
 export { default as Keypad } from './keypad.svg';
-export { default as Loading } from './loading.svg';
 export { default as Logo } from './logo.svg';
 export { default as Logout } from './logout.svg';
 export { default as Menu } from './menu.svg';
