@@ -27,7 +27,7 @@ export default function DeviceSelector({ currentValue, onClose, type }: DeviceSe
   };
   return (
     <div
-      className='absolute top-full left-0 z-10 max-h-[376.2px] max-w-[498.4px] min-w-65 rounded bg-white py-1.5'
+      className='max-h-[376.2px absolute top-full left-1/2 z-10 w-full -translate-x-1/2 rounded bg-white py-1.5'
       style={{
         boxShadow: '0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12)',
       }}

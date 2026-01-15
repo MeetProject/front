@@ -42,9 +42,9 @@ export default function DeviceSelectBox({ type }: DeviceSelectBoxProps) {
   const CurrentIcon = ICON_MAP[type];
 
   return (
-    <div className='relative w-full' ref={targetRef}>
+    <div className='@container relative flex w-full' ref={targetRef}>
       <button
-        className={`relative flex h-14 w-full min-w-16 items-center gap-2 truncate rounded border border-solid ${disabled ? 'border-[#E7E8E8]' : 'border-[#80868B]'} pr-6.25 pl-2.5 ${!disabled && 'hover:bg-[#F6FAFE] active:border-[#1B77E4] active:bg-[#DBE9FB]'} `}
+        className={`flex h-14 w-full min-w-16 items-center gap-2 truncate rounded border border-solid ${disabled ? 'border-[#E7E8E8]' : 'border-[#80868B]'} pr-6.25 pl-2.5 ${!disabled && 'hover:bg-[#F6FAFE] active:border-[#1B77E4] active:bg-[#DBE9FB]'} `}
         disabled={Boolean(disabled)}
         type='button'
         onClick={handleSelectButtonClick}

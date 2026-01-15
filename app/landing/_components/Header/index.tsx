@@ -33,6 +33,7 @@ export default function Header() {
   const { initStream } = useDevice();
 
   const handleSettingClick = useCallback(async () => {
+    console.log('clicked');
     const chromium = isChromium();
 
     if (!chromium) {
@@ -46,6 +47,10 @@ export default function Header() {
     if (hasGranted) {
       setMenuStatus('permission');
       return;
+    }
+
+    if (chromium) {
+      initStream();
     }
 
     setMenuStatus('setting');

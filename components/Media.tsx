@@ -33,13 +33,17 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ tag, ...props }, ref) 
     }
 
     const applyDevice = async () => {
-      if (!audioOutput || !('setSinkId' in HTMLMediaElement.prototype) || el.sinkId !== audioOutput.deviceId) {
+      if (!audioOutput || !('setSinkId' in HTMLMediaElement.prototype) || el.sinkId === audioOutput.deviceId) {
         return;
       }
 
+      console.log('apply');
+
       try {
         await el.setSinkId(audioOutput.deviceId);
-        el.play();
+        if (!el.paused && !el.ended && el.readyState) {
+          el.play();
+        }
       } catch {
         const { changeDevice, changeDeviceList, deviceList } = useDeviceStore.getState();
         const currentDevice = deviceList.audioOutput.find((device) => device.deviceId === el.sinkId);

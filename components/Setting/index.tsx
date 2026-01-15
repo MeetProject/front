@@ -4,6 +4,8 @@ import { useState } from 'react';
 
 import Dialog from '../_shared/Dialog';
 
+import AudioSetting from './AudioSetting';
+
 import * as Icon from '@/asset/svg';
 import { DeviceKindType } from '@/types/deviceType';
 
@@ -24,14 +26,14 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
       isActive ? 'z-10 bg-[#E8F0FE] hover:shadow-md' : 'bg-white hover:bg-[#F9F9F9]'
     }`,
     iconFill: isActive ? '#1967D2' : '#5F6368',
-    text: `[@media(max-width:800px)]:hidden ${isActive ? 'text-[#1967D2] font-medium' : 'text-[#5F6368]'}`,
+    text: `[@media(max-width:640px)]:hidden ${isActive ? 'text-[#1967D2] font-medium' : 'text-[#5F6368]'}`,
   });
 
   return (
     <Dialog className='min-w-80 rounded-4xl' isOpen={isOpen} position='center' onClose={onClose}>
       <div className='font-googleSans relative flex h-162.5 w-200 max-w-full rounded-lg bg-white shadow-xl'>
-        <aside className='h-full w-[256px] border-r border-[#DADCE0] [@media(max-width:800px)]:w-20'>
-          <h1 className='text-1.5xl px-6 pt-6 font-medium text-[#202124] [@media(max-width:800px)]:hidden'>설정</h1>
+        <aside className='h-full w-[256px] border-r border-[#DADCE0] [@media(max-width:640px)]:w-20'>
+          <h1 className='text-1.5xl px-6 pt-6 font-medium text-[#202124] [@media(max-width:640px)]:hidden'>설정</h1>
           <nav className='mt-6 mr-2'>
             {CATEGORY_BUTTONS.map(({ icon: IconComponent, name, value }) => {
               const isActive = category === value;
@@ -63,7 +65,7 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
         </button>
 
         <main className='mx-12 my-6 flex flex-1 pt-15'>
-          <div className='w-full'>content</div>
+          <div className='w-full'>{category === 'audio' ? <AudioSetting /> : 'content'}</div>
         </main>
       </div>
     </Dialog>
