@@ -20,7 +20,7 @@ const ICON_PROPS = {
   width: 24,
 };
 
-type Menu = 'feedback' | 'setting' | 'permissionRequire' | 'permissionDeny';
+type Menu = 'feedback' | 'setting' | 'permission';
 
 export default function Header() {
   /* const { client } = useClientStore(
@@ -42,20 +42,12 @@ export default function Header() {
     const { permission } = useDeviceStore.getState();
     const values = Object.values(permission);
 
-    const allDeny = values.every((status) => status === 'denied');
-
-    if (allDeny) {
-      setMenuStatus('permissionDeny');
-      return;
-    }
-
     const hasGranted = values.some((status) => status === 'prompt');
     if (hasGranted) {
-      setMenuStatus('permissionRequire');
+      setMenuStatus('permission');
       return;
     }
 
-    await initStream();
     setMenuStatus('setting');
   }, [initStream]);
 
@@ -73,8 +65,8 @@ export default function Header() {
     setMenuStatus(null);
   }, []);
 
-  const handlePermissionClose = useCallback((value: 'setting' | null) => {
-    setMenuStatus(value);
+  const handlePermissionClose = useCallback(() => {
+    setMenuStatus('setting');
   }, []);
 
   const BUTTON_LIST = [
@@ -114,11 +106,7 @@ export default function Header() {
         {/* {client && <InfoMenu />} */}
       </div>
       <Feedback isOpen={menuStatus === 'feedback'} onClose={handleFeedbackClose} />
-      <MediaPermissionDialog
-        isOpen={menuStatus === 'permissionDeny' || menuStatus === 'permissionRequire'}
-        type={menuStatus === 'permissionDeny' || menuStatus === 'permissionRequire' ? menuStatus : null}
-        onClose={handlePermissionClose}
-      />
+      <MediaPermissionDialog isOpen={menuStatus === 'permission'} onClose={handlePermissionClose} />
       <Setting isOpen={menuStatus === 'setting'} onClose={handleSettingClose} />
     </div>
   );

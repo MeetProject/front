@@ -29,7 +29,7 @@ export default function Dialog({
   const cn = {
     center: `
       top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-      animate-in fade-in zoom-in-95 max-w-[calc(100svw-32px)] max-h-[calc(100vh-32px)] w-fit
+      animate-in fade-in zoom-in-95 max-w-[calc(100svw-32px)] max-h-[calc(100svh-32px)] w-fit
       data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95 rounded-[28px]
     `,
     right: `
