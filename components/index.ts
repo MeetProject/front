@@ -1,6 +1,10 @@
 export { default as Alert } from './Alert';
 export { default as ButtonTag } from './ButtonTag';
+export { default as DeviceSelectBox } from './DeviceSelectBox';
 export { default as MediaPermissionDialog } from './MediaPermissionDialog';
 export { default as Feedback } from './Feedback';
 export { default as Loading } from './Loading';
+export { default as Media } from './Media';
+export { default as MediaPermissionDeniedDialog } from './MediaPermissionDeniedDialog';
 export { default as Setting } from './Setting';
+export { default as Visualizer } from './Visualizer';
