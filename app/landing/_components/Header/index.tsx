@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import CurrentDate from './CurrentDate';
 import HelpMenu from './HelpMenu';
@@ -9,8 +9,10 @@ import IconButton from './IconButton';
 //import InfoMenu from './InfoMenu';
 
 import * as Icon from '@/asset/svg';
-import { Feedback, MediaPermissionDialog } from '@/components';
+import { Feedback, MediaPermissionDialog, Setting } from '@/components';
+import useDevice from '@/hook/useDevice';
 import { useDeviceStore } from '@/store/useDeviceStore';
+import { isChromium } from '@/util/env';
 
 const ICON_PROPS = {
   fill: '#5f6368',
@@ -18,7 +20,7 @@ const ICON_PROPS = {
   width: 24,
 };
 
-type Menu = 'feedback' | 'setting' | 'permission';
+type Menu = 'feedback' | 'setting' | 'permissionRequire' | 'permissionDeny';
 
 export default function Header() {
   /* const { client } = useClientStore(
@@ -27,42 +29,53 @@ export default function Header() {
     })),
   ); */
 
-  const [menuStatus, setMenuStatus] = useState<Record<Menu, boolean>>({
-    feedback: false,
-    permission: false,
-    setting: false,
-  });
+  const [menuStatus, setMenuStatus] = useState<Menu | null>(null);
+  const { initStream } = useDevice();
 
-  const toggleMenu = (menu: Menu) => {
-    setMenuStatus(
-      (prev) => Object.fromEntries(Object.keys(prev).map((key) => [key, key === menu])) as Record<Menu, boolean>,
-    );
-  };
+  const handleSettingClick = useCallback(async () => {
+    const chromium = isChromium();
 
-  const closeMenu = (menu: Menu) => {
-    setMenuStatus((prev) => ({ ...prev, [menu]: false }));
-  };
+    if (!chromium) {
+      await initStream();
+    }
 
-  const handleSettingClick = () => {
     const { permission } = useDeviceStore.getState();
-    if (Object.values(permission).every((state) => state === 'granted')) {
-      toggleMenu('setting');
+    const values = Object.values(permission);
+
+    const allDeny = values.every((status) => status === 'denied');
+
+    if (allDeny) {
+      setMenuStatus('permissionDeny');
       return;
     }
-    toggleMenu('permission');
-  };
 
-  /* const handleSettingClose = () => {
-    closeMenu('setting');
-  }; */
+    const hasGranted = values.some((status) => status === 'prompt');
+    if (hasGranted) {
+      setMenuStatus('permissionRequire');
+      return;
+    }
 
-  const handleFeedbackClick = () => {
-    toggleMenu('feedback');
-  };
+    await initStream();
+    setMenuStatus('setting');
+  }, [initStream]);
 
-  const handleFeedbackClose = () => {
-    closeMenu('feedback');
-  };
+  const handleSettingClose = useCallback(() => {
+    const { stopStream } = useDeviceStore.getState();
+    setMenuStatus(null);
+    stopStream();
+  }, []);
+
+  const handleFeedbackClick = useCallback(() => {
+    setMenuStatus('feedback');
+  }, []);
+
+  const handleFeedbackClose = useCallback(() => {
+    setMenuStatus(null);
+  }, []);
+
+  const handlePermissionClose = useCallback((value: 'setting' | null) => {
+    setMenuStatus(value);
+  }, []);
 
   const BUTTON_LIST = [
     {
@@ -100,8 +113,13 @@ export default function Header() {
         ))}
         {/* {client && <InfoMenu />} */}
       </div>
-      <Feedback isOpen={menuStatus.feedback} onClose={handleFeedbackClose} />
-      <MediaPermissionDialog isOpen={menuStatus.permission} onClose={() => toggleMenu('setting')} />
+      <Feedback isOpen={menuStatus === 'feedback'} onClose={handleFeedbackClose} />
+      <MediaPermissionDialog
+        isOpen={menuStatus === 'permissionDeny' || menuStatus === 'permissionRequire'}
+        type={menuStatus === 'permissionDeny' || menuStatus === 'permissionRequire' ? menuStatus : null}
+        onClose={handlePermissionClose}
+      />
+      <Setting isOpen={menuStatus === 'setting'} onClose={handleSettingClose} />
     </div>
   );
 }

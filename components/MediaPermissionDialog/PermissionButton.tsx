@@ -5,6 +5,8 @@ import { useState } from 'react';
 import ButtonTag from '../ButtonTag';
 
 import * as Icon from '@/asset/svg';
+import useDevice from '@/hook/useDevice';
+import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
 interface PermissionButtonProps {
@@ -38,6 +40,7 @@ const CONTENT = {
 
 export default function PermissionButton({ type }: PermissionButtonProps) {
   const [isOpenOption, setIsOpenOption] = useState(false);
+  const { initStream, replaceTrack } = useDevice();
 
   const status = CONTENT[type];
 
@@ -45,16 +48,14 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
     setIsOpenOption((prev) => !prev);
   };
 
-  const handleRequestButtonClick = () => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true, video: true })
-      .then(() => {
-        // 성공 로직
-      })
-      .catch((err) => {
-        console.log(err);
-        // 에러 로직
-      });
+  const handleRequestButtonClick = async (deviceType: DeviceKindType | 'both') => {
+    if (deviceType === 'both') {
+      await initStream();
+      return;
+    }
+    const { device } = useDeviceStore.getState();
+    await replaceTrack(device[deviceType === 'audio' ? 'audioInput' : 'videoInput'], deviceType);
+    setIsOpenOption(false);
   };
 
   return (
@@ -64,7 +65,7 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
           <button
             className='mx-2 flex h-11 min-w-46 items-center justify-center rounded-3xl bg-[#0B57D0] pr-16 pl-24 text-[14px] text-white hover:bg-[#1F64D4] [@media(max-width:600px)]:pr-8 [@media(max-width:600px)]:pl-12 [@media(max-width:600px)]:text-xs'
             type='button'
-            onClick={handleRequestButtonClick}
+            onClick={() => handleRequestButtonClick(type)}
           >
             {status.request}
           </button>
@@ -90,7 +91,11 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
       {isOpenOption && (
         <div className='mt-4 flex items-center justify-center gap-6 [@media(max-width:600px)]:flex-col [@media(max-width:600px)]:gap-3'>
           <div className='relative rounded-3xl border border-[rgb(26,115,232)] hover:bg-blue-50'>
-            <button className='flex h-11 items-center justify-center pr-10 pl-16 text-sm text-[rgb(26,115,232)]'>
+            <button
+              className='flex h-11 items-center justify-center pr-10 pl-16 text-sm text-[rgb(26,115,232)]'
+              type='button'
+              onClick={() => handleRequestButtonClick('audio')}
+            >
               마이크 사용
             </button>
             <Icon.Mic
@@ -101,7 +106,11 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
             />
           </div>
           <div className='relative rounded-3xl border border-[rgb(26,115,232)] hover:bg-blue-50'>
-            <button className='flex h-11 items-center justify-center pr-10 pl-16 text-sm text-[rgb(26,115,232)]'>
+            <button
+              className='flex h-11 items-center justify-center pr-10 pl-16 text-sm text-[rgb(26,115,232)]'
+              type='button'
+              onClick={() => handleRequestButtonClick('video')}
+            >
               카메라 사용
             </button>
             <Icon.VideoOn

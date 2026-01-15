@@ -2,6 +2,7 @@ import './globals.css';
 import { Inter } from 'next/font/google';
 
 import Alert from '@/components/Alert';
+import Provider from '@/provider';
 
 const inter = Inter({
   display: 'swap',
@@ -23,7 +24,7 @@ export default function RootLayout({
     <html className={inter.variable} lang='ko'>
       <body className='relative flex h-svh w-svw'>
         <Alert />
-        {children}
+        <Provider>{children}</Provider>
       </body>
     </html>
   );

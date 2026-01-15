@@ -27,10 +27,10 @@ export default function MediaPermissionPrompt() {
   const permission = useDeviceStore((state) => state.permission);
 
   const getStatus = (value: Record<DeviceKindType, PermissionState>) => {
-    if (value.audio !== 'granted' && permission.video !== 'granted') {
+    if (value.audio === 'prompt' && value.video === 'prompt') {
       return 'both';
     }
-    if (value.audio !== 'granted') {
+    if (value.audio === 'prompt') {
       return 'audio';
     }
     return 'video';
