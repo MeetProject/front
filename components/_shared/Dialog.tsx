@@ -12,11 +12,13 @@ interface DialogProps {
   children: ReactNode;
   className?: string;
   hidden?: boolean;
+  closeOnOutsideClick?: boolean;
 }
 
 export default function Dialog({
   children,
   className,
+  closeOnOutsideClick = true,
   description,
   hidden,
   isOpen,
@@ -45,6 +47,11 @@ export default function Dialog({
         />
         <RadixDialog.Content
           className={`animate-in fixed z-2102 bg-white shadow-2xl duration-300 outline-none ${cn[position]} ${className} ${hidden && 'pointer-events-none opacity-0'}`}
+          onPointerDownOutside={(e) => {
+            if (!closeOnOutsideClick) {
+              e.preventDefault();
+            }
+          }}
         >
           <RadixDialog.Title className='sr-only'>{title || 'Modal'}</RadixDialog.Title>
           <RadixDialog.Description className='sr-only'>{description || 'Modal Content'}</RadixDialog.Description>

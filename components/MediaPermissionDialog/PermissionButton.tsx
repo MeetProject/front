@@ -1,34 +1,76 @@
 'use client';
 
-import { JSX, useState } from 'react';
+import { useState } from 'react';
 
 import ButtonTag from '../ButtonTag';
 
 import * as Icon from '@/asset/svg';
+import { DeviceKindType } from '@/types/deviceType';
 
 interface PermissionButtonProps {
-  icon: JSX.Element;
-  request: string;
-  option: boolean;
+  type: DeviceKindType | 'both';
 }
 
-export default function PermissionButton({ icon, option, request }: PermissionButtonProps) {
+const ICON_PROPS = {
+  className: 'absolute top-1/2 left-20 -translate-y-1/2 [@media(max-width:600px)]:left-8',
+  fill: '#ffffff',
+  height: 18,
+  width: 18,
+};
+
+const CONTENT = {
+  audio: {
+    icon: <Icon.Mic {...ICON_PROPS} />,
+    option: false,
+    request: '마이크 사용',
+  },
+  both: {
+    icon: <Icon.VideoOn {...ICON_PROPS} />,
+    option: true,
+    request: '마이크 및 카메라 사용',
+  },
+  video: {
+    icon: <Icon.VideoOn {...ICON_PROPS} />,
+    option: false,
+    request: '카메라 사용',
+  },
+};
+
+export default function PermissionButton({ type }: PermissionButtonProps) {
   const [isOpenOption, setIsOpenOption] = useState(false);
+
+  const status = CONTENT[type];
 
   const handleOptionButtonClick = () => {
     setIsOpenOption((prev) => !prev);
+  };
+
+  const handleRequestButtonClick = () => {
+    navigator.mediaDevices
+      .getUserMedia({ audio: true, video: true })
+      .then(() => {
+        // 성공 로직
+      })
+      .catch((err) => {
+        console.log(err);
+        // 에러 로직
+      });
   };
 
   return (
     <div className='relative mt-6.25 mb-4 flex flex-1 flex-col items-center justify-center'>
       <div className='flex items-center justify-center'>
         <div className='relative mx-2'>
-          <button className='mx-2 flex h-11 min-w-46 items-center justify-center rounded-3xl bg-[#0B57D0] pr-16 pl-24 text-[14px] text-white hover:bg-[#1F64D4] [@media(max-width:600px)]:pr-8 [@media(max-width:600px)]:pl-12 [@media(max-width:600px)]:text-xs'>
-            {request}
+          <button
+            className='mx-2 flex h-11 min-w-46 items-center justify-center rounded-3xl bg-[#0B57D0] pr-16 pl-24 text-[14px] text-white hover:bg-[#1F64D4] [@media(max-width:600px)]:pr-8 [@media(max-width:600px)]:pl-12 [@media(max-width:600px)]:text-xs'
+            type='button'
+            onClick={handleRequestButtonClick}
+          >
+            {status.request}
           </button>
-          {icon}
+          {status.icon}
         </div>
-        {option && (
+        {status.option && (
           <ButtonTag gap={8} name={isOpenOption ? '옵션 간단히 보기' : '옵션 더보기'} position='top'>
             <button
               className='flex size-10 items-center justify-center rounded-full border hover:bg-gray-300'

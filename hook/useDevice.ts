@@ -49,16 +49,20 @@ const useDevice = () => {
   );
 
   const replaceNewTrack = useCallback(
-    async (type: DeviceKindType, deviceId: string, isExact = true) => {
+    async (type: DeviceKindType, deviceId: string | null, isExact = true) => {
       const { stream } = useDeviceStore.getState();
       if (!stream) {
         return;
       }
 
+      const constraint = deviceId
+        ? {
+            [type]: { deviceId: isExact ? { exact: deviceId } : { ideal: deviceId } },
+          }
+        : { [type]: true };
+
       try {
-        const trackStream = await navigator.mediaDevices.getUserMedia({
-          [type]: { deviceId: isExact ? { exact: deviceId } : { ideal: deviceId } },
-        });
+        const trackStream = await navigator.mediaDevices.getUserMedia(constraint);
         const newTrack = trackStream.getTracks().find((t) => t.kind === type);
         const oldTrack = stream.getTracks().find((t) => t.kind === type);
 
@@ -100,19 +104,18 @@ const useDevice = () => {
         prevStream.getTracks().forEach((track) => track.stop());
       }
 
-      if (constraint) {
-        await getStream(constraint);
-        return;
-      }
-
       try {
-        return await getStream({
-          audio: audioInput ? { deviceId: { exact: audioInput.deviceId } } : true,
-          video: videoInput ? { deviceId: { exact: videoInput.deviceId } } : true,
-        });
+        return await getStream(
+          constraint ?? {
+            audio: audioInput ? { deviceId: { exact: audioInput.deviceId } } : true,
+            video: videoInput ? { deviceId: { exact: videoInput.deviceId } } : true,
+          },
+        );
       } catch (e) {
         const error = e as DOMException;
+        console.log(error);
         if (error.name === 'NotAllowedError') {
+          console.log('not allowed');
           useDeviceStore.setState({ status: 'rejected', stream: null });
           return null;
         }
@@ -147,14 +150,22 @@ const useDevice = () => {
   );
 
   const replaceTrack = useCallback(
-    async (device: MediaDeviceInfo) => {
+    async (device: MediaDeviceInfo | null, type?: DeviceKindType) => {
+      if (!device) {
+        if (!type) {
+          throw new Error('device가 null인 경우, type이 반드시 필요합니다.');
+        }
+        replaceNewTrack(type, null, false);
+        return;
+      }
+
       if (device.kind === 'audiooutput') {
         const { changeDevice } = useDeviceStore.getState();
         changeDevice('audioOutput', device);
         return;
       }
-      const type = device.kind === 'audioinput' ? 'audio' : 'video';
-      await replaceNewTrack(type, device.deviceId, true);
+      const deviceType = device.kind === 'audioinput' ? 'audio' : 'video';
+      await replaceNewTrack(deviceType, device.deviceId, true);
     },
     [replaceNewTrack],
   );

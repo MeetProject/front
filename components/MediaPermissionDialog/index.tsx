@@ -19,6 +19,7 @@ export default function MediaPermissionDialog({ isOpen, onClose }: MediaPermissi
   return (
     <Dialog
       className='min-w-80 rounded-4xl'
+      closeOnOutsideClick={false}
       description='장치 권한을 허용해주세요.'
       isOpen={isOpen}
       position='center'
