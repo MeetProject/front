@@ -9,7 +9,8 @@ import IconButton from './IconButton';
 //import InfoMenu from './InfoMenu';
 
 import * as Icon from '@/asset/svg';
-import { Feedback } from '@/components';
+import { Feedback, MediaPermissionDialog } from '@/components';
+import { useDeviceStore } from '@/store/useDeviceStore';
 
 const ICON_PROPS = {
   fill: '#5f6368',
@@ -17,7 +18,7 @@ const ICON_PROPS = {
   width: 24,
 };
 
-type Menu = 'feedback' | 'setting';
+type Menu = 'feedback' | 'setting' | 'permission';
 
 export default function Header() {
   /* const { client } = useClientStore(
@@ -28,11 +29,14 @@ export default function Header() {
 
   const [menuStatus, setMenuStatus] = useState<Record<Menu, boolean>>({
     feedback: false,
+    permission: false,
     setting: false,
   });
 
   const toggleMenu = (menu: Menu) => {
-    setMenuStatus((prev) => ({ ...prev, [menu]: !prev[menu] }));
+    setMenuStatus(
+      (prev) => Object.fromEntries(Object.keys(prev).map((key) => [key, key === menu])) as Record<Menu, boolean>,
+    );
   };
 
   const closeMenu = (menu: Menu) => {
@@ -40,7 +44,12 @@ export default function Header() {
   };
 
   const handleSettingClick = () => {
-    toggleMenu('setting');
+    const { permission } = useDeviceStore.getState();
+    if (Object.values(permission).every((state) => state === 'granted')) {
+      toggleMenu('setting');
+      return;
+    }
+    toggleMenu('permission');
   };
 
   /* const handleSettingClose = () => {
@@ -92,6 +101,7 @@ export default function Header() {
         {/* {client && <InfoMenu />} */}
       </div>
       <Feedback isOpen={menuStatus.feedback} onClose={handleFeedbackClose} />
+      <MediaPermissionDialog isOpen={menuStatus.permission} onClose={() => toggleMenu('setting')} />
     </div>
   );
 }

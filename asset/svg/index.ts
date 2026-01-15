@@ -31,6 +31,7 @@ export { default as Loading } from './loading.svg';
 export { default as Logo } from './logo.svg';
 export { default as Logout } from './logout.svg';
 export { default as Menu } from './menu.svg';
+export { default as Mic } from './mic.svg';
 export { default as MicOn } from './micOn.svg';
 export { default as MicOff } from './micOff.svg';
 export { default as PermissionSetting } from './permissionSetting.svg';

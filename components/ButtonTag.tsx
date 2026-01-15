@@ -44,12 +44,13 @@ export default function ButtonTag({
     }
     setIsDrag(false);
   };
+
   return (
     <div className='relative' onMouseEnter={handleButtonMouseEnter} onMouseLeave={handleButtonMouseLeave}>
       {children}
       {isDrag && (
         <div
-          className={`absolute z-10 flex h-6 w-max ${align === 'left' ? 'left-0' : align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'} bg-black-75 items-center rounded-md px-2 text-xs text-white`}
+          className={`absolute z-999999 flex h-6 w-max ${align === 'left' ? 'left-0' : align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'} bg-black-75 items-center rounded-md px-2 text-xs text-white`}
           style={{ ...positionStyle, ...style }}
         >
           {name}

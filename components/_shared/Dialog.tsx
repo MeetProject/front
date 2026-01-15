@@ -26,13 +26,13 @@ export default function Dialog({
 }: DialogProps) {
   const cn = {
     center: `
-      top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[85vh] rounded-lg 
-      animate-in fade-in zoom-in-95 
-      data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95
+      top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+      animate-in fade-in zoom-in-95 max-w-[calc(100svw-32px)] max-h-[calc(100vh-32px)] w-fit
+      data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95 rounded-[28px]
     `,
     right: `
       fixed top-0 right-0 z-2102 h-full w-103 rounded-l-lg
-      animate-in slide-in-from-right 
+      animate-in slide-in-from-right max-w-[calc(100svw-8px)] max-h-svh
       data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right
     `,
   };
@@ -44,7 +44,7 @@ export default function Dialog({
           className={`animate-in fade-in fixed inset-0 z-2101 bg-[rgba(128,134,139,0.5)] duration-200 ${hidden && 'pointer-events-none opacity-0'}`}
         />
         <RadixDialog.Content
-          className={`animate-in fixed z-2102 max-h-svh max-w-svw overflow-hidden bg-white shadow-2xl duration-300 outline-none ${cn[position]} ${className} ${hidden && 'pointer-events-none opacity-0'}`}
+          className={`animate-in fixed z-2102 bg-white shadow-2xl duration-300 outline-none ${cn[position]} ${className} ${hidden && 'pointer-events-none opacity-0'}`}
         >
           <RadixDialog.Title className='sr-only'>{title || 'Modal'}</RadixDialog.Title>
           <RadixDialog.Description className='sr-only'>{description || 'Modal Content'}</RadixDialog.Description>
