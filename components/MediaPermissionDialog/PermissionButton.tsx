@@ -5,7 +5,7 @@ import { useState } from 'react';
 import ButtonTag from '../ButtonTag';
 
 import * as Icon from '@/asset/svg';
-import useDevice from '@/hook/useDevice';
+import { useDevice } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 

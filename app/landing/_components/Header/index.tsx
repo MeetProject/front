@@ -10,7 +10,7 @@ import IconButton from './IconButton';
 
 import * as Icon from '@/asset/svg';
 import { Feedback, MediaPermissionDialog, Setting } from '@/components';
-import useDevice from '@/hook/useDevice';
+import { useDevice } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { isChromium } from '@/util/env';
 
