@@ -17,9 +17,9 @@ const getAudioOutput = (deviceInfo: MediaDeviceInfo[]) => {
   if (isSupportedSinkId) {
     return {
       audioOutput:
-        currentAudioOutput ??
-        audioOutputList.find((d) => d.groupId === (defaultAudioOutput?.groupId ?? 'none')) ??
-        null,
+        currentAudioOutput && audioOutputList.find((d) => d.groupId === currentAudioOutput.groupId)
+          ? currentAudioOutput
+          : (audioOutputList.find((d) => d.groupId === (defaultAudioOutput?.groupId ?? 'none')) ?? null),
       audioOutputList: audioOutputList,
     };
   }
