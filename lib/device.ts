@@ -27,8 +27,8 @@ const getAudioOutput = (deviceInfo: MediaDeviceInfo[]) => {
 };
 
 export const getCurrentDeviceInfo = async (stream: MediaStream | null) => {
-  const audioDeviceId = stream?.getAudioTracks()[0]?.getSettings?.().deviceId;
-  const videoDeviceId = stream?.getVideoTracks()[0]?.getSettings?.().deviceId;
+  const audioDeviceId = stream?.getAudioTracks()[0]?.getSettings?.()?.deviceId;
+  const videoDeviceId = stream?.getVideoTracks()[0]?.getSettings?.()?.deviceId;
 
   const deviceInfo = await navigator.mediaDevices.enumerateDevices();
 

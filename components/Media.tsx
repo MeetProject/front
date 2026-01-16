@@ -99,7 +99,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
   if (tag === 'audio') {
     return <audio ref={audioRef} {...props} />;
   }
-  return <video ref={videoRef} {...props} />;
+  return <video ref={videoRef} style={{ transform: 'scaleX(-1)' }} {...props} />;
 });
 
 Media.displayName = 'Media';

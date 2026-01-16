@@ -21,7 +21,7 @@ export default function MediaPermissionDeniedDialog({ isOpen, onClose }: MediaPe
       title='거부된 장치 권한 재설정 방법'
       onClose={() => onClose()}
     >
-      <div className='@media(max-width:600px)]:flex-col relative flex w-160 items-center rounded-[28px] bg-white px-8 pt-7.5 pb-10'>
+      <div className='relative flex w-160 max-w-full items-center rounded-[28px] bg-white px-8 pt-7.5 pb-10 [@media(max-width:540px)]:flex-col'>
         <div className='absolute top-2 right-2 rounded-full hover:bg-[#F0F1F1] active:bg-[#DEDFDF]'>
           <ButtonTag name='대화상자 닫기' position='bottom'>
             <button className='flex size-12 items-center justify-center' type='button' onClick={onClose}>
@@ -29,7 +29,11 @@ export default function MediaPermissionDeniedDialog({ isOpen, onClose }: MediaPe
             </button>
           </ButtonTag>
         </div>
-        <Image alt='permission' className='size-[322.5px] lg:size-43.75' src={permissionCommon} />
+        <Image
+          alt='permission'
+          className='size-[322.5px] [@media(max-width:700px)]:size-43.75'
+          src={permissionCommon}
+        />
         <div className='font-googleSans px-10 pt-5'>
           <h1 className='mb-3.75 text-left text-[22px] text-[#444746]'>Meet에서 마이크 및 카메라 사용이 차단됨</h1>
           <ol className='list-decimal'>

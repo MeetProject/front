@@ -18,34 +18,97 @@ const useDevice = () => {
     });
   }, []);
 
-  const getStream = useCallback(
-    async (constraints?: MediaStreamConstraints) => {
-      const { updatePermission } = useDeviceStore.getState();
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (constraints?.audio) {
-          updatePermission('audio', 'granted');
-        }
+  const getConstraints = useCallback((config: { audio: boolean; video: boolean }, isExact: boolean) => {
+    const { device } = useDeviceStore.getState();
+    return {
+      ...(config.audio && {
+        audio: device.audioInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } } : true,
+      }),
+      ...(config.video && {
+        video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput } } : true,
+      }),
+    } as MediaStreamConstraints;
+  }, []);
 
-        if (constraints?.video) {
-          updatePermission('video', 'granted');
-        }
-        await setMediaStream(stream);
+  const getStream = useCallback(
+    async (constraint: Record<DeviceKindType, boolean>, isExact: boolean, isLast?: boolean) => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(getConstraints(constraint, isExact));
+        const deviceInfo = await getCurrentDeviceInfo(stream);
+
+        useDeviceStore.setState({
+          ...deviceInfo,
+          permission: {
+            audio: constraint.audio ? 'granted' : 'denied',
+            video: constraint.video ? 'granted' : 'denied',
+          },
+          status: 'success',
+          stream,
+        });
+
         return stream;
       } catch (e) {
         const error = e as DOMException;
-        if (error.name === 'NotAllowedError') {
-          if (constraints?.audio) {
-            updatePermission('audio', 'denied');
-          }
-          if (constraints?.video) {
-            updatePermission('video', 'denied');
-          }
+        if ((error.name === 'OverconstrainedError' || error.name === 'NotFoundError') && isExact) {
+          return getStream(constraint, false, isLast);
         }
-        throw e;
+
+        if (error.name === 'NotAllowedError' && !isLast) {
+          throw e;
+        }
+
+        useDeviceStore.setState({
+          device: { audioInput: null, audioOutput: null, videoInput: null },
+          deviceList: { audioInput: [], audioOutput: [], videoInput: [] },
+          permission: {
+            audio: constraint.audio && error.name !== 'NotAllowedError' ? 'granted' : 'denied',
+            video: constraint.video && error.name !== 'NotAllowedError' ? 'granted' : 'denied',
+          },
+          status: error.name === 'NotAllowedError' ? 'rejected' : 'failed',
+          stream: null,
+        });
+        return null;
       }
     },
-    [setMediaStream],
+    [getConstraints],
+  );
+
+  const initStream = useCallback(
+    async (config?: { audio: boolean; video: boolean }) => {
+      const { status, stream: prevStream } = useDeviceStore.getState();
+      if (status === 'pending') {
+        return;
+      }
+
+      useDeviceStore.setState({ status: 'pending' });
+      if (prevStream) {
+        prevStream.getTracks().forEach((track) => track.stop());
+      }
+
+      if (config) {
+        try {
+          return await getStream(config, true, true);
+        } catch {
+          return null;
+        }
+      }
+
+      const attempts = [
+        { audio: true, video: true },
+        { audio: true, video: false },
+        { audio: false, last: true, video: true },
+      ];
+
+      for (const { audio, last, video } of attempts) {
+        try {
+          return await getStream({ audio, video }, true, last);
+        } catch {
+          continue;
+        }
+      }
+      return null;
+    },
+    [getStream],
   );
 
   const replaceNewTrack = useCallback(
@@ -88,68 +151,6 @@ const useDevice = () => {
       }
     },
     [setMediaStream],
-  );
-
-  const initStream = useCallback(
-    async (constraint?: MediaStreamConstraints) => {
-      const {
-        device: { audioInput, videoInput },
-        status,
-        stream: prevStream,
-      } = useDeviceStore.getState();
-
-      if (status === 'pending') {
-        return;
-      }
-
-      useDeviceStore.setState({ status: 'pending' });
-
-      if (prevStream) {
-        prevStream.getTracks().forEach((track) => track.stop());
-      }
-
-      try {
-        return await getStream(
-          constraint ?? {
-            audio: audioInput ? { deviceId: { exact: audioInput.deviceId } } : true,
-            video: videoInput ? { deviceId: { exact: videoInput.deviceId } } : true,
-          },
-        );
-      } catch (e) {
-        const error = e as DOMException;
-        console.log(error);
-        if (error.name === 'NotAllowedError') {
-          useDeviceStore.setState({ status: 'rejected', stream: null });
-          return null;
-        }
-
-        if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
-          try {
-            return await getStream({
-              audio: audioInput ? { deviceId: { ideal: audioInput.deviceId } } : true,
-              video: videoInput ? { deviceId: { ideal: videoInput.deviceId } } : true,
-            });
-          } catch {
-            useDeviceStore.setState({ status: 'failed', stream: null });
-            return null;
-          }
-        }
-
-        try {
-          return await getStream({ audio: audioInput ? { deviceId: { exact: audioInput.deviceId } } : true });
-        } catch {
-          try {
-            return await getStream({
-              video: videoInput ? { deviceId: { exact: videoInput.deviceId } } : true,
-            });
-          } catch {
-            useDeviceStore.setState({ status: 'failed', stream: null });
-            return null;
-          }
-        }
-      }
-    },
-    [getStream],
   );
 
   const replaceTrack = useCallback(
