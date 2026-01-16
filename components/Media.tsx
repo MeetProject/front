@@ -7,9 +7,10 @@ import { useDeviceStore } from '@/store/useDeviceStore';
 
 interface MediaProps extends MediaHTMLAttributes<HTMLMediaElement> {
   tag: 'video' | 'audio';
+  stream?: MediaStream;
 }
 
-const Media = forwardRef<HTMLMediaElement, MediaProps>(({ tag, ...props }, ref) => {
+const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -37,8 +38,6 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ tag, ...props }, ref) 
         return;
       }
 
-      console.log('apply');
-
       try {
         await el.setSinkId(audioOutput.deviceId);
         if (!el.paused && !el.ended && el.readyState) {
@@ -62,6 +61,40 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ tag, ...props }, ref) 
 
     applyDevice();
   }, [audioOutput, tag]);
+
+  useEffect(() => {
+    if (tag === 'audio' || !videoRef.current || !stream) {
+      return;
+    }
+
+    const updateStreamSrc = () => {
+      if (!videoRef.current) {
+        return;
+      }
+      const liveTracks = stream.getTracks().filter((track) => track.readyState === 'live');
+
+      if (liveTracks.length === 0) {
+        videoRef.current.srcObject = null;
+        return;
+      }
+
+      const safeStream = new MediaStream(liveTracks);
+      videoRef.current.srcObject = safeStream;
+      videoRef.current.play().catch(() => {});
+    };
+
+    updateStreamSrc();
+
+    stream?.getTracks().forEach((track) => {
+      track.addEventListener('ended', updateStreamSrc);
+    });
+
+    return () => {
+      stream?.getTracks().forEach((track) => {
+        track.removeEventListener('ended', updateStreamSrc);
+      });
+    };
+  }, [stream, tag]);
 
   if (tag === 'audio') {
     return <audio ref={audioRef} {...props} />;

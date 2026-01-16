@@ -40,21 +40,27 @@ export default function ParticipateMeetingForm() {
   };
 
   return (
-    <form className='relative flex shrink items-center gap-2' onSubmit={handleFormSubmit}>
+    <form className='relative flex flex-1 items-center gap-2' onSubmit={handleFormSubmit}>
       <Icon.Keypad className='absolute top-1/2 left-4 -translate-y-2/4' fill='#5F6368' height={16} width={22} />
-      <input
-        className='max-w-61.5 shrink rounded border border-solid border-[#80868B] py-2.75 pr-4 pl-12 text-[16px] text-[#3C4043] outline-[#1B77E4]'
-        placeholder='코드 또는 링크 입력'
-        value={roomId}
-        onChange={handleInputChange}
-      />
-      <button
-        className={`shrink-0 rounded px-4 py-3 text-[16px] ${roomId ? 'text-[#1A73E8]' : 'text-[#B5B6B7]'} ${roomId && 'hover:bg-[#F6FAFE]'}`}
-        disabled={!roomId}
-        type='submit'
-      >
-        참여
-      </button>
+      <div className='flex flex-1 items-center'>
+        <div className='shrink overflow-hidden'>
+          <input
+            className='w-full max-w-61.5 shrink rounded border border-solid border-[#80868B] py-2.75 pr-4 pl-12 text-[16px] text-[#3C4043] outline-[#1B77E4]'
+            placeholder='코드 또는 링크 입력'
+            value={roomId}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <button
+          className={`shrink-0 rounded px-4 py-3 text-[16px] ${roomId ? 'text-[#1A73E8]' : 'text-[#B5B6B7]'} ${roomId && 'hover:bg-[#F6FAFE]'}`}
+          disabled={!roomId}
+          type='submit'
+        >
+          참여
+        </button>
+      </div>
+
       <Loading isPending={isPending} />
     </form>
   );

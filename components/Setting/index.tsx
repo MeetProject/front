@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Dialog from '../_shared/Dialog';
 
 import AudioSetting from './AudioSetting';
+import VideoSetting from './VideoSetting';
 
 import * as Icon from '@/asset/svg';
 import { DeviceKindType } from '@/types/deviceType';
@@ -29,8 +30,13 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
     text: `[@media(max-width:640px)]:hidden ${isActive ? 'text-[#1967D2] font-medium' : 'text-[#5F6368]'}`,
   });
 
+  const handleClose = () => {
+    onClose();
+    setCategory('audio');
+  };
+
   return (
-    <Dialog className='min-w-80 rounded-4xl' isOpen={isOpen} position='center' onClose={onClose}>
+    <Dialog className='min-w-80 rounded-4xl' isOpen={isOpen} position='center' onClose={handleClose}>
       <div className='font-googleSans relative flex h-162.5 w-200 max-w-full rounded-lg bg-white shadow-xl'>
         <aside className='h-full w-[256px] border-r border-[#DADCE0] [@media(max-width:640px)]:w-20'>
           <h1 className='text-1.5xl px-6 pt-6 font-medium text-[#202124] [@media(max-width:640px)]:hidden'>설정</h1>
@@ -64,8 +70,8 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
           <Icon.Delete fill='#5F6368' height={24} width={24} />
         </button>
 
-        <main className='mx-12 my-6 flex flex-1 pt-15'>
-          <div className='w-full'>{category === 'audio' ? <AudioSetting /> : 'content'}</div>
+        <main className='mx-12 my-6 flex flex-1 pt-8'>
+          <div className='w-full'>{category === 'audio' ? <AudioSetting /> : <VideoSetting />}</div>
         </main>
       </div>
     </Dialog>

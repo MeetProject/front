@@ -22,6 +22,9 @@ export default function DeviceSelector({ currentValue, onClose, type }: DeviceSe
 
   const handleDeviceButtonClick = (e: MouseEvent<HTMLButtonElement>, device: MediaDeviceInfo) => {
     e.stopPropagation();
+    if (currentValue.deviceId === device.deviceId) {
+      return;
+    }
     replaceTrack(device);
     onClose();
   };

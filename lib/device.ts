@@ -23,7 +23,7 @@ const getAudioOutput = (deviceInfo: MediaDeviceInfo[]) => {
       audioOutputList: audioOutputList,
     };
   }
-  return { audioOutput: defaultAudioOutput, audioOutputList: [defaultAudioOutput] };
+  return { audioOutput: defaultAudioOutput, audioOutputList: defaultAudioOutput ? [defaultAudioOutput] : [] };
 };
 
 export const getCurrentDeviceInfo = async (stream: MediaStream | null) => {

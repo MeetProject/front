@@ -33,7 +33,6 @@ export default function Header() {
   const { initStream } = useDevice();
 
   const handleSettingClick = useCallback(async () => {
-    console.log('clicked');
     const chromium = isChromium();
 
     if (!chromium) {
@@ -88,17 +87,16 @@ export default function Header() {
   ];
 
   return (
-    <div className='relative h-16'>
-      <Link
-        className='absolute top-1/2 left-5 flex h-10 -translate-y-1/2 items-center gap-2 whitespace-nowrap'
-        href='/'
-      >
+    <div className='relative flex h-16 items-center justify-between px-4 py-8'>
+      <Link className='flex h-10 items-center gap-2 whitespace-nowrap' href='/'>
         <Icon.Logo height={36} width={36} />
-        <p className='text-1.5xl font-semibold text-gray-600'>Meet</p>
-        <p className='text-1.5xl font-medium text-gray-600'>Project</p>
+        <div className='flex justify-center [@media(max-width:360px)]:hidden'>
+          <p className='text-1.5xl font-semibold text-gray-600'>Meet</p>
+          <p className='text-1.5xl font-medium text-gray-600'>Project</p>
+        </div>
       </Link>
-      <div className='absolute top-1/2 right-5 z-10 flex -translate-y-1/2 items-center bg-white whitespace-nowrap'>
-        <div>
+      <div className='z-10 flex items-center bg-white whitespace-nowrap'>
+        <div className='[@media(max-width:610px)]:hidden'>
           <CurrentDate />
         </div>
         <HelpMenu />
