@@ -1,5 +1,8 @@
+'use client';
+
 import DeviceEnableButton from './DeviceEnableButton';
 import ScreenSaver from './ScreenSaver';
+import Volume from './Volme';
 
 import { Media } from '@/components';
 import { useDeviceStore } from '@/store/useDeviceStore';
@@ -32,6 +35,7 @@ export default function DeviceVideo({ onOpenDialog }: DeviceVideoProps) {
         <DeviceEnableButton type='audio' onClickDeniedButton={onOpenDialog} />
         <DeviceEnableButton type='video' onClickDeniedButton={onOpenDialog} />
       </div>
+      <Volume />
     </>
   );
 }

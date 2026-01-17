@@ -13,11 +13,11 @@ export default function Visualizer({ stream }: VisualizerProperties) {
       return 0;
     }
 
-    const MAX_INPUT = 40;
+    const MAX_INPUT = 30;
     const MAX_DISPLAY_HEIGHT = 12;
 
     const normalized = Math.min((val - THRESHOLD) / (MAX_INPUT - THRESHOLD), 1);
-    return Math.pow(normalized, 1.5) * MAX_DISPLAY_HEIGHT;
+    return Math.pow(normalized, 1.2) * MAX_DISPLAY_HEIGHT;
   };
 
   const dynamicHeight = getMappedHeight(volume);
