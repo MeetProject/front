@@ -1,6 +1,5 @@
-import AudioButton from './AudioButton';
+import DeviceEnableButton from './DeviceEnableButton';
 import ScreenSaver from './ScreenSaver';
-import VideoButton from './VideoButton';
 
 import { Media } from '@/components';
 import { useDeviceStore } from '@/store/useDeviceStore';
@@ -30,8 +29,8 @@ export default function DeviceVideo({ onOpenDialog }: DeviceVideoProps) {
       />
       <ScreenSaver onClickButton={onOpenDialog} />
       <div className='absolute bottom-4 left-1/2 z-3 flex -translate-x-1/2 items-center justify-center gap-6'>
-        <AudioButton onClickDeniedButton={onOpenDialog} />
-        <VideoButton onClickDeniedButton={onOpenDialog} />
+        <DeviceEnableButton type='audio' onClickDeniedButton={onOpenDialog} />
+        <DeviceEnableButton type='video' onClickDeniedButton={onOpenDialog} />
       </div>
     </>
   );
