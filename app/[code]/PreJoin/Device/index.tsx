@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
+import DeviceSelector from './DeviceSelector';
 import DeviceVideo from './DeviceVideo';
 
 import { MediaPermissionDeniedDialog } from '@/components';
@@ -59,7 +60,7 @@ export default function Device() {
       <div className='relative m-4 mr-2 aspect-video flex-1 overflow-hidden rounded-2xl bg-black'>
         <DeviceVideo onOpenDialog={handleOpenDialog} />
       </div>
-      <div className='mb-2.5 h-10 border' />
+      <DeviceSelector onOpenDialog={handleOpenDialog} />
       <MediaPermissionDeniedDialog isOpen={isOpenDialog} onClose={handleCloseDialog} />
     </div>
   );

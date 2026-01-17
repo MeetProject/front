@@ -10,9 +10,19 @@ interface DeviceSelectorProps {
   currentValue: MediaDeviceInfo;
   type: DeviceType;
   onClose: () => void;
+  positionX: 'top' | 'bottom';
+  positionY: 'left' | 'right' | 'center';
+  overflow: boolean;
 }
 
-export default function DeviceSelector({ currentValue, onClose, type }: DeviceSelectorProps) {
+export default function DeviceSelector({
+  currentValue,
+  onClose,
+  overflow,
+  positionX,
+  positionY,
+  type,
+}: DeviceSelectorProps) {
   const { replaceTrack } = useDevice();
   const { deviceList } = useDeviceStore(
     useShallow((state) => ({
@@ -28,9 +38,18 @@ export default function DeviceSelector({ currentValue, onClose, type }: DeviceSe
     replaceTrack(device);
     onClose();
   };
+
+  const positionCn = {
+    bottom: 'top-full',
+    center: 'left-1/2 -translate-x-1/2',
+    left: 'left-0',
+    right: 'right-0',
+    top: 'top-0 -translate-y-full',
+  };
+
   return (
     <div
-      className='max-h-[376.2px absolute top-full left-1/2 z-10 w-full -translate-x-1/2 rounded bg-white py-1.5'
+      className={`max-h-[376.2px absolute z-10 ${!overflow && 'w-full'} ${positionCn[positionX]} ${positionCn[positionY]} rounded bg-white py-1.5`}
       style={{
         boxShadow: '0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12)',
       }}
@@ -43,7 +62,7 @@ export default function DeviceSelector({ currentValue, onClose, type }: DeviceSe
           onClick={(e) => handleDeviceButtonClick(e, device)}
         >
           <p
-            className={`w-full truncate ${device.deviceId === currentValue?.deviceId ? 'text-[#1A73E8]' : 'text-black'} text-left`}
+            className={`w-full truncate text-sm ${device.deviceId === currentValue?.deviceId ? 'text-[#1A73E8]' : 'text-black'} text-left`}
           >
             {device.label}
           </p>

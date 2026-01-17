@@ -46,15 +46,15 @@ export default function DeviceEnableButton({ onClickDeniedButton, type }: Device
       {permission[type] !== 'prompt' && (
         <div className='relative flex items-center'>
           <button
-            className={`relative flex items-center justify-center border border-solid shadow-sm ${!deviceEnable[type] && permission[type] === 'granted' ? 'border-[#EA4335] bg-[#EA4335]' : 'border-white'} size-14 rounded-full`}
+            className={`relative flex items-center justify-center border border-solid shadow-sm ${!deviceEnable[type] && permission[type] === 'granted' ? 'border-[#EA4335] bg-[#EA4335]' : 'border-white'} size-14 rounded-full [@media(max-width:400px)]:size-10`}
             type='button'
             onClick={handleButtonClick}
           >
-            <IconComponent fill='#ffffff' height={24} width={24} />
+            <IconComponent className='[@media(max-width:400px)]:size-5' fill='#ffffff' height={24} width={24} />
           </button>
           {permission[type] === 'denied' && (
-            <div className='absolute top-1.5 right-2.5 flex size-4 items-center justify-center rounded-full bg-[rgb(251,188,4)]'>
-              <Icon.Warn height={16} width={16} />
+            <div className='absolute top-[10%] right-[18%] flex size-4 items-center justify-center rounded-full bg-[rgb(251,188,4)] [@media(max-width:400px)]:size-3'>
+              <Icon.Warn className='[@media(max-width:400px)]:size-3' height={16} width={16} />
             </div>
           )}
         </div>
