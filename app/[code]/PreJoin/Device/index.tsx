@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 import DeviceVideo from './DeviceVideo';
 
@@ -9,8 +10,13 @@ import { useDevice } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 export default function Device() {
-  const { initStream } = useDevice();
-  const permission = useDeviceStore((state) => state.permission);
+  const { initStream, toggleAudioTrack, toggleVideoTrack } = useDevice();
+  const { permission, stream } = useDeviceStore(
+    useShallow((state) => ({
+      permission: state.permission,
+      stream: state.stream,
+    })),
+  );
   const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
 
   const handleOpenDialog = useCallback(() => {
@@ -23,11 +29,30 @@ export default function Device() {
 
   useEffect(() => {
     initStream();
+    useDeviceStore.setState({ deviceEnable: { audio: true, video: true } });
   }, [initStream]);
 
   useEffect(() => {
     setIsOpenDialog(false);
   }, [permission]);
+
+  useEffect(() => {
+    if (!stream) {
+      return;
+    }
+
+    const { deviceEnable, toggleDeviceEnalbe } = useDeviceStore.getState();
+
+    if (!deviceEnable.audio) {
+      toggleDeviceEnalbe('audio');
+      toggleAudioTrack();
+    }
+
+    if (!deviceEnable.video) {
+      toggleDeviceEnalbe('video');
+      toggleVideoTrack();
+    }
+  }, [stream, toggleAudioTrack, toggleVideoTrack]);
 
   return (
     <div className='flex w-full max-w-191 flex-col'>

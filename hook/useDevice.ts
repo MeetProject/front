@@ -176,6 +176,7 @@ const useDevice = () => {
 
   const toggleAudioTrack = useCallback(() => {
     const { deviceEnable, stream, toggleDeviceEnalbe } = useDeviceStore.getState();
+    console.log(stream);
     if (!stream) {
       return;
     }
