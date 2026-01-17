@@ -9,9 +9,10 @@ import { ButtonTag } from '@/components';
 interface MediaPermissionDeniedDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  zIndex?: number;
 }
 
-export default function MediaPermissionDeniedDialog({ isOpen, onClose }: MediaPermissionDeniedDialogProps) {
+export default function MediaPermissionDeniedDialog({ isOpen, onClose, zIndex }: MediaPermissionDeniedDialogProps) {
   return (
     <Dialog
       className='min-w-80 rounded-4xl'
@@ -19,6 +20,7 @@ export default function MediaPermissionDeniedDialog({ isOpen, onClose }: MediaPe
       isOpen={isOpen}
       position='center'
       title='거부된 장치 권한 재설정 방법'
+      zIndex={zIndex}
       onClose={() => onClose()}
     >
       <div className='relative flex w-160 max-w-full items-center rounded-[28px] bg-white px-8 pt-7.5 pb-10 [@media(max-width:540px)]:flex-col'>

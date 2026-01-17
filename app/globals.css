@@ -66,7 +66,6 @@
 
   --width-device-select-box-sm: calc(100vw - 160px);
   --width-device-select-box-sm-md: calc(100vw - 320px);
-  --width-setting-content-md: calc(100vw - 112px);
 
   --animate-move-bottom-up: move-bottom-up 3s linear forwards;
   --animate-slide-in-bottom: slide-in-bottom 0.3s ease forwards;

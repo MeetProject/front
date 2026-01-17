@@ -13,6 +13,7 @@ interface DialogProps {
   className?: string;
   hidden?: boolean;
   closeOnOutsideClick?: boolean;
+  zIndex?: number;
 }
 
 export default function Dialog({
@@ -25,6 +26,7 @@ export default function Dialog({
   onClose,
   position,
   title,
+  zIndex = 2100,
 }: DialogProps) {
   const cn = {
     center: `
@@ -43,10 +45,12 @@ export default function Dialog({
     <RadixDialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <RadixDialog.Portal>
         <RadixDialog.Overlay
-          className={`animate-in fade-in fixed inset-0 z-2101 bg-[rgba(128,134,139,0.5)] duration-200 ${hidden && 'pointer-events-none opacity-0'}`}
+          className={`animate-in fade-in fixed inset-0 bg-[rgba(128,134,139,0.5)] duration-200 ${hidden && 'pointer-events-none opacity-0'}`}
+          style={{ zIndex }}
         />
         <RadixDialog.Content
-          className={`animate-in fixed z-2102 bg-white shadow-2xl duration-300 outline-none ${cn[position]} ${className} ${hidden && 'pointer-events-none opacity-0'}`}
+          className={`animate-in fixed bg-white shadow-2xl duration-300 outline-none ${cn[position]} ${className} ${hidden && 'pointer-events-none opacity-0'}`}
+          style={{ zIndex: zIndex + 1 }}
           onPointerDownOutside={(e) => {
             if (!closeOnOutsideClick) {
               e.preventDefault();

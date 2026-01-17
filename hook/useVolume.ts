@@ -31,12 +31,12 @@ const useVolume = (stream: MediaStream | null | undefined) => {
       const sum = dataArray.reduce((a, b) => a + b, 0);
       const avg = sum / dataArray.length;
 
-      const roundedAvg = Math.round(avg);
+      const smoothingFactor = 0.15;
+      const smoothedVolume = prevVolumeRef.current * (1 - smoothingFactor) + avg * smoothingFactor;
 
-      if (prevVolumeRef.current !== roundedAvg) {
-        setIsExpand(roundedAvg > prevVolumeRef.current);
-        setVolume(roundedAvg);
-        prevVolumeRef.current = roundedAvg;
+      if (Math.abs(prevVolumeRef.current - smoothedVolume) > 0.1) {
+        setVolume(smoothedVolume);
+        prevVolumeRef.current = smoothedVolume;
       }
 
       rafRef.current = requestAnimationFrame(updateVolume);

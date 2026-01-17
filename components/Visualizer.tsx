@@ -8,13 +8,16 @@ export default function Visualizer({ stream }: VisualizerProperties) {
   const { volume } = useVolume(stream);
 
   const getMappedHeight = (val: number) => {
-    if (val <= 0) {
+    const THRESHOLD = 3;
+    if (val <= 3) {
       return 0;
     }
-    if (val >= 20) {
-      return 12;
-    }
-    return (val / 20) * 12;
+
+    const MAX_INPUT = 40;
+    const MAX_DISPLAY_HEIGHT = 12;
+
+    const normalized = Math.min((val - THRESHOLD) / (MAX_INPUT - THRESHOLD), 1);
+    return Math.pow(normalized, 1.5) * MAX_DISPLAY_HEIGHT;
   };
 
   const dynamicHeight = getMappedHeight(volume);

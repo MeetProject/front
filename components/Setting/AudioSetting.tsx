@@ -4,7 +4,11 @@ import { useShallow } from 'zustand/shallow';
 import { DeviceSelectBox, Media, Visualizer } from '@/components';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
-export default function AudioSetting() {
+interface AudioSettingProps {
+  onDisabledClick: () => void;
+}
+
+export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
   const audioReference = useRef<HTMLAudioElement>(null);
   const timerReference = useRef<NodeJS.Timeout | null>(null);
   const [isPlay, setIsPlay] = useState(false);
@@ -38,7 +42,7 @@ export default function AudioSetting() {
         <p className='mb-2 text-sm font-medium text-[#1A73E8]'>마이크</p>
         <div className='flex items-center gap-2 [@media(max-width:640px)]:flex-col [@media(max-width:640px)]:items-start'>
           <div className='w-72 max-w-[calc(100svw-260px)] [@media(max-width:640px)]:w-full [@media(max-width:640px)]:max-w-[calc(100svw-208px)]'>
-            <DeviceSelectBox type='audioInput' />
+            <DeviceSelectBox type='audioInput' onDisabledClick={onDisabledClick} />
           </div>
           <div className='flex w-full flex-1 items-center justify-center'>
             {permission?.audio && <Visualizer stream={stream} />}
@@ -49,7 +53,7 @@ export default function AudioSetting() {
         <p className='mb-2 text-sm font-medium text-[#1A73E8]'>스피커</p>
         <div className='flex items-center gap-2 [@media(max-width:640px)]:flex-col [@media(max-width:640px)]:items-start'>
           <div className='w-72 max-w-[calc(100svw-260px)] [@media(max-width:640px)]:w-full [@media(max-width:640px)]:max-w-[calc(100svw-208px)]'>
-            <DeviceSelectBox type='audioOutput' />
+            <DeviceSelectBox type='audioOutput' onDisabledClick={onDisabledClick} />
           </div>
           <div className='flex w-full flex-1 items-center justify-center'>
             <button
