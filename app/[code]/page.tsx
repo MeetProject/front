@@ -6,6 +6,6 @@ import PreJoin from './PreJoin';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 export default function Page() {
-  const userId = useUserInfoStore((state) => state.id);
+  const userId = useUserInfoStore((state) => state.userId);
   return <>{userId ? <Meeting /> : <PreJoin />}</>;
 }
