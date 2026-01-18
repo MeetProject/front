@@ -18,6 +18,18 @@ const useDevice = () => {
     });
   }, []);
 
+  const syncEnable = useCallback((stream: MediaStream, constranint: Record<DeviceKindType, boolean>) => {
+    const { deviceEnable } = useDeviceStore.getState();
+
+    if (constranint.audio && !deviceEnable.audio) {
+      stream.getAudioTracks().forEach((track) => (track.enabled = false));
+    }
+
+    if (constranint.video && !deviceEnable.video) {
+      stream.getVideoTracks().forEach((track) => track.stop());
+    }
+  }, []);
+
   const getConstraints = useCallback((config: { audio: boolean; video: boolean }, isExact: boolean) => {
     const { device } = useDeviceStore.getState();
     return {
@@ -31,13 +43,18 @@ const useDevice = () => {
   }, []);
 
   const getStream = useCallback(
-    async (constraint: Record<DeviceKindType, boolean>, isExact: boolean, isLast?: boolean) => {
+    async (constraint: Record<DeviceKindType, boolean>, isExact: boolean, isLast?: boolean, isSyncEnable?: boolean) => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia(getConstraints(constraint, isExact));
         const deviceInfo = await getCurrentDeviceInfo(stream);
 
+        if (isSyncEnable) {
+          syncEnable(stream, constraint);
+        }
+
         useDeviceStore.setState({
           ...deviceInfo,
+          isInit: false,
           permission: {
             audio: constraint.audio ? 'granted' : 'denied',
             video: constraint.video ? 'granted' : 'denied',
@@ -70,11 +87,11 @@ const useDevice = () => {
         return null;
       }
     },
-    [getConstraints],
+    [getConstraints, syncEnable],
   );
 
   const initStream = useCallback(
-    async (config?: { audio: boolean; video: boolean }) => {
+    async (isSyncEnable?: boolean) => {
       const { status, stream: prevStream } = useDeviceStore.getState();
       if (status === 'pending') {
         return;
@@ -85,14 +102,6 @@ const useDevice = () => {
         prevStream.getTracks().forEach((track) => track.stop());
       }
 
-      if (config) {
-        try {
-          return await getStream(config, true, true);
-        } catch {
-          return null;
-        }
-      }
-
       const attempts = [
         { audio: true, video: true },
         { audio: true, video: false },
@@ -101,7 +110,7 @@ const useDevice = () => {
 
       for (const { audio, last, video } of attempts) {
         try {
-          return await getStream({ audio, video }, true, last);
+          return await getStream({ audio, video }, true, last, isSyncEnable);
         } catch {
           continue;
         }

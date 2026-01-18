@@ -22,6 +22,10 @@ export default function ScreenSaver({ onClickButton }: ScreenSaverProps) {
       return '카메라가 꺼져 있음';
     }
 
+    if (permission.audio === 'denied' && permission.video === 'denied') {
+      return '카메라 및 비디오 장치 권한이 차단되었습니다.';
+    }
+
     if (permission.video === 'denied') {
       return '회의에서 참여자들이 나를 보도록 하시겠습니까?';
     }
@@ -49,7 +53,7 @@ export default function ScreenSaver({ onClickButton }: ScreenSaverProps) {
             type='button'
             onClick={onClickButton}
           >
-            카메라를 허용합니다.
+            {permission.audio === 'denied' ? '장치 권한 허용하기' : '카메라를 허용합니다.'}
           </button>
         )}
       </div>

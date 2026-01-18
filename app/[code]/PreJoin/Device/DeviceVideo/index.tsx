@@ -1,7 +1,6 @@
 'use client';
 
 import DeviceEnableButton from './DeviceEnableButton';
-import ScreenSaver from './ScreenSaver';
 import Volume from './Volme';
 
 import { Media } from '@/components';
@@ -17,6 +16,7 @@ export default function DeviceVideo({ onOpenDialog }: DeviceVideoProps) {
   if (!stream) {
     return null;
   }
+
   return (
     <>
       <div
@@ -28,9 +28,10 @@ export default function DeviceVideo({ onOpenDialog }: DeviceVideoProps) {
       <Media className='size-full object-cover' stream={stream} tag='video' />
       <div
         className='absolute bottom-0 z-1 h-20 w-full'
-        style={{ backgroundImage: 'linear-gradient(to top,rgba(0,0,0,0.7) 0,rgba(0,0,0,0.3) 50%,rgba(0,0,0,0) 100%)' }}
+        style={{
+          backgroundImage: 'linear-gradient(to top,rgba(0,0,0,0.7) 0,rgba(0,0,0,0.3) 50%,rgba(0,0,0,0) 100%)',
+        }}
       />
-      <ScreenSaver onClickButton={onOpenDialog} />
       <div className='absolute bottom-4 left-1/2 z-3 flex -translate-x-1/2 items-center justify-center gap-6'>
         <DeviceEnableButton type='audio' onClickDeniedButton={onOpenDialog} />
         <DeviceEnableButton type='video' onClickDeniedButton={onOpenDialog} />

@@ -19,11 +19,11 @@ export default function MediaPermissionDeniedDialog({ isOpen, onClose, zIndex }:
   const permission = useDeviceStore((state) => state.permission);
 
   const getDeniedDeviceName = () => {
-    if (!permission.audio && !permission.video) {
+    if (permission.audio === 'denied' && permission.video === 'denied') {
       return '마이크 및 카메라';
     }
 
-    if (!permission.audio) {
+    if (permission.audio === 'denied') {
       return '마이크';
     }
 

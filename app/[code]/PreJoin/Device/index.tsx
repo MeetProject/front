@@ -5,40 +5,66 @@ import { useShallow } from 'zustand/shallow';
 
 import DeviceSelector from './DeviceSelector';
 import DeviceVideo from './DeviceVideo';
+import ScreenSaver from './ScreenSaver';
 
-import { MediaPermissionDeniedDialog } from '@/components';
+import { MediaPermissionDeniedDialog, MediaPermissionDialog } from '@/components';
 import { useDevice } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 export default function Device() {
   const { initStream, toggleAudioTrack, toggleVideoTrack } = useDevice();
-  const { permission, stream } = useDeviceStore(
+  const { isInit, permission, stream } = useDeviceStore(
     useShallow((state) => ({
+      isInit: state.isInit,
       permission: state.permission,
       stream: state.stream,
     })),
   );
-  const [isOpenDialog, setIsOpenDialog] = useState<boolean>(false);
+  const [isDeniedDialogOpen, setIsDeniedDialogOpen] = useState<boolean>(false);
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState<boolean>(false);
 
-  const handleOpenDialog = useCallback(() => {
-    setIsOpenDialog(true);
+  const handleDeniedDialogOpen = useCallback(() => {
+    setIsDeniedDialogOpen(true);
   }, []);
 
-  const handleCloseDialog = useCallback(() => {
-    setIsOpenDialog(false);
+  const handleDeniedDialogClose = useCallback(() => {
+    setIsDeniedDialogOpen(false);
   }, []);
 
-  useEffect(() => {
-    initStream();
+  const handleRequestDialogClose = useCallback(() => {
+    setIsRequestDialogOpen(false);
     useDeviceStore.setState({ deviceEnable: { audio: true, video: true } });
-  }, [initStream]);
+  }, []);
 
   useEffect(() => {
-    setIsOpenDialog(false);
+    if (!isInit) {
+      return;
+    }
+
+    const getStream = async () => {
+      const { permission: currentPermission } = useDeviceStore.getState();
+      if (currentPermission.audio === 'prompt' || currentPermission.video === 'prompt') {
+        setIsRequestDialogOpen(true);
+        return;
+      }
+
+      if (currentPermission.audio === 'denied' && currentPermission.video === 'denied') {
+        setIsDeniedDialogOpen(true);
+        return;
+      }
+
+      await initStream(true);
+    };
+
+    getStream();
+  }, [initStream, isInit]);
+
+  useEffect(() => {
+    setIsDeniedDialogOpen(false);
   }, [permission]);
 
   useEffect(() => {
-    if (!stream) {
+    if (!stream || !isInit) {
       return;
     }
 
@@ -53,15 +79,25 @@ export default function Device() {
       toggleDeviceEnalbe('video');
       toggleVideoTrack();
     }
-  }, [stream, toggleAudioTrack, toggleVideoTrack]);
+  }, [stream, toggleAudioTrack, toggleVideoTrack, isInit]);
+
+  useEffect(
+    () => () => {
+      const { stopStream } = useDeviceStore.getState();
+      stopStream();
+    },
+    [],
+  );
 
   return (
     <div className='flex w-full max-w-191 flex-col'>
       <div className='relative m-4 mr-2 aspect-video flex-1 overflow-hidden rounded-2xl bg-black'>
-        <DeviceVideo onOpenDialog={handleOpenDialog} />
+        <DeviceVideo onOpenDialog={handleDeniedDialogOpen} />
+        <ScreenSaver onClickButton={handleDeniedDialogOpen} />
       </div>
-      <DeviceSelector onOpenDialog={handleOpenDialog} />
-      <MediaPermissionDeniedDialog isOpen={isOpenDialog} onClose={handleCloseDialog} />
+      <DeviceSelector onOpenDialog={handleDeniedDialogOpen} />
+      <MediaPermissionDialog isOpen={isRequestDialogOpen} onClose={handleRequestDialogClose} />
+      <MediaPermissionDeniedDialog isOpen={isDeniedDialogOpen} onClose={handleDeniedDialogClose} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Dialog from '../_shared/Dialog';
 import MediaPermissionDeniedDialog from '../MediaPermissionDeniedDialog';
@@ -9,6 +9,8 @@ import AudioSetting from './AudioSetting';
 import VideoSetting from './VideoSetting';
 
 import * as Icon from '@/asset/svg';
+import { useDevice } from '@/hook';
+import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
 interface SettingProps {
@@ -21,8 +23,12 @@ const CATEGORY_BUTTONS = [
 ] as const;
 
 export default function Setting({ isOpen, onClose }: SettingProps) {
+  const isInitial = useRef<boolean>(true);
   const [category, setCategory] = useState<DeviceKindType>('audio');
   const [isOpenDeniedDialog, setIsOpenDeniedDialog] = useState<boolean>(false);
+
+  const { initStream } = useDevice();
+  const isInit = useDeviceStore((state) => state.isInit);
 
   const getButtonStyles = (isActive: boolean) => ({
     container: `group relative flex h-12 w-full items-center gap-3 rounded-r-full px-6 transition-all ${
@@ -40,6 +46,18 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
   const handleDeniedDialogOpen = useCallback(() => {
     setIsOpenDeniedDialog(true);
   }, []);
+
+  useEffect(() => {
+    if (isInitial.current || !isInit || !isOpen) {
+      isInitial.current = false;
+      useDeviceStore.setState({ isInit: false });
+      return;
+    }
+
+    useDeviceStore.setState({ isInit: false });
+    setIsOpenDeniedDialog(false);
+    initStream();
+  }, [isInit, initStream, isOpen]);
 
   return (
     <>
