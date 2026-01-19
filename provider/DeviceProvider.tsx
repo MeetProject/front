@@ -21,7 +21,6 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
         const video = await navigator.permissions.query({ name: 'camera' });
 
         const syncDevice = async () => {
-          console.log('sync');
           const { permission: prev, status } = useDeviceStore.getState();
           if (status === 'pending' || (prev.audio === audio.state && prev.video === video.state)) {
             return;
@@ -34,16 +33,13 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
           permission: { audio: audio.state, video: video.state },
         });
 
-        console.log(audio);
-
         if (!Boolean('onchange' in audio) || !Boolean('onchange' in video)) {
           throw new Error('permission API 미지원');
         }
 
         audio.onchange = syncDevice;
         video.onchange = syncDevice;
-      } catch (e) {
-        console.log(e);
+      } catch {
         setIsSupportedPermission(false);
       } finally {
         useDeviceStore.setState({

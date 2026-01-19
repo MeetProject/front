@@ -68,18 +68,10 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
     }
 
     const updateStreamSrc = () => {
-      if (!videoRef.current) {
+      if (!videoRef.current || videoRef.current.srcObject === stream) {
         return;
       }
-      const liveTracks = stream.getTracks().filter((track) => track.readyState === 'live');
-
-      if (liveTracks.length === 0) {
-        videoRef.current.srcObject = null;
-        return;
-      }
-
-      const safeStream = new MediaStream(liveTracks);
-      videoRef.current.srcObject = safeStream;
+      videoRef.current.srcObject = stream;
       videoRef.current.play().catch(() => {});
     };
 
