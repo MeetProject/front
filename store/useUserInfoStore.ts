@@ -15,6 +15,6 @@ export const useUserInfoStore = create<UserInfoState>((set) => ({
       userName,
     })),
   userColor: '#aaccff',
-  userId: 'testId',
+  userId: null,
   userName: 'test',
 }));

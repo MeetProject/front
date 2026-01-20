@@ -53,7 +53,6 @@ import { DeviceKindType } from '@/types/deviceType';
 
 export default function CallControlls() {
   const [isOpenSetting, setIsOpenSetting] = useState<DeviceKindType | null>(null);
-  console.log(isOpenSetting);
   const handleSettingClose = () => {
     setIsOpenSetting(null);
   };

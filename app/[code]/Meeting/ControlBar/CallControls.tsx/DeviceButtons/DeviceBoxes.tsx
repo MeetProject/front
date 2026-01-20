@@ -17,6 +17,7 @@ export default function DeviceBoxes({ onDisabledClick, type }: DeviceBoxesProps)
             selectorPositionY='top'
             theme='dark'
             type='audioInput'
+            volume={true}
             onDisabledClick={onDisabledClick}
           />
         </div>
@@ -26,6 +27,7 @@ export default function DeviceBoxes({ onDisabledClick, type }: DeviceBoxesProps)
             selectorPositionY='top'
             theme='dark'
             type='audioOutput'
+            volume={true}
             onDisabledClick={onDisabledClick}
           />
         </div>

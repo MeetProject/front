@@ -1,6 +1,11 @@
+'use client';
+
 import clsx from 'clsx';
 import { MouseEvent } from 'react';
 import { useShallow } from 'zustand/shallow';
+
+import DeviceVolume from './DeviceVolume';
+import SpeakerTestButton from './SpeakerTest';
 
 import * as Icon from '@/asset/svg';
 import { useDevice } from '@/hook';
@@ -15,16 +20,20 @@ interface DeviceSelectorProps {
   positionX: 'left' | 'right' | 'center';
   overflow: boolean;
   theme?: 'default' | 'dark';
+  volume?: boolean;
+  onPlay: (value: boolean) => void;
 }
 
 export default function DeviceSelector({
   currentValue,
   onClose,
+  onPlay,
   overflow,
   positionX,
   positionY,
   theme = 'default',
   type,
+  volume = false,
 }: DeviceSelectorProps) {
   const { replaceTrack } = useDevice();
   const { deviceList } = useDeviceStore(useShallow((state) => ({ deviceList: state.deviceList })));
@@ -41,7 +50,7 @@ export default function DeviceSelector({
   const isDark = theme === 'dark';
 
   const wrapperCn = clsx(
-    'animate-slide-in-bottom absolute z-10 max-h-94 origin-top rounded py-1.5 transition-all',
+    'animate-slide-in-bottom absolute z-10 max-h-94 origin-top overflow-hidden rounded rounded-2xl py-1.5 py-2 transition-all',
     !overflow && 'w-full',
     positionY === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
     positionX === 'center' ? 'left-1/2 -translate-x-1/2' : positionX === 'left' ? 'left-0' : 'right-0',
@@ -83,6 +92,10 @@ export default function DeviceSelector({
           )}
         </button>
       ))}
+      {volume && type === 'audioInput' && <DeviceVolume color={theme === 'dark' ? 'white' : 'black'} />}
+      {volume && type === 'audioOutput' && (
+        <SpeakerTestButton color={theme === 'dark' ? 'white' : 'black'} onPlay={onPlay} />
+      )}
     </div>
   );
 }

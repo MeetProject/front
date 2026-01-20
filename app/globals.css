@@ -100,12 +100,14 @@
   --color-device-item: #2a2b2c; /* 일반 아이템/호버 기본 */
   --color-device-active: #353736; /* 선택된 상태 배경 */
   --color-device-hover: #525353; /* 강조된 호버 상태 */
+  --color-device-disable: #69696a;
 
   /* Border & Outline */
   --color-device-outline: #444746; /* 경계선, 비활성화 요소 */
 
   /* Text & Icon */
   --color-device-content: #c4c7c5; /* 메인 텍스트/아이콘 */
+
   --text-1.5xl: 22px;
   --text-1.5xl--line-height: 30px;
   --text-4.5xl: 44px;

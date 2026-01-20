@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import DeviceSelector from './DeviceSelector';
@@ -19,11 +19,12 @@ interface DeviceSelectBoxProps {
   selectorPositionX?: 'center' | 'left' | 'right';
   overflow?: boolean;
   theme?: 'default' | 'dark';
+  volume?: boolean;
 }
 
 const ICON_MAP = {
   audioInput: Icon.Mic,
-  audioOutput: Icon.Speaker,
+  audioOutput: Icon.Sound,
   videoInput: Icon.VideoOn,
 };
 
@@ -35,8 +36,11 @@ export default function DeviceSelectBox({
   selectorPositionY = 'bottom',
   theme = 'default',
   type,
+  volume = false,
 }: DeviceSelectBoxProps) {
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isClicked, setIsClicked] = useState(false);
+
   const { targetRef } = useOutsideClick<HTMLDivElement>(() => {
     setIsClicked(false);
   });
@@ -47,6 +51,10 @@ export default function DeviceSelectBox({
       permission: state.permission,
     })),
   );
+
+  const handleTestAudioPlay = useCallback((value: boolean) => {
+    setIsPlaying(value);
+  }, []);
 
   const handleSelectButtonClick = () => {
     if (disabled) {
@@ -88,7 +96,7 @@ export default function DeviceSelectBox({
       <button className={wrapperCn} type='button' onClick={handleSelectButtonClick}>
         <CurrentIcon fill={cn[theme]} height={16} width={16} />
         <p className='w-full truncate text-left text-sm' style={{ color: cn[theme] }}>
-          {disabled ? '권한 필요' : (device[type]?.label ?? '시스템 장치')}
+          {disabled ? '권한 필요' : isPlaying ? '재생 중' : (device[type]?.label ?? '시스템 장치')}
         </p>
         <Icon.ChevronFill
           className='absolute top-1/2 right-3 -translate-y-1/2'
@@ -105,7 +113,9 @@ export default function DeviceSelectBox({
           positionY={selectorPositionY}
           theme={theme}
           type={type}
+          volume={volume}
           onClose={handleSelectButtonClick}
+          onPlay={handleTestAudioPlay}
         />
       )}
     </div>

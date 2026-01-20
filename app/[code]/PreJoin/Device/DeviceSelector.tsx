@@ -12,10 +12,11 @@ interface DeviceSelectorProps {
 interface DeviceSetorType {
   type: DeviceType;
   positionY: 'right' | 'center' | 'left';
+  volume?: boolean;
 }
 const DEVICE: DeviceSetorType[] = [
-  { positionY: 'left', type: 'audioInput' },
-  { positionY: 'center', type: 'audioOutput' },
+  { positionY: 'left', type: 'audioInput', volume: true },
+  { positionY: 'center', type: 'audioOutput', volume: true },
   { positionY: 'right', type: 'videoInput' },
 ];
 
@@ -41,6 +42,7 @@ export default function DeviceSelector({ onOpenDialog }: DeviceSelectorProps) {
             selectorPositionX={device.positionY}
             selectorPositionY='top'
             type={device.type}
+            volume={device.volume}
             onDisabledClick={onOpenDialog}
           />
         </div>
