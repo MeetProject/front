@@ -2,9 +2,11 @@ import { useVolume } from '@/hook';
 
 interface VisualizerProperties {
   stream: MediaStream | null;
+  className?: string;
+  color?: string;
 }
 
-export default function Visualizer({ stream }: VisualizerProperties) {
+export default function Visualizer({ className, color, stream }: VisualizerProperties) {
   const { volume } = useVolume(stream);
 
   const getMappedHeight = (val: number) => {
@@ -25,20 +27,19 @@ export default function Visualizer({ stream }: VisualizerProperties) {
 
   return (
     <div
-      className='flex size-6.5 items-center justify-center gap-0.5 rounded-full shadow-sm'
-      style={{ backgroundColor: 'rgba(26, 115, 232, 0.9)' }}
+      className={`flex size-6.5 items-center justify-center gap-0.5 rounded-full bg-[rgba(26,115,232,0.9)] shadow-sm ${className}`}
     >
       <div
         className='w-0.75 rounded-full bg-white transition-[height] duration-75'
-        style={{ height: `${MIN_HEIGHT + dynamicHeight / 2}px` }}
+        style={{ height: `${MIN_HEIGHT + dynamicHeight / 2}px`, ...(color ? { backgroundColor: color } : {}) }}
       />
       <div
         className='w-0.75 rounded-full bg-white transition-[height] duration-75'
-        style={{ height: `${MIN_HEIGHT + dynamicHeight}px` }}
+        style={{ height: `${MIN_HEIGHT + dynamicHeight}px`, ...(color ? { backgroundColor: color } : {}) }}
       />
       <div
         className='w-0.75 rounded-full bg-white transition-[height] duration-75'
-        style={{ height: `${MIN_HEIGHT + dynamicHeight / 2}px` }}
+        style={{ height: `${MIN_HEIGHT + dynamicHeight / 2}px`, ...(color ? { backgroundColor: color } : {}) }}
       />
     </div>
   );

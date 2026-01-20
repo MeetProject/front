@@ -1,47 +1,81 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @keyframes move-bottom-up {
-    0% { opacity: 1; transform: translateY(100%); }
-    70% { opacity: 1; transform: translateY(-355%); }
-    80% { opacity: 0.8; transform: translateY(-420%); }
-    100% { opacity: 0; transform: translateY(-520%); }
+  0% {
+    opacity: 1;
+    transform: translateY(100%);
   }
-
-  @keyframes slide-in-bottom {
-    0% { transform: scaleY(0); }
-    100% { transform: scaleY(1); }
+  70% {
+    opacity: 1;
+    transform: translateY(-355%);
   }
-
-  @keyframes slide-in-left {
-    0% { transform: scaleX(0); }
-    100% { transform: scaleX(1); }
+  80% {
+    opacity: 0.8;
+    transform: translateY(-420%);
   }
-
-  @keyframes slide-out-left {
-    0% { transform: scaleX(1); }
-    100% { transform: scaleX(0); }
+  100% {
+    opacity: 0;
+    transform: translateY(-520%);
   }
+}
 
-  @keyframes custom-spinner {
-    0% { 
-      transform: rotate(0deg);
-      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    95% { 
-      transform: rotate(360deg); 
-      animation-timing-function: ease-out; 
-    }
-    100% { 
-      transform: rotate(360deg); 
-    }
+@keyframes slide-in-bottom {
+  0% {
+    transform: scaleY(0);
   }
+  100% {
+    transform: scaleY(1);
+  }
+}
 
+@keyframes slide-in-left {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes slide-out-left {
+  0% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes custom-spinner {
+  0% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  95% {
+    transform: rotate(360deg);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
 
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  
+
   --font-sans: var(--font-google-sans), ui-sans-serif, system-ui;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular;
   --font-google-sans: var(--font-google-sans), ui-sans-serif, system-ui;
@@ -59,6 +93,19 @@
   --color-black-87: rgba(0, 0, 0, 0.87);
   --color-custom-gray: #1f1f1f;
 
+  /* Surface / Background */
+  --color-device-bg: #1e1f20; /* 가장 어두운 배경 */
+
+  /* Item States */
+  --color-device-item: #2a2b2c; /* 일반 아이템/호버 기본 */
+  --color-device-active: #353736; /* 선택된 상태 배경 */
+  --color-device-hover: #525353; /* 강조된 호버 상태 */
+
+  /* Border & Outline */
+  --color-device-outline: #444746; /* 경계선, 비활성화 요소 */
+
+  /* Text & Icon */
+  --color-device-content: #c4c7c5; /* 메인 텍스트/아이콘 */
   --text-1.5xl: 22px;
   --text-1.5xl--line-height: 30px;
   --text-4.5xl: 44px;
@@ -72,6 +119,7 @@
   --animate-slide-in-left: slide-in-left 0.3s ease forwards;
   --animate-slide-out-left: slide-out-left 0.3s ease forwards;
   --animate-spinner: custom-spinner 1s linear infinite;
+  --animate-slide-in-bottom: slide-in-bottom 0.2s ease-out forwards;
 }
 
 :root {

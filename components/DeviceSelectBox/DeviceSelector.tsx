@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { MouseEvent } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -10,9 +11,10 @@ interface DeviceSelectorProps {
   currentValue: MediaDeviceInfo;
   type: DeviceType;
   onClose: () => void;
-  positionX: 'top' | 'bottom';
-  positionY: 'left' | 'right' | 'center';
+  positionY: 'top' | 'bottom';
+  positionX: 'left' | 'right' | 'center';
   overflow: boolean;
+  theme?: 'default' | 'dark';
 }
 
 export default function DeviceSelector({
@@ -21,14 +23,11 @@ export default function DeviceSelector({
   overflow,
   positionX,
   positionY,
+  theme = 'default',
   type,
 }: DeviceSelectorProps) {
   const { replaceTrack } = useDevice();
-  const { deviceList } = useDeviceStore(
-    useShallow((state) => ({
-      deviceList: state.deviceList,
-    })),
-  );
+  const { deviceList } = useDeviceStore(useShallow((state) => ({ deviceList: state.deviceList })));
 
   const handleDeviceButtonClick = (e: MouseEvent<HTMLButtonElement>, device: MediaDeviceInfo) => {
     e.stopPropagation();
@@ -39,35 +38,48 @@ export default function DeviceSelector({
     onClose();
   };
 
-  const positionCn = {
-    bottom: 'top-full',
-    center: 'left-1/2 -translate-x-1/2',
-    left: 'left-0',
-    right: 'right-0',
-    top: 'top-0 -translate-y-full',
-  };
+  const isDark = theme === 'dark';
+
+  const wrapperCn = clsx(
+    'animate-slide-in-bottom absolute z-10 max-h-94 origin-top rounded py-1.5 transition-all',
+    !overflow && 'w-full',
+    positionY === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
+    positionX === 'center' ? 'left-1/2 -translate-x-1/2' : positionX === 'left' ? 'left-0' : 'right-0',
+    isDark ? 'bg-device-bg shadow-none' : 'bg-white shadow-xl',
+  );
 
   return (
-    <div
-      className={`max-h-[376.2px absolute z-10 ${!overflow && 'w-full'} ${positionCn[positionX]} ${positionCn[positionY]} rounded bg-white py-1.5`}
-      style={{
-        boxShadow: '0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12)',
-      }}
-    >
+    <div className={wrapperCn}>
       {deviceList[type].map((device) => (
         <button
-          className='relative h-11 w-full truncate bg-white pr-4 pl-14 hover:bg-[#F5F5F5] active:bg-[#D7D7D7]'
+          className={clsx(
+            'group relative flex h-11 w-full items-center px-4 pl-14 transition-colors',
+            isDark
+              ? device.deviceId === currentValue.deviceId
+                ? 'hover:bg-device-hover bg-device-active'
+                : 'bg-device-bg hover:bg-device-item'
+              : 'bg-white hover:bg-gray-100 active:bg-gray-200',
+          )}
           key={device.deviceId}
           type='button'
           onClick={(e) => handleDeviceButtonClick(e, device)}
         >
-          <p
-            className={`w-full truncate text-sm ${device.deviceId === currentValue?.deviceId ? 'text-[#1A73E8]' : 'text-black'} text-left`}
+          <span
+            className={clsx(
+              'truncate text-left text-sm font-medium',
+              isDark
+                ? device.deviceId === currentValue.deviceId
+                  ? 'text-blue-300'
+                  : 'text-gray-300'
+                : device.deviceId === currentValue.deviceId
+                  ? 'text-blue-600'
+                  : 'text-black-87',
+            )}
           >
             {device.label}
-          </p>
-          {device.deviceId === currentValue?.deviceId && (
-            <Icon.Check className='absolute top-2.5 left-4' fill='#1A73E8' height={24} width={24} />
+          </span>
+          {device.deviceId === currentValue.deviceId && (
+            <Icon.Check className={clsx('absolute left-4 size-6', isDark ? 'fill-blue-300' : 'fill-blue-600')} />
           )}
         </button>
       ))}

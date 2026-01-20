@@ -16,15 +16,16 @@ import { DeviceKindType } from '@/types/deviceType';
 interface SettingProps {
   isOpen: boolean;
   onClose: () => void;
+  category?: DeviceKindType;
 }
 const CATEGORY_BUTTONS = [
   { icon: Icon.Speaker, name: '오디오', value: 'audio' },
   { icon: Icon.VideoOn, name: '비디오', value: 'video' },
 ] as const;
 
-export default function Setting({ isOpen, onClose }: SettingProps) {
+export default function Setting({ category = 'audio', isOpen, onClose }: SettingProps) {
   const isInitial = useRef<boolean>(true);
-  const [category, setCategory] = useState<DeviceKindType>('audio');
+  const [currentCategory, setCurrentCategory] = useState<DeviceKindType>(category);
   const [isOpenDeniedDialog, setIsOpenDeniedDialog] = useState<boolean>(false);
 
   const { initStream } = useDevice();
@@ -40,7 +41,6 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
 
   const handleClose = () => {
     onClose();
-    setCategory('audio');
   };
 
   const handleDeniedDialogOpen = useCallback(() => {
@@ -59,6 +59,10 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
     initStream();
   }, [isInit, initStream, isOpen]);
 
+  useEffect(() => {
+    setCurrentCategory(category);
+  }, [category]);
+
   return (
     <>
       <Dialog
@@ -73,7 +77,7 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
             <h1 className='text-1.5xl px-6 pt-6 font-medium text-[#202124] [@media(max-width:640px)]:hidden'>설정</h1>
             <nav className='mt-6 mr-2'>
               {CATEGORY_BUTTONS.map(({ icon: IconComponent, name, value }) => {
-                const isActive = category === value;
+                const isActive = currentCategory === value;
                 const styles = getButtonStyles(isActive);
 
                 return (
@@ -82,7 +86,7 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
                     className={styles.container}
                     key={value}
                     type='button'
-                    onClick={() => setCategory(value)}
+                    onClick={() => setCurrentCategory(value)}
                   >
                     <IconComponent className='transition-colors' fill={styles.iconFill} height={24} width={24} />
                     <span className={styles.text}>{name}</span>
@@ -103,7 +107,7 @@ export default function Setting({ isOpen, onClose }: SettingProps) {
 
           <main className='mx-12 my-6 flex flex-1 pt-8'>
             <div className='w-full'>
-              {category === 'audio' ? (
+              {currentCategory === 'audio' ? (
                 <AudioSetting onDisabledClick={handleDeniedDialogOpen} />
               ) : (
                 <VideoSetting onDisabledClick={handleDeniedDialogOpen} />

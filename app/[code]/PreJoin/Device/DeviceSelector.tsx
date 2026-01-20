@@ -38,8 +38,8 @@ export default function DeviceSelector({ onOpenDialog }: DeviceSelectorProps) {
           <DeviceSelectBox
             className='rounded-4xl'
             overflow={!isCenter}
-            selectorPositionX='top'
-            selectorPositionY={device.positionY}
+            selectorPositionX={device.positionY}
+            selectorPositionY='top'
             type={device.type}
             onDisabledClick={onOpenDialog}
           />

@@ -45,3 +45,19 @@ export const canUseSetSinkId = () => {
 
   return false;
 };
+
+export const isScreenShareSupported = () =>
+  typeof navigator !== 'undefined' &&
+  !!navigator.mediaDevices &&
+  typeof navigator.mediaDevices.getDisplayMedia === 'function';
+
+export const isMac = () => {
+  if (navigator.userAgentData) {
+    return navigator.userAgentData.platform.toLowerCase().includes('mac');
+  }
+
+  const platform = navigator.platform?.toLowerCase() || '';
+  const userAgent = navigator.userAgent.toLowerCase();
+
+  return platform.includes('mac') || userAgent.includes('macintosh');
+};

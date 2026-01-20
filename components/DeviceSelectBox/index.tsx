@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import React, { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -14,9 +15,10 @@ interface DeviceSelectBoxProps {
   type: DeviceType;
   onDisabledClick?: () => void;
   className?: string;
-  selectorPositionX?: 'top' | 'bottom';
-  selectorPositionY?: 'center' | 'left' | 'right';
+  selectorPositionY?: 'top' | 'bottom';
+  selectorPositionX?: 'center' | 'left' | 'right';
   overflow?: boolean;
+  theme?: 'default' | 'dark';
 }
 
 const ICON_MAP = {
@@ -29,8 +31,9 @@ export default function DeviceSelectBox({
   className,
   onDisabledClick,
   overflow = false,
-  selectorPositionX = 'bottom',
-  selectorPositionY = 'right',
+  selectorPositionX = 'right',
+  selectorPositionY = 'bottom',
+  theme = 'default',
   type,
 }: DeviceSelectBoxProps) {
   const [isClicked, setIsClicked] = useState(false);
@@ -68,20 +71,28 @@ export default function DeviceSelectBox({
 
   const CurrentIcon = ICON_MAP[type];
 
+  const cn = {
+    dark: `${disabled ? '#444647' : '#c4c7c5'}`,
+    default: `${disabled ? '#b5b6b7' : '#3c4043'}`,
+  };
+
+  const wrapperCn = clsx(
+    'flex h-14 max-h-full w-full min-w-16 items-center gap-2 truncate rounded border border-solid pr-6.25 pl-2.5',
+    theme === 'dark' && 'border-device-outline',
+    !disabled && (theme === 'default' ? 'hover:$bg-[#f6fafe]' : 'hover:bg-device-outline'),
+    className,
+  );
+
   return (
     <div className='@container relative flex size-full' ref={targetRef}>
-      <button
-        className={`flex h-14 max-h-full w-full min-w-16 items-center gap-2 truncate rounded border border-solid ${disabled ? 'border-[#E7E8E8]' : 'border-[#80868B]'} pr-6.25 pl-2.5 ${!disabled && 'hover:bg-[#F6FAFE] active:border-[#1B77E4] active:bg-[#DBE9FB]'} ${className} `}
-        type='button'
-        onClick={handleSelectButtonClick}
-      >
-        <CurrentIcon fill={disabled ? '#B5B6B7' : '#3C4043'} height={16} width={16} />
-        <p className={`w-full truncate text-left text-sm ${disabled ? 'text-[#B5B6B7]' : 'text-[#3C4043]'}`}>
+      <button className={wrapperCn} type='button' onClick={handleSelectButtonClick}>
+        <CurrentIcon fill={cn[theme]} height={16} width={16} />
+        <p className='w-full truncate text-left text-sm' style={{ color: cn[theme] }}>
           {disabled ? '권한 필요' : (device[type]?.label ?? '시스템 장치')}
         </p>
         <Icon.ChevronFill
           className='absolute top-1/2 right-3 -translate-y-1/2'
-          fill={disabled ? '#B5B6B7' : '#3C4043'}
+          fill={cn[theme]}
           height={18}
           width={18}
         />
@@ -92,6 +103,7 @@ export default function DeviceSelectBox({
           overflow={overflow}
           positionX={selectorPositionX}
           positionY={selectorPositionY}
+          theme={theme}
           type={type}
           onClose={handleSelectButtonClick}
         />

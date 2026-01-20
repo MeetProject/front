@@ -2,6 +2,7 @@ export { default as ActiveOff } from './activeOff.svg';
 export { default as ActiveOn } from './activeOn.svg';
 export { default as AddMeeting } from './addMeeting.svg';
 export { default as Arrow } from './arrow.svg';
+export { default as Blur } from './blur.svg';
 export { default as CallEnd } from './callEnd.svg';
 export { default as Capture } from './capture.svg';
 export { default as Cc } from './cc.svg';
