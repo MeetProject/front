@@ -9,28 +9,30 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
     if (combination.length === 0) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      keyPressed.current['Meta'] = e.metaKey;
-      keyPressed.current['Control'] = e.ctrlKey;
-      keyPressed.current['Alt'] = e.altKey;
-      keyPressed.current['Shift'] = e.shiftKey;
+      keyPressed.current['meta'] = e.metaKey;
+      keyPressed.current['control'] = e.ctrlKey;
+      keyPressed.current['alt'] = e.altKey;
+      keyPressed.current['shift'] = e.shiftKey;
 
-      keyPressed.current[e.key] = true;
+      const lowerKey = e.key.toLowerCase();
+      keyPressed.current[lowerKey] = true;
 
       const isTriggerCombi = combination.every((k) => {
-        const targetKey = k === 'Command' || k === 'cmd' ? 'Meta' : k;
+        let targetKey = k.toLowerCase();
+        if (targetKey === 'command' || targetKey === 'cmd') targetKey = 'meta';
+
         return keyPressed.current[targetKey] === true;
       });
 
       if (isTriggerCombi) {
         e.preventDefault();
         callback();
-
-        keyPressed.current[e.key] = false;
+        keyPressed.current[lowerKey] = false;
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      keyPressed.current[e.key] = false;
+      keyPressed.current[e.key.toLowerCase()] = false;
 
       if (e.key === 'Meta') {
         keyPressed.current = {};
