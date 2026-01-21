@@ -19,7 +19,6 @@ export default function SpeakerTestButton({ color, onPlay }: SpeakerTestButtonPr
     if (!audioRef.current || isPlaying) {
       return;
     }
-    console.log('click');
     setIsPlaying(true);
     onPlay(true);
     audioRef.current.currentTime = 0;

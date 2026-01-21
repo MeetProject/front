@@ -8,6 +8,7 @@ import { ButtonTag, Visualizer } from '@/components';
 import { useDevice } from '@/hook';
 import useShortcutKey from '@/hook/useShortcutKey';
 import { useDeviceStore } from '@/store/useDeviceStore';
+import { formatShortcut } from '@/util/formatter';
 
 interface DeviceButtonProps {
   type: 'audio' | 'video';
@@ -22,11 +23,6 @@ const BUTTON_PROPS = {
   height: 24,
   width: 24,
 };
-
-const SHORT_CUT_KEY = {
-  Control: 'Ctrl',
-  Meta: '⌘',
-} as const;
 
 export default function DeviceButton({
   isOptionOpen,
@@ -78,15 +74,12 @@ export default function DeviceButton({
     },
   };
 
-  const parseShortcut = shortcutKey
-    ? '(' + shortcutKey?.map((el) => SHORT_CUT_KEY[el as keyof typeof SHORT_CUT_KEY] ?? el).join(' + ') + ')'
-    : '';
-
+  const parseShortcut = shortcutKey ? formatShortcut(shortcutKey) : '';
   return (
     <div className='relative'>
       <ButtonTag align='left' name={`${type === 'audio' ? '오디오' : '비디오'} 설정`} position='top'>
         <button
-          className={`group h-12 w-22 transition-[border-radius,background-color,transform] duration-200 ease-in-out ${deviceEnable[type] || permission[type] !== 'granted' ? 'rounded-3xl bg-[rgb(40,42,44)] hover:bg-[rgb(45,47,50)]' : 'rounded-xl bg-[rgb(65,14,11)] hover:bg-[rgb(80,17,14)]'} `}
+          className={`group h-12 w-22 transition-[border-radius,background-color,transform] duration-200 ease-in-out ${deviceEnable[type] || permission[type] !== 'granted' ? 'bg-device-button-bg hover:bg-device-button-hover-bg rounded-3xl' : 'rounded-xl bg-[rgb(65,14,11)] hover:bg-[rgb(80,17,14)]'} `}
           type='button'
           onClick={onChevronClick}
         >

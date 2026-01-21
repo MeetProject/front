@@ -108,6 +108,14 @@
   /* Text & Icon */
   --color-device-content: #c4c7c5; /* 메인 텍스트/아이콘 */
 
+  --color-device-button-bg: rgb(40, 42, 44);
+  --color-device-button-item: rgb(227, 227, 227);
+  --color-device-button-hover-bg: rgb(45, 47, 50);
+  --color-device-button-selected-bg: rgb(168, 199, 250);
+  --color-device-button-selected-hover-bg: rgb(156, 187, 239);
+  --color-device-button-selected-item: rgb(6, 46, 111);
+  --color-device-button-selected-hover-item: rgb(7, 54, 115);
+
   --text-1.5xl: 22px;
   --text-1.5xl--line-height: 30px;
   --text-4.5xl: 44px;

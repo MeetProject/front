@@ -7,43 +7,36 @@ export const isChromium = () => {
   return false;
 };
 
-export const canUseSetSinkId = () => {
-  /*   if (typeof window === 'undefined') return false;
+export const canUseSetSinkId = (): boolean => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
 
-  if (!('setSinkId' in HTMLMediaElement.prototype)) return false; */
+  const supportsMediaSetSinkId = 'setSinkId' in HTMLMediaElement.prototype;
+  const supportsAudioCtxSetSinkId = 'AudioContext' in window && 'setSinkId' in AudioContext.prototype;
+
+  if (!supportsMediaSetSinkId && !supportsAudioCtxSetSinkId) {
+    return false;
+  }
 
   const userAgent = window.navigator.userAgent;
+
+  // 모바일 환경 제외
   const isMobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ||
-    (userAgent.includes('Mac') && 'ontouchend' in document);
+    (navigator.maxTouchPoints > 0 && /Mac/.test(userAgent));
+
   if (isMobile) {
     return false;
   }
 
-  const isFirefox = userAgent.includes('firefox');
+  // Firefox 제외
+  const isFirefox = userAgent.toLowerCase().includes('firefox');
   if (isFirefox) {
     return false;
   }
 
-  const isMac = /Macintosh|Mac OS X/.test(userAgent);
-  const isWindows = /Windows/.test(userAgent);
-
-  const isChrome = /Chrome|Chromium|Edg|Arc|Vivaldi/.test(userAgent);
-  const isSafari = /Safari/.test(userAgent) && !/Chrome|Chromium|Edg|Arc|Vivaldi/.test(userAgent);
-
-  if (isMac && isChrome) {
-    return false;
-  }
-
-  if (isMac && isSafari) {
-    return true;
-  }
-
-  if (isWindows && isChrome) {
-    return true;
-  }
-
-  return false;
+  return true;
 };
 
 export const isScreenShareSupported = () =>

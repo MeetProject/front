@@ -32,3 +32,11 @@ export const formatDate = (date: Date | string | null) => {
 
   return `${month}월 ${day}일 (${week})`;
 };
+
+const SHORT_CUT_KEY = {
+  Control: 'Ctrl',
+  Meta: '⌘',
+} as const;
+
+export const formatShortcut = (shortcutKey: string[]) =>
+  '(' + shortcutKey.map((el) => SHORT_CUT_KEY[el as keyof typeof SHORT_CUT_KEY] ?? el).join(' + ') + ')';
