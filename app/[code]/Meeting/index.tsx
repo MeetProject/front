@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
+import BottomDrawer from './BottomDrawer';
 import ControlBar from './ControlBar';
+import EmojiReaction from './EmojiReaction';
 
 import { Loading } from '@/components';
 import { useDevice } from '@/hook';
@@ -37,7 +39,13 @@ export default function Meeting() {
 
   return (
     <div className='relative flex h-svh w-svw flex-col overflow-hidden bg-[rgb(19,19,20)]'>
-      <div className='flex-1' />
+      <div className='flex size-full flex-1 flex-col'>
+        <div className='relative flex-1 bg-white'>
+          <p>screen</p>
+          <EmojiReaction />
+        </div>
+        <BottomDrawer />
+      </div>
       <ControlBar />
     </div>
   );

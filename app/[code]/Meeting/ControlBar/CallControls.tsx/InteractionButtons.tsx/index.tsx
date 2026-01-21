@@ -1,13 +1,19 @@
 import { useCallback, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 import InteractionButton from './InteractionButton';
 
 import * as Icon from '@/asset/svg';
+import { useDrawerStore } from '@/store/useDrawer';
 
 export default function InteractionButtons() {
-  const [active, setActive] = useState<Record<'cc' | 'emoji' | 'handUp' | 'screenShare', boolean>>({
-    cc: false,
-    emoji: false,
+  const { cc, emoji } = useDrawerStore(
+    useShallow((state) => ({
+      cc: state.cc,
+      emoji: state.emoji,
+    })),
+  );
+  const [active, setActive] = useState<Record<'handUp' | 'screenShare', boolean>>({
     handUp: false,
     screenShare: false,
   });
@@ -17,11 +23,13 @@ export default function InteractionButtons() {
   }, []);
 
   const handleEmojiButtonClick = useCallback(() => {
-    setActive((prev) => ({ ...prev, emoji: !prev.emoji }));
+    const { toggleEmoji } = useDrawerStore.getState();
+    toggleEmoji();
   }, []);
 
   const handleCcButtonClick = useCallback(() => {
-    setActive((prev) => ({ ...prev, cc: !prev.cc }));
+    const { toggleCc } = useDrawerStore.getState();
+    toggleCc();
   }, []);
 
   const handleHandUpButtonClick = useCallback(() => {
@@ -35,11 +43,11 @@ export default function InteractionButtons() {
       name: active.screenShare ? '화면 공유 중지' : '화면 공유',
       onClick: handleScreenShareButtonClick,
     },
-    { icon: Icon.Emoji, isActive: active.emoji, name: '반응 보내기', onClick: handleEmojiButtonClick },
+    { icon: Icon.Emoji, isActive: emoji, name: '반응 보내기', onClick: handleEmojiButtonClick },
     {
       icon: Icon.Cc,
-      isActive: active.cc,
-      name: active.cc ? '자막 사용 중지' : '자막 사용 설정',
+      isActive: cc,
+      name: cc ? '자막 사용 중지' : '자막 사용 설정',
       onClick: handleCcButtonClick,
       shortcutKey: ['Shift', 'c'],
     },
