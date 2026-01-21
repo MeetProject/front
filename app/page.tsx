@@ -1,5 +1,5 @@
-import Loading from '@/components/Loading';
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-  return <Loading isPending={true} />;
+  redirect('/landing');
 }

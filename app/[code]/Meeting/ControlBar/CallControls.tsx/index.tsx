@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
+import CallEndButton from './CallEndButton';
 import DeviceButtons from './DeviceButtons';
 import InteractionButtons from './InteractionButtons.tsx';
 import OptionButton from './OptionButton';
@@ -34,6 +35,7 @@ export default function CallControlls() {
       <DeviceButtons onSettingButtonClick={handleSettingOpen} />
       <InteractionButtons />
       <OptionButton onClickFeedbackButton={handleFeedbackOpen} onClickSettingButton={handleSettingOpen} />
+      <CallEndButton />
       <Setting category={isOpenSetting ?? 'audio'} isOpen={isOpenSetting !== null} onClose={handleSettingClose} />
       <Feedback isOpen={isOpenFeedback} onClose={handleFeedbackClose} />
     </div>

@@ -33,6 +33,16 @@ export default function Meeting() {
     init();
   }, [isInit, initStream]);
 
+  useEffect(
+    () => () => {
+      const { stopScreenStream, stopStream } = useDeviceStore.getState();
+      stopStream();
+      stopScreenStream();
+      /* peerConnection clear */
+    },
+    [],
+  );
+
   if (isPending) {
     return <Loading isPending={isPending} />;
   }
