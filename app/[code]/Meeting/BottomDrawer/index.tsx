@@ -15,7 +15,7 @@ export default function BottomDrawer() {
   );
 
   return (
-    <div className='w-full overflow-hidden transition-all duration-500 ease-in-out'>
+    <aside className='w-full overflow-hidden transition-all duration-500 ease-in-out'>
       <div
         className={`grid w-full transition-[grid-template-rows,opacity] duration-500 ease-in-out ${cc ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
       >
@@ -30,6 +30,6 @@ export default function BottomDrawer() {
           <EmojiDrawer />
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

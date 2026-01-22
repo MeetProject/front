@@ -5,13 +5,13 @@ import { useShallow } from 'zustand/shallow';
 import * as Icon from '@/asset/svg';
 import { ButtonTag } from '@/components';
 import { useDrawerStore } from '@/store/useDrawer';
-import { RightPanelKeyType } from '@/types/drawerType';
+import { RightDrawerKeyType } from '@/types/drawerType';
 
 interface ButtonType {
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
   isOpen: boolean;
   name: string;
-  value: RightPanelKeyType;
+  value: RightDrawerKeyType;
 }
 
 export default function MeetingAuxControls() {

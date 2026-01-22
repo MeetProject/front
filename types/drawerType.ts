@@ -1,4 +1,4 @@
-export const RIGHT_PANEL_KEYS = ['info', 'chat'] as const;
+export const RIGHT_DRAWER_KEYS = ['info', 'chat'] as const;
 
-export type RightPanelKeyType = (typeof RIGHT_PANEL_KEYS)[number];
-export type DrawerKeyType = 'cc' | 'emoji' | RightPanelKeyType;
+export type RightDrawerKeyType = (typeof RIGHT_DRAWER_KEYS)[number];
+export type DrawerKeyType = 'cc' | 'emoji' | RightDrawerKeyType;
