@@ -34,11 +34,11 @@ export default function InfoContent() {
   };
 
   return (
-    <div>
+    <div className='px-6'>
       <div className='my-2 pt-2'>
         <p className='font-google-sans text-device-button-item text-sm'>참여 정보</p>
       </div>
-      <span className='text-sm text-[rgb(196,199,197)] select-text'>{url}</span>
+      <span className='text-drawer-text text-sm select-text'>{url}</span>
       <div className='group relative my-1'>
         <button
           className='group-hover:bg-device-button-hover-bg text-device-button-selected-bg h-10 rounded-full pr-4 pl-9.5 text-sm'

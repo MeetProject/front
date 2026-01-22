@@ -1,3 +1,4 @@
+export { default as chat } from './chat.png';
 export { default as clapEmoji } from './clapEmoji.png';
 export { default as curiousEmoji } from './curiousEmoji.png';
 export { default as feedbackHeader } from './feedbackHeader.png';

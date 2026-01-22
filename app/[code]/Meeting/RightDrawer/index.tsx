@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 
+import ChatContent from './ChatContent';
 import Header from './Header';
 import InfoContent from './InfoContent';
 
@@ -42,21 +43,21 @@ export default function RightDrawer() {
   };
 
   const content = {
-    chat: <InfoContent />,
+    chat: <ChatContent />,
     info: <InfoContent />,
   };
 
   return (
     <aside
-      className={`relative h-full overflow-hidden transition-[width] duration-500 ease-in-out ${isOpen ? 'w-93.5' : 'w-0'} `}
+      className={`relative h-full overflow-hidden transition-[width] duration-500 ease-in-out ${isOpen ? 'w-93.5' : 'w-0'}`}
     >
       <div
-        className={`absolute top-0 right-0 h-full w-89.5 transform rounded-[20px] bg-[rgb(32,33,36)] transition-transform duration-500 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} `}
+        className={`absolute top-0 right-0 flex h-full w-89.5 transform flex-col rounded-[20px] bg-[rgb(32,33,36)] transition-transform duration-500 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} `}
       >
         {isOpen && (
           <>
             <Header name={name[isOpen]} onClose={() => handleClose(isOpen)} />
-            <main className='px-6'>{content[isOpen]}</main>
+            <main className='flex-1'>{content[isOpen]}</main>
           </>
         )}
       </div>
