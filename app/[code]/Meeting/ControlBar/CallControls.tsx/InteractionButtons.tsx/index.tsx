@@ -23,13 +23,13 @@ export default function InteractionButtons() {
   }, []);
 
   const handleEmojiButtonClick = useCallback(() => {
-    const { toggleEmoji } = useDrawerStore.getState();
-    toggleEmoji();
+    const { toggleDrawer } = useDrawerStore.getState();
+    toggleDrawer('emoji');
   }, []);
 
   const handleCcButtonClick = useCallback(() => {
-    const { toggleCc } = useDrawerStore.getState();
-    toggleCc();
+    const { toggleDrawer } = useDrawerStore.getState();
+    toggleDrawer('cc');
   }, []);
 
   const handleHandUpButtonClick = useCallback(() => {
@@ -52,6 +52,7 @@ export default function InteractionButtons() {
       shortcutKey: ['Shift', 'c'],
     },
     {
+      autoDeselectDelay: 4000,
       icon: Icon.Handup,
       isActive: active.handUp,
       name: active.handUp ? '손 내리기' : '손들기',

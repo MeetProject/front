@@ -1,4 +1,5 @@
 import CallControlls from './CallControls.tsx';
+import MeetingAuxControls from './MeetingAuxControls';
 import MeetingInfo from './MeetingInfo';
 
 export default function ControlBar() {
@@ -6,7 +7,7 @@ export default function ControlBar() {
     <div className='grid h-20 w-full grid-cols-[1fr_auto_1fr] items-center px-3'>
       <MeetingInfo />
       <CallControlls />
-      <div className='justify-self-end text-white'>a</div>
+      <MeetingAuxControls />
     </div>
   );
 }
