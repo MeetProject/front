@@ -19,7 +19,7 @@ export default function MeetingAuxControls() {
   return (
     <div className='relative flex items-center justify-self-end' ref={targetRef}>
       <button
-        className='hover:bg-device-button-hover-bg hidden size-12 items-center justify-center rounded-full max-[810px]:flex'
+        className='hover:bg-device-button-hover-bg hidden size-12 items-center justify-center rounded-full max-[905px]:flex'
         type='button'
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -32,12 +32,12 @@ export default function MeetingAuxControls() {
       <div
         className={clsx(
           'flex items-center gap-2',
-          !isOpen && 'max-[810px]:hidden',
+          !isOpen && 'max-[905px]:hidden',
           isOpen && [
-            'max-[810px]:flex max-[810px]:flex-col',
-            'max-[810px]:absolute max-[810px]:top-0 max-[810px]:right-1/2',
-            'max-[810px]:translate-x-1/2 max-[810px]:-translate-y-[calc(100%+8px)]',
-            'max-[810px]:w-16 max-[810px]:rounded-lg max-[810px]:bg-[rgb(32,33,36)] max-[810px]:p-2 max-[810px]:shadow-xl',
+            'max-[905px]:flex-col',
+            'max-[905px]:absolute max-[905px]:top-0 max-[905px]:right-1/2',
+            'max-[905px]:translate-x-1/2 max-[905px]:-translate-y-[calc(100%+8px)]',
+            'max-[905px]:w-16 max-[905px]:rounded-lg max-[905px]:bg-[rgb(32,33,36)] max-[905px]:p-2 max-[905px]:shadow-xl',
           ],
         )}
       >

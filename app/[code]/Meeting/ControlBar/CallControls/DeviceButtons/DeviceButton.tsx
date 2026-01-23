@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { MouseEvent, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -77,27 +78,34 @@ export default function DeviceButton({
   const parseShortcut = shortcutKey ? formatShortcut(shortcutKey) : '';
   return (
     <div className='relative'>
-      <ButtonTag align='left' name={`${type === 'audio' ? '오디오' : '비디오'} 설정`} position='top'>
-        <button
-          className={`group h-12 w-22 transition-[border-radius,background-color,transform] duration-200 ease-in-out ${deviceEnable[type] || permission[type] !== 'granted' ? 'bg-device-button-bg hover:bg-device-button-hover-bg rounded-3xl' : 'rounded-xl bg-[rgb(65,14,11)] hover:bg-[rgb(80,17,14)]'} `}
-          type='button'
-          onClick={onChevronClick}
-        >
-          <div className='flex size-12 items-center justify-center'>
-            {type === 'audio' && enableMute && (
-              <Visualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' stream={stream} />
-            )}
-            <Icon.Chevron
-              className={`${!isOptionOpen && 'rotate-180'} ${type === 'audio' && enableMute && 'hidden group-hover:inline-block'}`}
-              fill={enableMute ? '#ffffff' : '#f9dedc'}
-              height={10}
-              width={10}
-            />
-          </div>
-        </button>
-      </ButtonTag>
+      <div className='max-[450px]:hidden'>
+        <ButtonTag align='left' name={`${type === 'audio' ? '오디오' : '비디오'} 설정`} position='top'>
+          <button
+            className={`group h-12 w-22 transition-[border-radius,background-color,transform] duration-200 ease-in-out ${deviceEnable[type] || permission[type] !== 'granted' ? 'bg-device-button-bg hover:bg-device-button-hover-bg rounded-3xl' : 'rounded-xl bg-[rgb(65,14,11)] hover:bg-[rgb(80,17,14)]'} `}
+            type='button'
+            onClick={onChevronClick}
+          >
+            <div className='flex size-12 items-center justify-center'>
+              {type === 'audio' && enableMute && (
+                <Visualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' stream={stream} />
+              )}
+              <Icon.Chevron
+                className={`${!isOptionOpen && 'rotate-180'} ${type === 'audio' && enableMute && 'hidden group-hover:inline-block'}`}
+                fill={enableMute ? '#ffffff' : '#f9dedc'}
+                height={10}
+                width={10}
+              />
+            </div>
+          </button>
+        </ButtonTag>
+      </div>
 
-      <div className='absolute top-1/2 right-0 z-1 -translate-y-1/2'>
+      <div
+        className={clsx(
+          'absolute top-1/2 right-0 z-1 -translate-y-1/2',
+          'max-[450px]:relative max-[450px]:top-0 max-[450px]:translate-0',
+        )}
+      >
         <ButtonTag
           align='center'
           className={enableMute ? '-translate-x-14' : ''}

@@ -15,7 +15,7 @@ export default function CallControlls() {
   const [isOpenSetting, setIsOpenSetting] = useState<DeviceKindType | null>(null);
 
   const handleSettingOpen = useCallback((category?: DeviceKindType) => {
-    setIsOpenSetting(category ?? null);
+    setIsOpenSetting(category ?? 'audio');
   }, []);
 
   const handleFeedbackOpen = useCallback(() => {
@@ -31,7 +31,7 @@ export default function CallControlls() {
   }, []);
 
   return (
-    <div className='relative flex w-xl items-center gap-2 px-1.5'>
+    <div className='relative flex items-center gap-2 px-1.5'>
       <DeviceButtons onSettingButtonClick={handleSettingOpen} />
       <InteractionButtons />
       <OptionButton onClickFeedbackButton={handleFeedbackOpen} onClickSettingButton={handleSettingOpen} />
