@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -49,15 +50,24 @@ export default function RightDrawer() {
 
   return (
     <aside
-      className={`relative h-full overflow-hidden transition-[width] duration-500 ease-in-out ${isOpen ? 'w-93.5' : 'w-0'}`}
+      className={clsx(
+        'relative h-full transition-[width,margin] duration-500 ease-in-out',
+        isOpen ? 'w-93.5' : 'w-0',
+        'max-[600px]:w-0',
+      )}
     >
       <div
-        className={`absolute top-0 right-0 flex h-full w-89.5 transform flex-col rounded-[20px] bg-[rgb(32,33,36)] transition-transform duration-500 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} `}
+        className={clsx(
+          'absolute top-0 right-0 flex h-full transform flex-col bg-[rgb(32,33,36)] shadow-xl transition-all duration-500 ease-in-out',
+          'w-89.5 rounded-[20px]',
+          'max-[400px]:w-[calc(100vw-32px)]',
+          isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0',
+        )}
       >
         {isOpen && (
           <>
             <Header name={name[isOpen]} onClose={() => handleClose(isOpen)} />
-            <main className='flex-1'>{content[isOpen]}</main>
+            <main className='flex-1 overflow-hidden'>{content[isOpen]}</main>
           </>
         )}
       </div>
