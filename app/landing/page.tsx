@@ -11,12 +11,12 @@ export default function Page() {
       <div className='relative flex flex-1 flex-col items-center justify-center'>
         <div className='w-full max-w-163.75 shrink px-[3em] py-[1em]'>
           <div className='font-googleSans text-4.5xl pb-2 leading-13'>모든 사용자를 위한 영상 통화 및 화상 회의</div>
-          <div className='font-googleSans text-1.5xl pb-8 leading-7 font-normal text-gray-600 [@media(max-width:640px)]:pb-2'>
+          <div className='font-googleSans text-1.5xl pb-8 leading-7 font-normal text-gray-600 max-[640px]:pb-2'>
             Project Meet로 어디서나 연결하고 공동작업하고 기념일을 축하할 수 있습니다.
           </div>
         </div>
 
-        <div className='flex w-full max-w-162 flex-wrap items-center gap-6 px-12 [@media(max-width:540px)]:flex-col [@media(max-width:640px)]:items-start [@media(max-width:640px)]:gap-2'>
+        <div className='flex w-full max-w-162 flex-wrap items-center gap-6 px-12 max-[640px]:items-start max-[640px]:gap-2 max-[540px]:flex-col'>
           <NewMeetingButton />
           <ParticipateMeetingForm />
         </div>

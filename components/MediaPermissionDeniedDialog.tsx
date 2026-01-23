@@ -42,7 +42,7 @@ export default function MediaPermissionDeniedDialog({ isOpen, onClose, zIndex }:
       zIndex={zIndex}
       onClose={() => onClose()}
     >
-      <div className='relative flex w-160 max-w-full items-center rounded-[28px] bg-white px-8 pt-7.5 pb-10 [@media(max-width:540px)]:flex-col'>
+      <div className='relative flex w-160 max-w-full items-center rounded-[28px] bg-white px-8 pt-7.5 pb-10 max-[540px]:flex-col'>
         <div className='absolute top-2 right-2 rounded-full hover:bg-[#F0F1F1] active:bg-[#DEDFDF]'>
           <ButtonTag name='대화상자 닫기' position='bottom'>
             <button className='flex size-12 items-center justify-center' type='button' onClick={onClose}>
@@ -50,13 +50,9 @@ export default function MediaPermissionDeniedDialog({ isOpen, onClose, zIndex }:
             </button>
           </ButtonTag>
         </div>
-        <Image
-          alt='permission'
-          className='size-[322.5px] [@media(max-width:700px)]:size-43.75'
-          src={permissionCommon}
-        />
+        <Image alt='permission' className='size-[322.5px] max-[700px]:size-43.75' src={permissionCommon} />
         <div className='font-googleSans px-10 pt-5'>
-          <h1 className='mb-3.75 text-left text-[22px] text-[#444746]'>{`Meet에서 ${deniedDevice} 사용이 차단됨`}</h1>
+          <h1 className='text-device-outline mb-3.75 text-left text-[22px]'>{`Meet에서 ${deniedDevice} 사용이 차단됨`}</h1>
           <ol className='list-decimal'>
             <li>
               <span className='inline'>

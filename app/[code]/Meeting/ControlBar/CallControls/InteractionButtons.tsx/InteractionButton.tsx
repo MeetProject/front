@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { useCallback, useEffect, useRef } from 'react';
 
 import { ButtonTag } from '@/components';
@@ -61,7 +62,12 @@ export default function InteractionButton({
   return (
     <ButtonTag align='center' name={name + formatedShortcut} position='top'>
       <button
-        className={`${isActive ? 'bg-device-button-selected-bg hover:bg-device-button-selected-hover-bg rounded-xl' : 'bg-device-button-bg hover:bg-device-button-hover-bg rounded-3xl'} flex h-12 w-14 items-center justify-center transition-[border-radius,background-color,transform] duration-200 ease-in-out`}
+        className={clsx(
+          'bg-device-button-bg hover:bg-device-button-hover-bg flex h-12 w-14 items-center justify-center rounded-3xl transition-[border-radius,background-color,transform] duration-200 ease-in-out',
+          isActive && 'bg-device-button-selected-bg hover:bg-device-button-selected-hover-bg rounded-xl',
+          'max-[850px]:size-14 max-[850px]:rounded-full',
+          !isActive && 'max-[850px]:bg-device-bg',
+        )}
         disabled={disabled}
         type='button'
         onClick={handleClick}

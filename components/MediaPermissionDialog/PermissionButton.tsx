@@ -14,7 +14,7 @@ interface PermissionButtonProps {
 }
 
 const ICON_PROPS = {
-  className: 'absolute top-1/2 left-20 -translate-y-1/2 [@media(max-width:600px)]:left-8',
+  className: 'absolute top-1/2 left-20 -translate-y-1/2 max-[600px]:left-8',
   fill: '#ffffff',
   height: 18,
   width: 18,
@@ -63,7 +63,7 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
       <div className='flex items-center justify-center'>
         <div className='relative mx-2'>
           <button
-            className='mx-2 flex h-11 min-w-46 items-center justify-center rounded-3xl bg-[#0B57D0] pr-16 pl-24 text-[14px] text-white hover:bg-[#1F64D4] [@media(max-width:600px)]:pr-8 [@media(max-width:600px)]:pl-12 [@media(max-width:600px)]:text-xs'
+            className='mx-2 flex h-11 min-w-46 items-center justify-center rounded-3xl bg-[#0B57D0] pr-16 pl-24 text-[14px] text-white hover:bg-[#1F64D4] max-[600px]:pr-8 max-[600px]:pl-12 max-[600px]:text-xs'
             type='button'
             onClick={() => handleRequestButtonClick(type)}
           >
@@ -89,7 +89,7 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
         )}
       </div>
       {isOpenOption && (
-        <div className='mt-4 flex items-center justify-center gap-6 [@media(max-width:600px)]:flex-col [@media(max-width:600px)]:gap-3'>
+        <div className='mt-4 flex items-center justify-center gap-6 max-[600px]:flex-col max-[600px]:gap-3'>
           <div className='relative rounded-3xl border border-[rgb(26,115,232)] hover:bg-blue-50'>
             <button
               className='flex h-11 items-center justify-center pr-10 pl-16 text-sm text-[rgb(26,115,232)]'
