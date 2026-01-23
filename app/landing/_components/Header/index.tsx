@@ -90,13 +90,13 @@ export default function Header() {
     <div className='relative flex h-16 items-center justify-between px-4 py-8'>
       <Link className='flex h-10 items-center gap-2 whitespace-nowrap' href='/'>
         <Icon.Logo height={36} width={36} />
-        <div className='flex justify-center [@media(max-width:360px)]:hidden'>
+        <div className='flex justify-center max-[360px]:hidden'>
           <p className='text-1.5xl font-semibold text-gray-600'>Meet</p>
           <p className='text-1.5xl font-medium text-gray-600'>Project</p>
         </div>
       </Link>
       <div className='z-10 flex items-center bg-white whitespace-nowrap'>
-        <div className='[@media(max-width:610px)]:hidden'>
+        <div className='max-[610px]:hidden'>
           <CurrentDate />
         </div>
         <HelpMenu />

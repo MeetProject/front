@@ -36,7 +36,7 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
       isActive ? 'z-10 bg-[#E8F0FE] hover:shadow-md' : 'bg-white hover:bg-[#F9F9F9]'
     }`,
     iconFill: isActive ? '#1967D2' : '#5F6368',
-    text: `[@media(max-width:640px)]:hidden ${isActive ? 'text-[#1967D2] font-medium' : 'text-[#5F6368]'}`,
+    text: `max-[640px]:hidden ${isActive ? 'text-[#1967D2] font-medium' : 'text-[#5F6368]'}`,
   });
 
   const handleClose = () => {
@@ -73,8 +73,8 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
         onClose={handleClose}
       >
         <div className='font-googleSans relative flex h-162.5 w-200 max-w-full rounded-lg bg-white shadow-xl'>
-          <aside className='h-full w-[256px] border-r border-[#DADCE0] [@media(max-width:640px)]:w-20'>
-            <h1 className='text-1.5xl px-6 pt-6 font-medium text-[#202124] [@media(max-width:640px)]:hidden'>설정</h1>
+          <aside className='h-full w-[256px] border-r border-[#DADCE0] max-[640px]:w-20'>
+            <h1 className='text-1.5xl px-6 pt-6 font-medium text-[#202124] max-[640px]:hidden'>설정</h1>
             <nav className='mt-6 mr-2'>
               {CATEGORY_BUTTONS.map(({ icon: IconComponent, name, value }) => {
                 const isActive = currentCategory === value;

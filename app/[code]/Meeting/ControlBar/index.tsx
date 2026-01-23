@@ -1,4 +1,4 @@
-import CallControlls from './CallControls.tsx';
+import CallControlls from './CallControls';
 import MeetingAuxControls from './MeetingAuxControls';
 import MeetingInfo from './MeetingInfo';
 

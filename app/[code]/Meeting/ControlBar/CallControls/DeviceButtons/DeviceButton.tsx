@@ -117,7 +117,7 @@ export default function DeviceButton({
           </button>
         </ButtonTag>
         {permission[type] !== 'granted' && (
-          <div className='absolute top-[10%] right-[18%] flex size-3 items-center justify-center rounded-full bg-[rgb(251,188,4)] [@media(max-width:400px)]:size-3'>
+          <div className='absolute top-[10%] right-[18%] flex size-3 items-center justify-center rounded-full bg-[rgb(251,188,4)] max-[400px]:size-3'>
             <Icon.Warn height={14} width={14} />
           </div>
         )}

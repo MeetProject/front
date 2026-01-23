@@ -22,13 +22,13 @@ export default function VideoSetting({ onDisabledClick }: VideoSettingProps) {
           <div>
             <p className='mb-2 text-sm font-medium text-[#1A73E8]'>카메라</p>
           </div>
-          <div className='flex flex-1 items-center gap-4 [@media(max-width:640px)]:flex-col-reverse'>
+          <div className='flex flex-1 items-center gap-4 max-[640px]:flex-col-reverse'>
             <DeviceSelectBox type='videoInput' onDisabledClick={onDisabledClick} />
             <div className='flex w-fit justify-center overflow-hidden rounded-md bg-gray-700'>
               {permission?.video === 'granted' && stream && (
                 <Media
                   autoPlay={true}
-                  className='aspect-video w-40 object-cover sm:rounded-md [@media(max-width:640px)]:w-full'
+                  className='aspect-video w-40 object-cover max-[640px]:w-full sm:rounded-md'
                   muted={true}
                   stream={stream}
                   style={{ transform: 'rotateY(180deg)' }}

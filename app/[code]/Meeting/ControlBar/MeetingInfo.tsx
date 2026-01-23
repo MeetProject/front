@@ -15,7 +15,7 @@ export default function MeetingInfo() {
   });
 
   return (
-    <div className='flex items-center gap-3 justify-self-start px-3'>
+    <div className='flex items-center gap-3 justify-self-start px-3 max-[400px]:hidden'>
       <p className='font-google-sans text-white'>{formattedTime}</p>
       <div className='h-4 border-l border-white' />
       <p className='font-google-sans text-white select-text'>{roomId}</p>
