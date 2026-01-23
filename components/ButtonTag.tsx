@@ -10,11 +10,13 @@ interface ButtonTagProperties {
   style?: CSSProperties | null;
   align?: 'left' | 'center' | 'right';
   instant?: boolean;
+  className?: string;
 }
 
 export default function ButtonTag({
   align = 'center',
   children,
+  className,
   gap = 4,
   instant,
   name,
@@ -50,7 +52,7 @@ export default function ButtonTag({
       {children}
       {isDrag && (
         <div
-          className={`absolute z-999999 flex h-6 w-max ${align === 'left' ? 'left-0' : align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'} bg-black-75 items-center rounded-md px-2 text-xs text-white`}
+          className={`absolute z-999999 flex h-6 w-max ${align === 'left' ? 'left-0' : align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'} items-center rounded-md bg-[rgb(40,42,44)] px-2 text-xs text-white ${className}`}
           style={{ ...positionStyle, ...style }}
         >
           {name}

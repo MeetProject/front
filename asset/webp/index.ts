@@ -1,0 +1,9 @@
+export { default as clapEmoji } from './clapEmoji.webp';
+export { default as curiousEmoji } from './curiousEmoji.webp';
+export { default as heartEmoji } from './heartEmoji.webp';
+export { default as laughterEmoji } from './laughterEmoji.webp';
+export { default as partyPoperEmoji } from './partyPoperEmoji.webp';
+export { default as sadEmoji } from './sadEmoji.webp';
+export { default as surpriceEmoji } from './surpriceEmoji.webp';
+export { default as thumbDownEmoji } from './thumbDownEmoji.webp';
+export { default as thumbUpEmoji } from './thumbUpEmoji.webp';

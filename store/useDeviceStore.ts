@@ -3,6 +3,8 @@ import { create } from 'zustand';
 import { DeviceType, DeviceEnableType, DeviceKindType, StatusType } from '@/types/deviceType';
 
 interface DeviceState {
+  isInit: boolean;
+
   device: Record<DeviceType, MediaDeviceInfo | null>;
   deviceEnable: DeviceEnableType;
   permission: Record<DeviceKindType, PermissionState>;
@@ -29,16 +31,17 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
     audioOutput: null,
     videoInput: null,
   },
-
   deviceEnable: {
     audio: true,
     video: true,
   },
+
   deviceList: {
     audioInput: [],
     audioOutput: [],
     videoInput: [],
   },
+  isInit: false,
   permission: { audio: 'prompt', video: 'prompt' },
   screenStream: null,
   status: null,

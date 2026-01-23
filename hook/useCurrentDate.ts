@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 const useCurrentDate = () => {
-  const [time, setTime] = useState<Date | null>(null);
+  const [time, setTime] = useState<Date>(new Date());
   const timerReference = useRef<NodeJS.Timeout | null>(null);
   const intervalReference = useRef<NodeJS.Timeout | null>(null);
 

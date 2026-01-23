@@ -18,43 +18,111 @@ const useDevice = () => {
     });
   }, []);
 
+  const syncEnable = useCallback((stream: MediaStream, constranint: Record<DeviceKindType, boolean>) => {
+    const { deviceEnable } = useDeviceStore.getState();
+
+    if (constranint.audio && !deviceEnable.audio) {
+      stream.getAudioTracks().forEach((track) => (track.enabled = false));
+    }
+
+    if (constranint.video && !deviceEnable.video) {
+      stream.getVideoTracks().forEach((track) => track.stop());
+    }
+  }, []);
+
+  const getConstraints = useCallback((config: { audio: boolean; video: boolean }, isExact: boolean) => {
+    const { device } = useDeviceStore.getState();
+    return {
+      ...(config.audio && {
+        audio: device.audioInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } } : true,
+      }),
+      ...(config.video && {
+        video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput } } : true,
+      }),
+    } as MediaStreamConstraints;
+  }, []);
+
   const getStream = useCallback(
-    async (constraints?: MediaStreamConstraints) => {
-      const { updatePermission } = useDeviceStore.getState();
+    async (constraint: Record<DeviceKindType, boolean>, isExact: boolean, isLast?: boolean, isSyncEnable?: boolean) => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (constraints?.audio) {
-          updatePermission('audio', 'granted');
+        const stream = await navigator.mediaDevices.getUserMedia(getConstraints(constraint, isExact));
+        const deviceInfo = await getCurrentDeviceInfo(stream);
+
+        if (isSyncEnable) {
+          syncEnable(stream, constraint);
         }
 
-        if (constraints?.video) {
-          updatePermission('video', 'granted');
-        }
-        await setMediaStream(stream);
+        useDeviceStore.setState({
+          ...deviceInfo,
+          isInit: false,
+          permission: {
+            audio: constraint.audio ? 'granted' : 'denied',
+            video: constraint.video ? 'granted' : 'denied',
+          },
+          status: 'success',
+          stream,
+        });
+
         return stream;
       } catch (e) {
         const error = e as DOMException;
-        if (error.name === 'NotAllowedError') {
-          if (constraints?.audio) {
-            updatePermission('audio', 'denied');
-          }
-          if (constraints?.video) {
-            updatePermission('video', 'denied');
-          }
+        if ((error.name === 'OverconstrainedError' || error.name === 'NotFoundError') && isExact) {
+          return getStream(constraint, false, isLast);
         }
-        throw e;
+
+        if (error.name === 'NotAllowedError' && !isLast) {
+          throw e;
+        }
+
+        useDeviceStore.setState({
+          device: { audioInput: null, audioOutput: null, videoInput: null },
+          deviceList: { audioInput: [], audioOutput: [], videoInput: [] },
+          permission: {
+            audio: constraint.audio && error.name !== 'NotAllowedError' ? 'granted' : 'denied',
+            video: constraint.video && error.name !== 'NotAllowedError' ? 'granted' : 'denied',
+          },
+          status: error.name === 'NotAllowedError' ? 'rejected' : 'failed',
+          stream: null,
+        });
+        return null;
       }
     },
-    [setMediaStream],
+    [getConstraints, syncEnable],
+  );
+
+  const initStream = useCallback(
+    async (isSyncEnable?: boolean) => {
+      const { status, stream: prevStream } = useDeviceStore.getState();
+      if (status === 'pending') {
+        return;
+      }
+
+      useDeviceStore.setState({ status: 'pending' });
+      if (prevStream) {
+        prevStream.getTracks().forEach((track) => track.stop());
+      }
+
+      const attempts = [
+        { audio: true, video: true },
+        { audio: true, video: false },
+        { audio: false, last: true, video: true },
+      ];
+
+      for (const { audio, last, video } of attempts) {
+        try {
+          return await getStream({ audio, video }, true, last, isSyncEnable);
+        } catch {
+          continue;
+        }
+      }
+      return null;
+    },
+    [getStream],
   );
 
   const replaceNewTrack = useCallback(
     async (type: DeviceKindType, deviceId: string | null, isExact = true) => {
-      const { stream } = useDeviceStore.getState();
-      if (!stream) {
-        return;
-      }
-
+      const { stream, updatePermission } = useDeviceStore.getState();
       const constraint = deviceId
         ? {
             [type]: { deviceId: isExact ? { exact: deviceId } : { ideal: deviceId } },
@@ -62,91 +130,36 @@ const useDevice = () => {
         : { [type]: true };
 
       try {
+        const prevStream = stream ?? new MediaStream();
         const trackStream = await navigator.mediaDevices.getUserMedia(constraint);
         const newTrack = trackStream.getTracks().find((t) => t.kind === type);
-        const oldTrack = stream.getTracks().find((t) => t.kind === type);
+        const oldTrack = stream?.getTracks().find((t) => t.kind === type);
 
         if (newTrack) {
-          stream.addTrack(newTrack);
+          prevStream.addTrack(newTrack);
         }
 
         if (oldTrack) {
           oldTrack.stop();
-          stream.removeTrack(oldTrack);
+          prevStream.removeTrack(oldTrack);
         }
 
-        const updateStream = new MediaStream(stream.getTracks());
+        const updateStream = new MediaStream(prevStream.getTracks());
         await setMediaStream(updateStream);
+        updatePermission(type, 'granted');
         return updateStream;
       } catch (e) {
+        const error = e as DOMException;
+
+        if (error.name === 'NotAllowedError') {
+          updatePermission(type, 'denied');
+          return;
+        }
         if (isExact) return replaceNewTrack(type, deviceId, false);
         throw e;
       }
     },
     [setMediaStream],
-  );
-
-  const initStream = useCallback(
-    async (constraint?: MediaStreamConstraints) => {
-      const {
-        device: { audioInput, videoInput },
-        status,
-        stream: prevStream,
-      } = useDeviceStore.getState();
-
-      if (status === 'pending') {
-        return;
-      }
-
-      useDeviceStore.setState({ status: 'pending' });
-
-      if (prevStream) {
-        prevStream.getTracks().forEach((track) => track.stop());
-      }
-
-      try {
-        return await getStream(
-          constraint ?? {
-            audio: audioInput ? { deviceId: { exact: audioInput.deviceId } } : true,
-            video: videoInput ? { deviceId: { exact: videoInput.deviceId } } : true,
-          },
-        );
-      } catch (e) {
-        const error = e as DOMException;
-        console.log(error);
-        if (error.name === 'NotAllowedError') {
-          console.log('not allowed');
-          useDeviceStore.setState({ status: 'rejected', stream: null });
-          return null;
-        }
-
-        if (error.name === 'OverconstrainedError' || error.name === 'NotFoundError') {
-          try {
-            return await getStream({
-              audio: audioInput ? { deviceId: { ideal: audioInput.deviceId } } : true,
-              video: videoInput ? { deviceId: { ideal: videoInput.deviceId } } : true,
-            });
-          } catch {
-            useDeviceStore.setState({ status: 'failed', stream: null });
-            return null;
-          }
-        }
-
-        try {
-          return await getStream({ audio: audioInput ? { deviceId: { exact: audioInput.deviceId } } : true });
-        } catch {
-          try {
-            return await getStream({
-              video: videoInput ? { deviceId: { exact: videoInput.deviceId } } : true,
-            });
-          } catch {
-            useDeviceStore.setState({ status: 'failed', stream: null });
-            return null;
-          }
-        }
-      }
-    },
-    [getStream],
   );
 
   const replaceTrack = useCallback(
@@ -155,7 +168,7 @@ const useDevice = () => {
         if (!type) {
           throw new Error('device가 null인 경우, type이 반드시 필요합니다.');
         }
-        replaceNewTrack(type, null, false);
+        await replaceNewTrack(type, null, false);
         return;
       }
 
