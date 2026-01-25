@@ -8,6 +8,7 @@ import * as Icon from '@/asset/svg';
 import { ButtonTag } from '@/components';
 import { useOutsideClick } from '@/hook';
 import { useDrawerStore } from '@/store/useDrawer';
+import { useInteractionStore } from '@/store/useInteractionStore';
 
 export default function InteractionButtons() {
   const { cc, emoji } = useDrawerStore(
@@ -17,9 +18,10 @@ export default function InteractionButtons() {
     })),
   );
 
+  const handsUp = useInteractionStore((state) => state.handsUp);
+
   const [isOpenOption, setIsOpenOption] = useState<boolean>(false);
-  const [active, setActive] = useState<Record<'handUp' | 'screenShare', boolean>>({
-    handUp: false,
+  const [active, setActive] = useState<Record<'screenShare', boolean>>({
     screenShare: false,
   });
 
@@ -49,7 +51,8 @@ export default function InteractionButtons() {
   }, [handleOptionClose]);
 
   const handleHandUpButtonClick = useCallback(() => {
-    setActive((prev) => ({ ...prev, handUp: !prev.handUp }));
+    const { toggleHandsUp } = useInteractionStore.getState();
+    toggleHandsUp();
     handleOptionClose();
   }, [handleOptionClose]);
 
@@ -69,10 +72,9 @@ export default function InteractionButtons() {
       shortcutKey: ['Shift', 'c'],
     },
     {
-      autoDeselectDelay: 4000,
       icon: Icon.Handup,
-      isActive: active.handUp,
-      name: active.handUp ? '손 내리기' : '손들기',
+      isActive: handsUp,
+      name: handsUp ? '손 내리기' : '손들기',
       onClick: handleHandUpButtonClick,
       shortcutKey: ['Control', 'Meta', 'h'],
     },

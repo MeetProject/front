@@ -57,8 +57,8 @@ export default function Meeting() {
     <div className='relative flex h-svh w-svw flex-col overflow-hidden bg-[rgb(19,19,20)] select-none'>
       <div className='flex size-full flex-1 flex-col'>
         <div className='relative flex flex-1 flex-col'>
-          <div className='relative flex flex-1 overflow-hidden p-4'>
-            <div className='flex size-full overflow-hidden rounded-[20px]'>
+          <div className='relative flex flex-1 shrink overflow-hidden p-4'>
+            <div className='flex size-full shrink overflow-hidden rounded-[20px]'>
               <Screen />
             </div>
             <RightDrawer />

@@ -1,6 +1,8 @@
+import { DeviceEnableType } from './deviceType';
+
 export interface UserRegisterPayloadType {
-  userName: string;
-  userColor: string;
+  name: string;
+  color: string;
 }
 
 export interface UserRegisterResponseType {
@@ -11,7 +13,7 @@ export interface UserDataType {
   id: string;
   name: string;
   color: string;
-  isMicOn: boolean;
-  isVideoOn: boolean;
+  device: DeviceEnableType;
   stream: MediaStream | null;
+  isHandsUp?: boolean;
 }

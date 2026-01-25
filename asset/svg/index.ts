@@ -15,6 +15,7 @@ export { default as Clipboard } from './clipboard.svg';
 export { default as Delete } from './delete.svg';
 export { default as Emoji } from './emoji.svg';
 export { default as Feedback } from './feedback.svg';
+export { default as FrontHand } from './frontHand.svg';
 export { default as FullScreen } from './fullScreen.svg';
 export { default as FullScreenOff } from './fullScreenOff.svg';
 export { default as Handup } from './handUp.svg';

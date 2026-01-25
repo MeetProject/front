@@ -1,0 +1,36 @@
+export const parseRGB = (hex: string) => {
+  const [r, g, b] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map((x) => parseInt(x, 16) / 255);
+  return { b, g, r };
+};
+
+export const getHue = (r: number, g: number, b: number) => {
+  const min = Math.min(r, g, b);
+  const max = Math.max(r, g, b);
+  const d = max - min;
+  if (d === 0) {
+    return 0;
+  }
+
+  const segment = {
+    [b]: (r - g) / d + 4,
+    [g]: (b - r) / d + 2,
+    [r]: (g - b) / d + (g < b ? 6 : 0),
+  };
+
+  return Math.round(segment[max] * 60);
+};
+
+export const getSaturation = (r: number, g: number, b: number) => {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+
+  const d = max - min;
+  const l = (max + min) / 2;
+  return Math.round(d === 0 ? 0 : (l > 0.5 ? d / (2 - 2 * l) : d / (2 * l)) * 100);
+};
+
+export const getLuminance = (hex: string) => {
+  const { b, g, r } = parseRGB(hex);
+
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255; // luminance가 0.5보다 크면 밝은 색상
+};

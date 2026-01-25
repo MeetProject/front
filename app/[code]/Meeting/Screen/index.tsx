@@ -8,7 +8,5 @@ export default function Screen() {
   if (screenStream) {
     return;
   }
-
-  const participants = Array.from({ length: 23 }, (_, i) => `user ${i}`);
-  return <GridLayout participants={participants} />;
+  return <GridLayout />;
 }
