@@ -36,19 +36,19 @@ export default function InfoContent() {
   return (
     <div className='px-6'>
       <div className='my-2 pt-2'>
-        <p className='font-google-sans text-device-button-item text-sm'>참여 정보</p>
+        <p className='font-google-sans text-on-surface-bright text-sm'>참여 정보</p>
       </div>
-      <span className='text-drawer-text text-sm select-text'>{url}</span>
+      <span className='text-on-surface text-sm select-text'>{url}</span>
       <div className='group relative my-1'>
         <button
-          className='group-hover:bg-device-button-hover-bg text-device-button-selected-bg h-10 rounded-full pr-4 pl-9.5 text-sm'
+          className='group-hover:bg-action-hover text-primary-container h-10 rounded-full pr-4 pl-9.5 text-sm'
           type='button'
           onClick={handleClipboardButtonClick}
         >
           참여 정보 복사
         </button>
         <Icon.Clipboard
-          className='fill-device-button-selected-bg group-hover:fill-device-button-selected-hover-bg absolute top-1/2 left-3 -translate-y-1/2'
+          className='fill-primary-container group-hover:fill-primary-container-hover absolute top-1/2 left-3 -translate-y-1/2'
           height={18}
           width={18}
         />

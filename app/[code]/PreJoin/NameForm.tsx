@@ -60,15 +60,15 @@ export default function NameForm() {
     <form className='flex w-full max-w-75 flex-col items-center justify-center' onSubmit={handleFormSubmit}>
       <div className='font-googleSans w-full pt-5 pb-1.25'>
         <input
-          className='border-custom-gray h-14 w-full rounded border border-solid px-4 text-base outline-none'
+          className='border-surface-base h-14 w-full rounded border border-solid px-4 text-base outline-none'
           placeholder='이름'
           value={name}
           onChange={handleNameInputChange}
         />
-        <p className='text-device-outline w-full px-4 pt-1 text-right text-xs'>{`${name.length} / ${MAX_SIZE}`}</p>
+        <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${name.length} / ${MAX_SIZE}`}</p>
       </div>
       <button
-        className={`mt-4 h-14 w-60 rounded-full ${name.length ? 'bg-[#0B57D0] text-white' : 'bg-[#E4E4E4] text-[#999999]'} text-center`}
+        className={`mt-4 h-14 w-60 rounded-full ${name.length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled'} text-center`}
         disabled={name.length === 0 || isPending}
         type='submit'
       >

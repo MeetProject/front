@@ -92,7 +92,7 @@ export default function InteractionButtons() {
             'max-[850px]:flex-col',
             'max-[850px]:absolute max-[850px]:top-0 max-[850px]:right-1/2',
             'max-[850px]:translate-x-1/2 max-[850px]:-translate-y-[calc(100%+8px)]',
-            'max-[850px]:w-16 max-[850px]:rounded-lg max-[850px]:bg-[rgb(32,33,36)] max-[850px]:p-2 max-[850px]:shadow-xl',
+            'max-[850px]:bg-surface-base max-[850px]:w-16 max-[850px]:rounded-lg max-[850px]:p-2 max-[850px]:shadow-xl',
           ],
         )}
       >
@@ -103,12 +103,12 @@ export default function InteractionButtons() {
       <div className='hidden items-center justify-center max-[850px]:flex'>
         <ButtonTag name='상호작용 더보기'>
           <button
-            className='hover:bg-device-button-hover-bg bg-device-button-bg hidden size-12 items-center justify-center rounded-full max-[850px]:flex'
+            className='hover:bg-action-hover bg-surface-elevated hidden size-12 items-center justify-center rounded-full max-[850px]:flex'
             type='button'
             onClick={handleOptionButtonClick}
           >
             <Icon.Chevron
-              className={clsx('fill-device-button-item transition-all', !isOpenOption && 'rotate-180')}
+              className={clsx('fill-on-surface-bright transition-all', !isOpenOption && 'rotate-180')}
               height={12}
               width={12}
             />

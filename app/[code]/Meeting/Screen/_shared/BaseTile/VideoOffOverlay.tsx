@@ -39,7 +39,7 @@ export default function VideoOffOverlay({ color, name }: VideoOffOverlayProps) {
       <div
         className={clsx(
           'flex h-24 w-24 items-center justify-center rounded-full text-3xl font-bold shadow-lg',
-          isLight ? 'text-device-item' : 'text-white',
+          isLight ? 'text-surface-elevated' : 'text-white',
         )}
         style={{ backgroundColor: color }}
       >

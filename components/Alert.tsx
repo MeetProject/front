@@ -9,7 +9,7 @@ export default function Alert() {
     <div className='fixed bottom-28 left-6 z-2101 flex flex-col gap-2'>
       {alerts.map((alert) => (
         <div
-          className='w-78 rounded bg-[#3C4043] px-4 py-3.5 text-[#E8EAED]'
+          className='bg-surface-elevated text-on-surface-bright w-78 rounded px-4 py-3.5'
           key={alert.id}
           style={{
             boxShadow:

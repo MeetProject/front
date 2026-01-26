@@ -80,27 +80,29 @@ export default function DeviceSelectBox({
   const CurrentIcon = ICON_MAP[type];
 
   const cn = {
-    dark: `${disabled ? '#444647' : '#c4c7c5'}`,
-    default: `${disabled ? '#b5b6b7' : '#3c4043'}`,
+    dark: `${disabled ? 'fill-outline-dark' : 'fill-on-surface'}`,
+    default: `${disabled ? 'fill-outline-strong' : 'fill-surface-elevated'}`,
   };
 
   const wrapperCn = clsx(
     'flex h-14 max-h-full w-full min-w-16 items-center gap-2 truncate rounded border border-solid pr-6.25 pl-2.5',
-    theme === 'dark' && 'border-device-outline',
-    !disabled && (theme === 'default' ? 'hover:$bg-[#f6fafe]' : 'hover:bg-device-outline'),
+    theme === 'dark' && 'border-outline-dark',
+    !disabled && (theme === 'default' ? 'hover:$bg-surface-info' : 'hover:bg-outline-dark'),
     className,
   );
 
   return (
     <div className='@container relative flex size-full' ref={targetRef}>
       <button className={wrapperCn} type='button' onClick={handleSelectButtonClick}>
-        <CurrentIcon fill={cn[theme]} height={16} width={16} />
-        <p className='w-full truncate text-left text-sm' style={{ color: cn[theme] }}>
+        <CurrentIcon className={cn[theme]} height={16} width={16} />
+        <p
+          className={clsx('w-full truncate text-left text-sm', theme === 'dark' && 'text-on-surface-white')}
+          style={{ color: cn[theme] }}
+        >
           {disabled ? '권한 필요' : isPlaying ? '재생 중' : (device[type]?.label ?? '시스템 장치')}
         </p>
         <Icon.ChevronFill
-          className='absolute top-1/2 right-3 -translate-y-1/2'
-          fill={cn[theme]}
+          className={clsx('absolute top-1/2 right-3 -translate-y-1/2', cn[theme])}
           height={18}
           width={18}
         />

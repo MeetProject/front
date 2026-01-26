@@ -13,11 +13,11 @@ export default function CallEndButton() {
   return (
     <ButtonTag align='center' name='통화에서 나가기' position='top'>
       <button
-        className='flex h-12 w-18 items-center justify-center rounded-3xl bg-[rgb(220,54,46)] hover:bg-[rgb(224,73,64)]'
+        className='bg-error-base hover:bg-error-hover flex h-12 w-18 items-center justify-center rounded-3xl'
         type='button'
         onClick={handleButtonClick}
       >
-        <Icon.CallEnd fill='#ffffff' height={24} width={24} />
+        <Icon.CallEnd className='fill-white' height={24} width={24} />
       </button>
     </ButtonTag>
   );

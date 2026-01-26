@@ -54,7 +54,7 @@ export default function DeviceSelector({
     !overflow && 'w-full',
     positionY === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
     positionX === 'center' ? 'left-1/2 -translate-x-1/2' : positionX === 'left' ? 'left-0' : 'right-0',
-    isDark ? 'bg-device-bg shadow-none' : 'bg-white shadow-xl',
+    isDark ? 'bg-surface-base shadow-none' : 'bg-white shadow-xl',
   );
 
   return (
@@ -65,8 +65,8 @@ export default function DeviceSelector({
             'group relative flex h-11 w-full items-center px-4 pl-14 transition-colors',
             isDark
               ? device.deviceId === currentValue.deviceId
-                ? 'hover:bg-device-hover bg-device-active'
-                : 'bg-device-bg hover:bg-device-item'
+                ? 'hover:bg-state-hover bg-state-active'
+                : 'bg-surface-base hover:bg-surface-elevated'
               : 'bg-white hover:bg-gray-100 active:bg-gray-200',
           )}
           key={device.deviceId}
@@ -82,7 +82,7 @@ export default function DeviceSelector({
                   : 'text-gray-300'
                 : device.deviceId === currentValue.deviceId
                   ? 'text-blue-600'
-                  : 'text-black-87',
+                  : 'text-overlay-dark',
             )}
           >
             {device.label}

@@ -56,17 +56,17 @@ export default function DeviceButtons({ onSettingButtonClick }: DeviceButtonsPro
     <>
       {deviceOption && (
         <div
-          className='absolute -top-2 left-0 flex w-full -translate-y-full items-center gap-2 rounded-[36px] bg-[rgb(44,44,44)] p-2.5'
+          className='bg-state-dim absolute -top-2 left-0 z-10 flex w-full -translate-y-full items-center gap-2 rounded-[36px] p-2.5'
           ref={targetRef}
         >
           <DeviceBoxes type={deviceOption} onDisabledClick={handleDeniedDialogOpen} />
           <ButtonTag name='설정'>
             <button
-              className='flex size-9 items-center justify-center rounded-full transition duration-200 ease-in-out hover:bg-[rgb(256,256,256,0.2)]'
+              className='flex size-9 items-center justify-center rounded-full transition duration-200 ease-in-out hover:bg-[rgba(256,256,256,0.2)]'
               type='button'
               onClick={() => handleSettingButtonClose(deviceOption)}
             >
-              <Icon.Setting fill='#ffffff' height={20} width={20} />
+              <Icon.Setting className='fill-white' height={20} width={20} />
             </button>
           </ButtonTag>
         </div>

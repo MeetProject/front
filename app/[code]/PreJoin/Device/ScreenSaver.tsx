@@ -49,7 +49,7 @@ export default function ScreenSaver({ onClickButton }: ScreenSaverProps) {
         <p className='text-1.5xl text-white'>{message}</p>
         {permission.video === 'denied' && (
           <button
-            className='my-3.75 h-9 rounded-sm bg-[rgb(26,115,232)] px-6 text-sm text-white hover:bg-[rgb(26,109,222)]'
+            className='bg-primary-main hover:bg-primary-main-hover my-3.75 h-9 rounded-sm px-6 text-sm text-white'
             type='button'
             onClick={onClickButton}
           >

@@ -76,19 +76,19 @@ export default function CaptureButton({ imgSrc, onImageChange, onVisible }: Capt
       {imgSrc ? (
         <>
           <p>첨부된 스크린샷</p>
-          <div className='overflow-hidden rounded border border-solid border-[#757575]'>
+          <div className='border-on-surface-muted overflow-hidden rounded border border-solid'>
             <Image alt='capturedImage' height={240} src={imgSrc} width={372} />
           </div>
           <div />
           <div className='absolute top-6 right-0'>
             <ButtonTag instant={true} name='스크린샷 삭제' style={{ left: 'auto', right: '-45px' }}>
               <button
-                className='flex size-12 items-center justify-center rounded-full bg-white hover:bg-[#FCF7F6] active:bg-[#F5E5E4]'
+                className='hover:bg-error-subtle-light active:bg-error-container flex size-12 items-center justify-center rounded-full bg-white'
                 style={{ boxShadow: '0 1px 3px 0 rgba(48,48,48,0.302),0 4px 8px 3px rgba(48,48,48,0.149)' }}
                 type='button'
                 onClick={handleRemoveButtonClick}
               >
-                <Icon.Remove fill='#B3261E' height={24} width={24} />
+                <Icon.Remove className='fill-on-surface-red-strong' height={24} width={24} />
               </button>
             </ButtonTag>
           </div>
@@ -97,13 +97,13 @@ export default function CaptureButton({ imgSrc, onImageChange, onVisible }: Capt
         <>
           <p>스크린샷을 주시면 문제를 더 정확하게 파악하는 데 도움이 됩니다.(선택사항)</p>
           <button
-            className='flex h-9 w-full items-center justify-center gap-2 rounded border border-solid border-[#ABABAB] pr-3.75 pl-2.75 hover:bg-[#F5F8FD] active:bg-[#E1EAF9]'
+            className='border-on-surface-disabled hover:bg-info-subtle active:bg-info-base flex h-9 w-full items-center justify-center gap-2 rounded border border-solid pr-3.75 pl-2.75'
             disabled={isClicked}
             type='button'
             onClick={handleCaptureButtonClick}
           >
-            <Icon.Capture fill='#0B57D0' height={18} width={18} />
-            <p className='text-sm text-[#0B57D0]'>스크린샷 캡처</p>
+            <Icon.Capture className='fill-primary-vivid' height={18} width={18} />
+            <p className='text-primary-dark text-sm'>스크린샷 캡처</p>
           </button>
         </>
       )}

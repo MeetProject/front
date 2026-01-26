@@ -41,7 +41,7 @@ function EmojiIcon({ emoji, id }: EmojiAnimationProps) {
     >
       <Image alt={emoji.emoji} height={36} src={EMOJI_IMAGE[emoji.emoji]} unoptimized={true} width={36} />
       <div
-        className={`max-w-28 truncate rounded-full px-2 text-sm ${emoji.userId === userId ? 'bg-[#8AB4F8] text-[#48525F]' : 'bg-[#202124] text-white'} `}
+        className={`max-w-28 truncate rounded-full px-2 text-sm ${emoji.userId === userId ? 'bg-primary-light text-action-hover' : 'bg-surface-base text-white'} `}
       >
         {userId === emoji.userId ? '나' : participantsUserData.get(emoji.userId)?.userName}
       </div>

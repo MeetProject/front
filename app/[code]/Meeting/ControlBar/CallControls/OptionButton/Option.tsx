@@ -58,18 +58,18 @@ export default function Option({
   return (
     <div
       className={clsx(
-        'absolute top-0 w-81 -translate-y-[calc(100%+8px)] rounded-xl bg-[#1E1F20] py-2',
+        'bg-surface-base absolute top-0 w-81 -translate-y-[calc(100%+8px)] rounded-xl py-2',
         'max-[906px]:right-0 max-[906px]:w-52',
       )}
     >
       {BUTTON.map(({ icon: IconComponent, name, onClick }) => (
         <button
-          className='flex h-12 w-full items-center gap-4 px-3 py-2 text-white hover:bg-[#2E2F2F] active:bg-[#444545]'
+          className='hover:bg-state-dim active:bg-state-pressed flex h-12 w-full items-center gap-4 px-3 py-2 text-white'
           key={name}
           type='button'
           onClick={onClick}
         >
-          <IconComponent fill='#c4c7c5' height={24} width={24} />
+          <IconComponent className='fill-on-surface' height={24} width={24} />
           <p>{name}</p>
         </button>
       ))}

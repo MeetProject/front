@@ -20,7 +20,7 @@ export default function VideoSetting({ onDisabledClick }: VideoSettingProps) {
       <div className='flex items-center gap-4 sm:block'>
         <div className='min-w-25' style={{ flex: '1 1 100px' }}>
           <div>
-            <p className='mb-2 text-sm font-medium text-[#1A73E8]'>카메라</p>
+            <p className='text-success-main mb-2 text-sm font-medium'>카메라</p>
           </div>
           <div className='flex flex-1 items-center gap-4 max-[640px]:flex-col-reverse'>
             <DeviceSelectBox type='videoInput' onDisabledClick={onDisabledClick} />

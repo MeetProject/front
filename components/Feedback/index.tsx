@@ -8,6 +8,7 @@ import Report from './Report';
 import Suggest from './Suggest';
 
 import Dialog from '@/components/_shared/Dialog';
+import { FeedbackCategoryType } from '@/types/components';
 
 interface FeedbackProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ interface FeedbackProps {
 
 export default function Feedback({ isOpen, onClose }: FeedbackProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [category, setCategory] = useState<null | 'report' | 'suggest'>(null);
+  const [category, setCategory] = useState<FeedbackCategoryType>(null);
   const [isCompletedForm, setIsCompletedForm] = useState(false);
 
   const handleClose = () => {
@@ -52,7 +53,7 @@ export default function Feedback({ isOpen, onClose }: FeedbackProps) {
           <div className='flex justify-end bg-white p-5 pb-4 shadow-[0_-1px_4px_rgba(48,48,48,0.3)]'>
             <button
               className={`font-googleSans h-9 rounded px-6 text-sm transition-colors ${
-                isCompletedForm ? 'bg-[#0B57D0] text-white' : 'bg-[#E4E4E4] text-[#555555]'
+                isCompletedForm ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-muted'
               }`}
               disabled={!isCompletedForm}
               type='button'

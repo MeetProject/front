@@ -58,7 +58,7 @@ export default function RightDrawer() {
     >
       <div
         className={clsx(
-          'absolute top-0 right-0 flex h-full transform flex-col bg-[rgb(32,33,36)] shadow-xl transition-all duration-500 ease-in-out',
+          'bg-surface-base absolute top-0 right-0 flex h-full transform flex-col shadow-xl transition-all duration-500 ease-in-out',
           'w-89.5 rounded-[20px]',
           'max-[400px]:w-[calc(100vw-32px)]',
           isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0',

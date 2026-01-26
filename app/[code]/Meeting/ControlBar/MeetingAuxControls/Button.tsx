@@ -36,11 +36,11 @@ export function Button({ align = 'center', onClick, type }: SingleButtonProps) {
   return (
     <ButtonTag align={align} name={config.name}>
       <button
-        className='hover:bg-device-button-hover-bg flex size-12 items-center justify-center rounded-full'
+        className='hover:bg-action-hover flex size-12 items-center justify-center rounded-full'
         type='button'
         onClick={handleButtonClick}
       >
-        <IconComponent className={isOpen ? 'fill-device-button-selected-bg' : 'fill-white'} height={24} width={24} />
+        <IconComponent className={isOpen ? 'fill-primary-container' : 'fill-white'} height={24} width={24} />
       </button>
     </ButtonTag>
   );

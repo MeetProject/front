@@ -36,7 +36,7 @@ export default function HelpMenu() {
   return (
     <div className='relative'>
       <IconButton name='지원' onClick={handleButtonClick}>
-        <Icon.Help fill='#5f6368' height={24} width={24} />
+        <Icon.Help className='fill-on-surface-muted' height={24} width={24} />
       </IconButton>
 
       {isOpen && (
@@ -49,7 +49,7 @@ export default function HelpMenu() {
         >
           {HELP_BUTTON.map((button) => (
             <button
-              className='flex h-12 w-full items-center justify-center px-4 text-black hover:bg-[#F5F5F5] active:bg-[#D7D7D7]'
+              className='hover:bg-surface-bright active:bg-surface-variant flex h-12 w-full items-center justify-center px-4 text-black'
               key={button.name}
               type='button'
               onClick={() => handleHelpButtonClick(button.href)}

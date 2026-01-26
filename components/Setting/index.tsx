@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Dialog from '../_shared/Dialog';
@@ -33,10 +34,10 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
 
   const getButtonStyles = (isActive: boolean) => ({
     container: `group relative flex h-12 w-full items-center gap-3 rounded-r-full px-6 transition-all ${
-      isActive ? 'z-10 bg-[#E8F0FE] hover:shadow-md' : 'bg-white hover:bg-[#F9F9F9]'
+      isActive ? 'z-10 bg-primary-ghost hover:shadow-md' : 'bg-white hover:bg-surface-bright'
     }`,
-    iconFill: isActive ? '#1967D2' : '#5F6368',
-    text: `max-[640px]:hidden ${isActive ? 'text-[#1967D2] font-medium' : 'text-[#5F6368]'}`,
+    icon: clsx('transition-colors', isActive ? 'fill-primary-vivid' : 'fill-on-surface-muted'),
+    text: `max-[640px]:hidden ${isActive ? 'text-primary-dark font-medium' : 'text-on-surface-muted'}`,
   });
 
   const handleClose = () => {
@@ -73,8 +74,8 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
         onClose={handleClose}
       >
         <div className='font-googleSans relative flex h-162.5 w-200 max-w-full rounded-lg bg-white shadow-xl'>
-          <aside className='h-full w-[256px] border-r border-[#DADCE0] max-[640px]:w-20'>
-            <h1 className='text-1.5xl px-6 pt-6 font-medium text-[#202124] max-[640px]:hidden'>설정</h1>
+          <aside className='border-outline-light h-full w-[256px] border-r max-[640px]:w-20'>
+            <h1 className='text-1.5xl text-surface-base px-6 pt-6 font-medium max-[640px]:hidden'>설정</h1>
             <nav className='mt-6 mr-2'>
               {CATEGORY_BUTTONS.map(({ icon: IconComponent, name, value }) => {
                 const isActive = currentCategory === value;
@@ -88,7 +89,7 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
                     type='button'
                     onClick={() => setCurrentCategory(value)}
                   >
-                    <IconComponent className='transition-colors' fill={styles.iconFill} height={24} width={24} />
+                    <IconComponent className={styles.icon} height={24} width={24} />
                     <span className={styles.text}>{name}</span>
                   </button>
                 );
@@ -102,7 +103,7 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
             type='button'
             onClick={onClose}
           >
-            <Icon.Delete fill='#5F6368' height={24} width={24} />
+            <Icon.Delete className='fill-on-surface-bright' height={24} width={24} />
           </button>
 
           <main className='mx-12 my-6 flex flex-1 pt-8'>

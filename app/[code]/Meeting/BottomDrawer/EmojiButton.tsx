@@ -23,7 +23,7 @@ export default function EmojiButton({ hoverSrc, name, onClick, src }: EmojiButto
   };
   return (
     <button
-      className='flex size-10 items-center justify-center rounded-full bg-[#2C2C2C] hover:bg-[#333333] active:bg-[#454646]'
+      className='bg-state-dim hover:bg-state-dim-hover active:bg-state-pressed flex size-10 items-center justify-center rounded-full'
       type='button'
       onClick={handleButtonClick}
       onMouseEnter={handleMouseEnter}

@@ -21,10 +21,10 @@ export default function Page() {
           <ParticipateMeetingForm />
         </div>
         <div className='w-full max-w-163.75 px-[3em]'>
-          <div className='mt-8 w-full border-t border-solid border-[#747775] pt-4 text-xs'>
+          <div className='border-on-surface-muted mt-8 w-full border-t border-solid pt-4 text-xs'>
             Project Meet에 관해{' '}
             <Link
-              className='border-solid border-[#0B57D5] text-[#0B57D5] hover:border-b'
+              className='border-primary-vivid text-primary-vivid border-solid hover:border-b'
               href='https://github.com/armd482/meetproejct'
             >
               자세히 알아보세요.

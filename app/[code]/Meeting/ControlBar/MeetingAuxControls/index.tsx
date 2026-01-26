@@ -19,12 +19,12 @@ export default function MeetingAuxControls() {
   return (
     <div className='relative flex items-center justify-self-end' ref={targetRef}>
       <button
-        className='hover:bg-device-button-hover-bg hidden size-12 items-center justify-center rounded-full max-[905px]:flex'
+        className='hover:bg-action-hover hidden size-12 items-center justify-center rounded-full max-[905px]:flex'
         type='button'
         onClick={() => setIsOpen(!isOpen)}
       >
         <Icon.Chevron
-          className={clsx('fill-device-button-item transition-all', !isOpen && 'rotate-180')}
+          className={clsx('fill-on-surface-bright transition-all', !isOpen && 'rotate-180')}
           height={12}
           width={12}
         />
@@ -37,7 +37,7 @@ export default function MeetingAuxControls() {
             'max-[905px]:flex-col',
             'max-[905px]:absolute max-[905px]:top-0 max-[905px]:right-1/2',
             'max-[905px]:translate-x-1/2 max-[905px]:-translate-y-[calc(100%+8px)]',
-            'max-[905px]:w-16 max-[905px]:rounded-lg max-[905px]:bg-[rgb(32,33,36)] max-[905px]:p-2 max-[905px]:shadow-xl',
+            'max-[905px]:bg-surface-base max-[905px]:w-16 max-[905px]:rounded-lg max-[905px]:p-2 max-[905px]:shadow-xl',
           ],
         )}
       >

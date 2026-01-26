@@ -14,11 +14,16 @@ interface PermissionButtonProps {
 }
 
 const ICON_PROPS = {
-  className: 'absolute top-1/2 left-20 -translate-y-1/2 max-[600px]:left-8',
-  fill: '#ffffff',
+  className: 'absolute top-1/2 left-20 -translate-y-1/2 max-[600px]:left-8 fill-white',
   height: 18,
   width: 18,
 };
+
+interface ButtonType {
+  name: string;
+  value: DeviceKindType;
+  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+}
 
 const CONTENT = {
   audio: {
@@ -37,6 +42,11 @@ const CONTENT = {
     request: '카메라 사용',
   },
 };
+
+const BUTTON: ButtonType[] = [
+  { icon: Icon.Mic, name: '마이크', value: 'audio' },
+  { icon: Icon.VideoOn, name: '비디오', value: 'video' },
+];
 
 export default function PermissionButton({ type }: PermissionButtonProps) {
   const [isOpenOption, setIsOpenOption] = useState(false);
@@ -63,7 +73,7 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
       <div className='flex items-center justify-center'>
         <div className='relative mx-2'>
           <button
-            className='mx-2 flex h-11 min-w-46 items-center justify-center rounded-3xl bg-[#0B57D0] pr-16 pl-24 text-[14px] text-white hover:bg-[#1F64D4] max-[600px]:pr-8 max-[600px]:pl-12 max-[600px]:text-xs'
+            className='bg-primary-dark hover:bg-primary-selection mx-2 flex h-11 min-w-46 items-center justify-center rounded-3xl pr-16 pl-24 text-[14px] text-white max-[600px]:pr-8 max-[600px]:pl-12 max-[600px]:text-xs'
             type='button'
             onClick={() => handleRequestButtonClick(type)}
           >
@@ -79,8 +89,7 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
               onClick={handleOptionButtonClick}
             >
               <Icon.Chevron
-                className={`${isOpenOption && 'rotate-180'} transition-transform duration-300`}
-                fill='#444746'
+                className={`${isOpenOption && 'rotate-180'} fill-outline-dark transition-transform duration-300`}
                 height={12}
                 width={12}
               />
@@ -90,36 +99,22 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
       </div>
       {isOpenOption && (
         <div className='mt-4 flex items-center justify-center gap-6 max-[600px]:flex-col max-[600px]:gap-3'>
-          <div className='relative rounded-3xl border border-[rgb(26,115,232)] hover:bg-blue-50'>
-            <button
-              className='flex h-11 items-center justify-center pr-10 pl-16 text-sm text-[rgb(26,115,232)]'
-              type='button'
-              onClick={() => handleRequestButtonClick('audio')}
-            >
-              마이크 사용
-            </button>
-            <Icon.Mic
-              className='absolute top-1/2 left-10 -translate-y-1/2'
-              fill='rgb(26,115,232)'
-              height={18}
-              width={18}
-            />
-          </div>
-          <div className='relative rounded-3xl border border-[rgb(26,115,232)] hover:bg-blue-50'>
-            <button
-              className='flex h-11 items-center justify-center pr-10 pl-16 text-sm text-[rgb(26,115,232)]'
-              type='button'
-              onClick={() => handleRequestButtonClick('video')}
-            >
-              카메라 사용
-            </button>
-            <Icon.VideoOn
-              className='absolute top-1/2 left-10 -translate-y-1/2'
-              fill='rgb(26,115,232)'
-              height={18}
-              width={18}
-            />
-          </div>
+          {BUTTON.map(({ icon: IconComponent, name, value }) => (
+            <div className='border-primary-main relative rounded-3xl border hover:bg-blue-50' key={value}>
+              <button
+                className='text-primary-main flex h-11 items-center justify-center pr-10 pl-16 text-sm'
+                type='button'
+                onClick={() => handleRequestButtonClick(value)}
+              >
+                {`${name} 사용`}
+              </button>
+              <IconComponent
+                className='fill-primary-main absolute top-1/2 left-10 -translate-y-1/2'
+                height={18}
+                width={18}
+              />
+            </div>
+          ))}
         </div>
       )}
     </div>

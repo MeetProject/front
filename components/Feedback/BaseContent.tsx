@@ -5,16 +5,16 @@ import { MouseEvent } from 'react';
 
 import * as image from '@/asset/image';
 import * as Icon from '@/asset/svg';
-import { CategoryType } from '@/types/menuType';
+import { FeedbackCategoryType } from '@/types/components';
 
-interface BaseContentProperties {
-  onClick: (value: CategoryType) => void;
+interface BaseContentProps {
+  onClick: (value: FeedbackCategoryType) => void;
 }
 
 interface ButtonType {
   name: string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
-  value: CategoryType;
+  value: FeedbackCategoryType;
 }
 
 const BUTTON: ButtonType[] = [
@@ -22,8 +22,8 @@ const BUTTON: ButtonType[] = [
   { icon: Icon.SuggestIdea, name: '아이디어 제안', value: 'suggest' },
 ];
 
-export default function BaseContent({ onClick }: BaseContentProperties) {
-  const handleButtonClick = (e: MouseEvent<HTMLButtonElement>, value: null | 'report' | 'suggest') => {
+export default function BaseContent({ onClick }: BaseContentProps) {
+  const handleButtonClick = (e: MouseEvent<HTMLButtonElement>, value: FeedbackCategoryType) => {
     e.stopPropagation();
     onClick(value);
   };
@@ -38,15 +38,15 @@ export default function BaseContent({ onClick }: BaseContentProperties) {
           const ButtonIcon = button.icon;
           return (
             <button
-              className='flex h-15 w-full items-center gap-2 rounded py-px pr-1.5 pl-5 hover:bg-[#F8F8F8] active:bg-[#E8E9E8]'
+              className='hover:bg-surface-bright active:bg-state-hover-light flex h-15 w-full items-center gap-2 rounded py-px pr-1.5 pl-5'
               key={button.value}
               type='button'
               onClick={(e) => handleButtonClick(e, button.value)}
             >
-              <div className='flex size-7 items-center justify-center rounded-full bg-[#0B57D0]'>
-                <ButtonIcon fill='#ffffff' height={18} width={18} />
+              <div className='bg-primary-dark flex size-7 items-center justify-center rounded-full'>
+                <ButtonIcon className='fill-white' height={18} width={18} />
               </div>
-              <p className='text-[#444746]'>{button.name}</p>
+              <p className='text-outline-dark'>{button.name}</p>
             </button>
           );
         })}

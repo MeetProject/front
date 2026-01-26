@@ -28,12 +28,12 @@ export default function NewMeetingButton() {
   return (
     <>
       <button
-        className='flex h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-[#1a73E8] px-3.5 text-base text-white hover:bg-[#1A6DDE] hover:shadow-md'
+        className='bg-primary-main hover:bg-primary-main-hover flex h-12 shrink-0 items-center justify-center gap-2 rounded-md px-3.5 text-base text-white hover:shadow-md'
         disabled={isPending}
         type='button'
         onClick={handleButtonClick}
       >
-        <Icon.AddMeeting fill='#ffffff' height={18} width={18} />새 회의
+        <Icon.AddMeeting className='fill-white' height={18} width={18} />새 회의
       </button>
       <Loading isPending={isPending} />
     </>

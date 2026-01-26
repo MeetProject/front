@@ -62,9 +62,9 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
       name='message'
       onSubmit={handleFormSubmit}
     >
-      <div className='flex w-full items-center rounded-[25px] border border-[rgb(68,71,70)] bg-[rgb(32,33,36)]'>
+      <div className='border-outline-dark bg-surface-base flex w-full items-center rounded-[25px] border'>
         <textarea
-          className='text-device-button-item my-2 flex max-h-32 w-full resize-none items-center justify-center bg-[rgb(32,33,36)] pl-4 outline-none'
+          className='text-on-surface-dark bg-surface-base my-2 flex max-h-32 w-full resize-none items-center justify-center pl-4 outline-none'
           name='message'
           placeholder='메시지 보내기'
           ref={inputRef}
@@ -81,7 +81,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
               type='submit'
             >
               <Icon.Submit
-                className='group-disabled:fill-device-button-item fill-device-button-selected-bg group-disabled:opacity-20'
+                className='group-disabled:fill-on-surface-bright fill-primary-container group-disabled:opacity-20'
                 height={24}
                 width={24}
               />

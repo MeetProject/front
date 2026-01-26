@@ -41,8 +41,8 @@ export default function ChatMessage({ chat }: ChatMessageProps) {
 
       <div className={clsx('flex max-w-[70%] flex-col gap-1', isMe ? 'items-end' : 'items-start')}>
         <div className='mb-1 flex items-center gap-2 px-1'>
-          {!isMe && <span className='text-device-content font-google-sans text-[13px] font-medium'>{user.name}</span>}
-          <span className='text-device-content font-google-sans text-xs opacity-70'>
+          {!isMe && <span className='text-on-surface font-google-sans text-[13px] font-medium'>{user.name}</span>}
+          <span className='text-on-surface font-google-sans text-xs opacity-70'>
             {formatTime(chat.messages[0].timestamp)}
           </span>
         </div>
@@ -50,7 +50,7 @@ export default function ChatMessage({ chat }: ChatMessageProps) {
         {chat.messages.map(({ id: messageId, message }, i) => (
           <div
             className={clsx(
-              'text-device-button-item font-google-sans max-w-61 rounded-[20px] bg-[rgb(0,74,119)] p-3 text-[12px] wrap-break-word hover:bg-[rgb(17,84,130)]',
+              'text-on-surface-bright font-google-sans bg-primary-dark hover:bg-primary-navy-hover max-w-61 rounded-[20px] p-3 text-[12px] wrap-break-word',
               isMe && i !== chat.messages.length - 1 && 'rounded-br-sm',
               isMe && i !== 0 && 'rounded-tr-sm',
               !isMe && i !== chat.messages.length - 1 && 'rounded-bl-sm',

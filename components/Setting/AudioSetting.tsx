@@ -39,7 +39,7 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
   return (
     <div className='flex flex-1 flex-col gap-6'>
       <div className='flex-1'>
-        <p className='mb-2 text-sm font-medium text-[#1A73E8]'>마이크</p>
+        <p className='text-primary-main mb-2 text-sm font-medium'>마이크</p>
         <div className='flex items-center gap-2 max-[640px]:flex-col max-[640px]:items-start'>
           <div className='w-72 max-w-[calc(100svw-260px)] max-[640px]:w-full max-[640px]:max-w-[calc(100svw-208px)]'>
             <DeviceSelectBox type='audioInput' onDisabledClick={onDisabledClick} />
@@ -50,14 +50,14 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
         </div>
       </div>
       <div className='flex-1'>
-        <p className='mb-2 text-sm font-medium text-[#1A73E8]'>스피커</p>
+        <p className='text-primary-main mb-2 text-sm font-medium'>스피커</p>
         <div className='flex items-center gap-2 max-[640px]:flex-col max-[640px]:items-start'>
           <div className='w-72 max-w-[calc(100svw-260px)] max-[640px]:w-full max-[640px]:max-w-[calc(100svw-208px)]'>
             <DeviceSelectBox type='audioOutput' onDisabledClick={onDisabledClick} />
           </div>
           <div className='flex w-full flex-1 items-center justify-center'>
             <button
-              className='text-device-outline h-10 w-12 rounded-full text-sm hover:bg-[#ECF2FC] hover:text-[#0B57D0] active:bg-[#D5E2F7]'
+              className='text-outline-dark hover:bg-primary-container hover:text-primary-dark active:bg-primary-container-bold h-10 w-12 rounded-full text-sm'
               disabled={isPlay}
               type='button'
               onClick={handleAudioTestButton}

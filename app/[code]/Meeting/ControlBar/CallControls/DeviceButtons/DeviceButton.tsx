@@ -20,7 +20,6 @@ interface DeviceButtonProps {
 }
 
 const BUTTON_PROPS = {
-  fill: '#ffffff',
   height: 24,
   width: 24,
 };
@@ -62,16 +61,16 @@ export default function DeviceButton({
 
   useShortcutKey(shortcutKey ?? [], handleMuteButton);
 
-  const enableMute = deviceEnable[type] && permission[type] === 'granted';
+  const enableMute = permission[type] === 'granted';
 
   const ICON = {
     audio: {
-      off: <Icon.MicOff {...BUTTON_PROPS} className='group-hover:fill-[#601410]' fill='#5A1410' />,
-      on: <Icon.MicOn {...BUTTON_PROPS} className='group-hover:fill-[#e3e3e3]' />,
+      off: <Icon.MicOff {...BUTTON_PROPS} className='group-hover:fill-error-dark' fill='#5A1410' />,
+      on: <Icon.MicOn {...BUTTON_PROPS} className='group-hover:fill-on-surface-bright fill-white' />,
     },
     video: {
-      off: <Icon.VideoOff {...BUTTON_PROPS} className='group-hover:fill-[#601410]' fill='#5A1410' />,
-      on: <Icon.VideoOn {...BUTTON_PROPS} className='group-hover:fill-[#e3e3e3]' />,
+      off: <Icon.VideoOff {...BUTTON_PROPS} className='group-hover:fill-error-dark' fill='#5A1410' />,
+      on: <Icon.VideoOn {...BUTTON_PROPS} className='group-hover:fill-on-surface-bright fill-white' />,
     },
   };
 
@@ -81,17 +80,20 @@ export default function DeviceButton({
       <div className='max-[450px]:hidden'>
         <ButtonTag align='left' name={`${type === 'audio' ? '오디오' : '비디오'} 설정`} position='top'>
           <button
-            className={`group h-12 w-22 transition-[border-radius,background-color,transform] duration-200 ease-in-out ${deviceEnable[type] || permission[type] !== 'granted' ? 'bg-device-button-bg hover:bg-device-button-hover-bg rounded-3xl' : 'rounded-xl bg-[rgb(65,14,11)] hover:bg-[rgb(80,17,14)]'} `}
+            className={`group h-12 w-22 transition-[border-radius,background-color,transform] duration-200 ease-in-out ${deviceEnable[type] || permission[type] !== 'granted' ? 'bg-surface-elevated hover:bg-action-hover rounded-3xl' : 'bg-error-deep hover:bg-error-dark rounded-xl'} `}
             type='button'
             onClick={onChevronClick}
           >
             <div className='flex size-12 items-center justify-center'>
-              {type === 'audio' && enableMute && (
+              {type === 'audio' && enableMute && deviceEnable.audio && (
                 <Visualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' stream={stream} />
               )}
               <Icon.Chevron
-                className={`${!isOptionOpen && 'rotate-180'} ${type === 'audio' && enableMute && 'hidden group-hover:inline-block'}`}
-                fill={enableMute ? '#ffffff' : '#f9dedc'}
+                className={clsx(
+                  !isOptionOpen && 'rotate-180',
+                  type === 'audio' && enableMute && deviceEnable.audio && 'hidden group-hover:inline-block',
+                  'fill-white',
+                )}
                 height={10}
                 width={10}
               />
@@ -117,7 +119,12 @@ export default function DeviceButton({
           position='top'
         >
           <button
-            className={`group flex size-12 items-center justify-center transition-[border-radius,background-color,transform] duration-200 ease-in-out ${deviceEnable[type] || permission[type] !== 'granted' ? 'rounded-full bg-[rgb(51,53,55)] hover:bg-[rgb(60,64,67)]' : 'rounded-xl bg-[rgb(249,222,220)] hover:bg-[rgb(237,210,208)]'} `}
+            className={clsx(
+              'group flex size-12 items-center justify-center transition-[border-radius,background-color,transform] duration-200 ease-in-out',
+              deviceEnable[type] || permission[type] !== 'granted'
+                ? 'bg-state-layer hover:bg-surface-elevated rounded-full'
+                : 'bg-error-container hover:bg-error-container rounded-xl',
+            )}
             type='button'
             onClick={handleMuteButton}
           >
@@ -125,7 +132,7 @@ export default function DeviceButton({
           </button>
         </ButtonTag>
         {permission[type] !== 'granted' && (
-          <div className='absolute top-[10%] right-[18%] flex size-3 items-center justify-center rounded-full bg-[rgb(251,188,4)] max-[400px]:size-3'>
+          <div className='bg-warning-main absolute top-[10%] right-[18%] flex size-3 items-center justify-center rounded-full max-[400px]:size-3'>
             <Icon.Warn height={14} width={14} />
           </div>
         )}

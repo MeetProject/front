@@ -54,7 +54,7 @@ export default function Meeting() {
   }
 
   return (
-    <div className='relative flex h-svh w-svw flex-col overflow-hidden bg-[rgb(19,19,20)] select-none'>
+    <div className='bg-surface-deep relative flex h-svh w-svw flex-col overflow-hidden select-none'>
       <div className='flex size-full flex-1 flex-col'>
         <div className='relative flex flex-1 flex-col'>
           <div className='relative flex flex-1 shrink overflow-hidden p-4'>

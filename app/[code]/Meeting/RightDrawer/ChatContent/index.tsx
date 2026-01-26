@@ -61,12 +61,12 @@ export default function ChatContent() {
 
   return (
     <div className='flex size-full flex-col'>
-      <div className='bg-device-button-bg m-3 flex flex-col items-center gap-2 rounded-lg p-3'>
+      <div className='bg-surface-elevated m-3 flex flex-col items-center gap-2 rounded-lg p-3'>
         <div className='flex items-center justify-center gap-1'>
-          <Icon.ChatOff className='fill-device-button-selected-bg' height={16} width={16} />
-          <h3 className='text-drawer-text font-google-sans text-xs'>연속 채팅 사용 중지됨</h3>
+          <Icon.ChatOff className='fill-primary-container' height={16} width={16} />
+          <h3 className='text-on-surface font-google-sans text-xs'>연속 채팅 사용 중지됨</h3>
         </div>
-        <div className='font-google-sans text-drawer-text text-center text-xs'>
+        <div className='font-google-sans text-on-surface text-center text-xs'>
           통화가 종료되면 메시지가 저장되지 않습니다. 나중에 참여하는 사용자에게도 표시되도록 메시지를 고정할 수
           있습니다.
         </div>
@@ -75,7 +75,7 @@ export default function ChatContent() {
         {chatData.length === 0 ? (
           <div className='flex flex-1 flex-col items-center justify-center'>
             <Image alt='chat' height={208} src={image.chat} width={208} />
-            <p className='text-drawer-text mt-8 text-sm'>아직 채팅 메시지가 없습니다.</p>
+            <p className='text-on-surface mt-8 text-sm'>아직 채팅 메시지가 없습니다.</p>
           </div>
         ) : (
           <div className='flex-1'>

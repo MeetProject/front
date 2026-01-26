@@ -63,17 +63,17 @@ export default function InteractionButton({
     <ButtonTag align='center' name={name + formatedShortcut} position='top'>
       <button
         className={clsx(
-          'bg-device-button-bg hover:bg-device-button-hover-bg flex h-12 w-14 items-center justify-center rounded-3xl transition-[border-radius,background-color,transform] duration-200 ease-in-out',
-          isActive && 'bg-device-button-selected-bg hover:bg-device-button-selected-hover-bg rounded-xl',
+          'flex h-12 w-14 items-center justify-center rounded-3xl transition-[border-radius,background-color,transform] duration-200 ease-in-out',
+          isActive && 'bg-primary-container hover:bg-primary-container-hover rounded-xl',
           'max-[850px]:size-14 max-[850px]:rounded-full',
-          !isActive && 'max-[850px]:bg-device-bg',
+          !isActive && 'bg-surface-elevated hover:bg-action-hover max-[850px]:bg-surface-base',
         )}
         disabled={disabled}
         type='button'
         onClick={handleClick}
       >
         <Icon
-          className={`${isActive ? 'fill-device-button-selected-item' : 'fill-device-button-item'}`}
+          className={`${isActive ? 'fill-on-primary-container' : 'fill-on-surface-bright'}`}
           height={24}
           width={24}
         />

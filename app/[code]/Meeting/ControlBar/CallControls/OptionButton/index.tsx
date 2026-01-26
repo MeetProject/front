@@ -48,11 +48,11 @@ export default function OptionButton({ onClickFeedbackButton, onClickSettingButt
     <div className='relative' ref={targetRef}>
       <ButtonTag name='옵션 더보기'>
         <button
-          className='bg-device-button-bg hover:bg-device-button-hover-bg flex h-12 w-9 items-center justify-center rounded-full active:bg-[#585A5C]'
+          className='bg-surface-elevated hover:bg-action-hover active:bg-action-active flex h-12 w-9 items-center justify-center rounded-full'
           type='button'
           onClick={handleButtonClick}
         >
-          <Icon.Menu className='rotate-90' fill='#E3E3E3' height={18} width={18} />
+          <Icon.Menu className='fill-on-surface-bright rotate-90' height={18} width={18} />
         </button>
       </ButtonTag>
       {isClickedButton && (
