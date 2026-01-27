@@ -27,6 +27,5 @@ export const useEmojiStore = create<EmojiState>((set) => ({
       prev.delete(id);
       return { emoji: prev };
     }),
-
-  emoji: new Map<string, EmojiDataType>(),
+  emoji: new Map(),
 }));

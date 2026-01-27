@@ -9,6 +9,7 @@ import { useInteractionStore } from '@/store/useInteractionStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 export default function UserTile() {
+  const emoji = useInteractionStore((state) => state.emoji);
   const { stream, video } = useDeviceStore(
     useShallow((state) => ({
       stream: state.stream,
@@ -25,5 +26,14 @@ export default function UserTile() {
 
   const isHandsUp = useInteractionStore((state) => state.handsUp);
 
-  return <BaseTile color={color ?? '#ffffff'} isHandsUp={isHandsUp} name={name ?? ''} stream={stream} video={video} />;
+  return (
+    <BaseTile
+      color={color ?? '#ffffff'}
+      emoji={emoji}
+      isHandsUp={isHandsUp}
+      name={name ?? ''}
+      stream={stream}
+      video={video}
+    />
+  );
 }

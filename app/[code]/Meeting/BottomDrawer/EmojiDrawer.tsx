@@ -5,6 +5,7 @@ import EmojiButton from './EmojiButton';
 import * as image from '@/asset/image';
 import * as wepb from '@/asset/webp';
 import { useEmojiStore } from '@/store/useEmojiStore';
+import { useInteractionStore } from '@/store/useInteractionStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { EmojiType } from '@/types/emojiType';
 
@@ -22,6 +23,7 @@ const EMOJI_BUTTON = [
 
 export default function EmojiDrawer() {
   const handleEmojiButtonClick = useCallback((emoji: EmojiType) => {
+    const { setEmoji } = useInteractionStore.getState();
     const { addEmoji } = useEmojiStore.getState();
     const { userId } = useUserInfoStore.getState();
 
@@ -31,6 +33,7 @@ export default function EmojiDrawer() {
 
     const timestamp = new Date().toISOString();
     addEmoji({ emoji, timestamp, userId });
+    setEmoji(emoji);
   }, []);
   return (
     <div className='flex w-full items-center justify-center px-6'>

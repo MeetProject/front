@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
+import Emoji from './Emoji';
 import NameTag from './NameTag';
 import VideoOffOverlay from './VideoOffOverlay';
 
 import { Media } from '@/components';
+import { EmojiType } from '@/types/emojiType';
 
 interface BaseTileProps {
   name: string;
@@ -11,9 +13,10 @@ interface BaseTileProps {
   stream: MediaStream | null;
   video: boolean;
   isHandsUp: boolean;
+  emoji: EmojiType | null;
 }
 
-export default function BaseTile({ color, isHandsUp, name, stream, video }: BaseTileProps) {
+export default function BaseTile({ color, emoji, isHandsUp, name, stream, video }: BaseTileProps) {
   const timerRef = useRef<NodeJS.Timeout>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -77,7 +80,7 @@ export default function BaseTile({ color, isHandsUp, name, stream, video }: Base
 
   return (
     <div className='@container-[size] relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
-      <div className='h-[min(calc(100cqw/16*9),100%)] max-h-full w-[min(calc(100cqh/9*16),100%)] max-w-full overflow-hidden'>
+      <div className='size-full max-h-full overflow-hidden'>
         <Media
           className='size-full object-cover'
           muted={true}
@@ -93,6 +96,7 @@ export default function BaseTile({ color, isHandsUp, name, stream, video }: Base
         </div>
       )}
       <NameTag isHandsUp={isHandsUp} name={name} />
+      <Emoji emoji={emoji} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { DeviceEnableType, DeviceKindType } from '@/types/deviceType';
+import { EmojiType } from '@/types/emojiType';
 import { UserDataType, UserRegisterPayloadType } from '@/types/userType';
 
 interface ParticipantState {
@@ -9,6 +10,7 @@ interface ParticipantState {
   isHandsUp: Map<string, boolean>;
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
+  emoji: Map<string, EmojiType | null>;
 
   addParticipant: (value: UserDataType) => void;
   removeParticipant: (id: string) => void;
@@ -16,6 +18,7 @@ interface ParticipantState {
   toggleDevices: (id: string, key: DeviceKindType, value?: boolean) => void;
   toggleHandsUp: (id: string, value?: boolean) => void;
   reset: () => void;
+  setEmoji: (id: string, value: EmojiType | null) => void;
 }
 
 export const useParticipantStore = create<ParticipantState>((set, get) => ({
@@ -41,6 +44,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     }),
 
   devices: new Map(),
+  emoji: new Map(),
   info: new Map(),
   isHandsUp: new Map(),
   participants: [],
@@ -73,6 +77,13 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     }),
   reset: () => set(useParticipantStore.getInitialState()),
 
+  setEmoji: (id, value) =>
+    set((prev) => {
+      const newMap = new Map(prev.emoji);
+      newMap.set(id, value);
+      return { emoji: newMap };
+    }),
+
   streams: new Map(),
 
   toggleDevices: (id, key, value) => {
@@ -90,7 +101,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { devices: newDevices };
     });
   },
-
   toggleHandsUp: (id, value) => {
     if (!get().devices.has(id)) {
       return;
