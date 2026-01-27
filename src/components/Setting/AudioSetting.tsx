@@ -57,7 +57,7 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
           </div>
           <div className='flex w-full flex-1 items-center justify-center'>
             <button
-              className='text-outline-dark hover:bg-primary-container hover:text-primary-dark active:bg-primary-container-bold h-10 w-12 rounded-full text-sm'
+              className='text-outline-dark hover:bg-primary-ghost hover:text-primary-dark active:bg-primary-container-bold h-10 w-12 rounded-full text-sm'
               disabled={isPlay}
               type='button'
               onClick={handleAudioTestButton}

@@ -183,6 +183,7 @@
   /* 텍스트 및 아이콘 (On-Surface) */
   --color-on-surface: rgb(196, 199, 197);          /* 디크: 기본 텍스트 */
   --color-on-surface-bright: rgb(227, 227, 227);   /* 다크: 제목 및 강조 텍스트 */
+  --color-on-surface-dark: rgb(146, 146, 146);
 
   --color-on-surface-light: rgb(32, 33, 36);       /* 라이트: 기본 텍스트 */
   --color-on-surface-varient: rgb(65, 71, 75);     /* 라이트: 보조 본문 및 아이콘 */

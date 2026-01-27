@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
-import Header from './_components/Header';
-import NewMeetingButton from './_components/NewMeetingButton';
-import ParticipateMeetingForm from './_components/ParticipantMeetingForm';
+import Header from './Header';
+import NewMeetingButton from './NewMeetingButton';
+import ParticipateMeetingForm from './ParticipantMeetingForm';
 
 export default function Page() {
   return (

@@ -15,7 +15,7 @@ import { useDeviceStore } from '@/store/useDeviceStore';
 import { isChromium } from '@/util/env';
 
 const ICON_PROPS = {
-  className: 'fill-on-surface-muted',
+  className: 'fill-outline-dark',
   height: 24,
   width: 24,
 };

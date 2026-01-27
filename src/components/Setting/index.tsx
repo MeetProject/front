@@ -103,7 +103,7 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
             type='button'
             onClick={onClose}
           >
-            <Icon.Delete className='fill-on-surface-bright' height={24} width={24} />
+            <Icon.Delete className='fill-outline-dark' height={24} width={24} />
           </button>
 
           <main className='mx-12 my-6 flex flex-1 pt-8'>

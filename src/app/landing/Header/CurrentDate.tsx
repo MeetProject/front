@@ -9,7 +9,7 @@ export default function CurrentDate() {
     return <div />;
   }
   return (
-    <div className='flex items-center gap-2 p-3 text-lg font-medium text-gray-500 max-[472px]:hidden'>
+    <div className='text-outline-dark flex items-center gap-2 p-3 text-lg font-medium max-[472px]:hidden'>
       <p>{formatTime(time)}</p>
       <span>•</span>
       <p>{formatDate(time)}</p>

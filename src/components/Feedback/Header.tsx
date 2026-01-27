@@ -41,7 +41,7 @@ export default function Header({ onClick, onClose, type }: HeaderProperties) {
           </ButtonTag>
         )}
 
-        <h1 className='text-surface-base ml-4 text-lg'>
+        <h1 className='text-outline-dark ml-4 text-lg'>
           {type === 'report' ? '문제 신고' : type === 'suggest' ? '아이디어 제안' : '의견 보내기'}
         </h1>
       </div>
