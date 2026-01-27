@@ -13,7 +13,7 @@ import { calculateGridLayout } from '@/util/layout';
 
 const MAX_STREAM_SIZE = 36;
 
-export default function GridLayout() {
+export default function TiledLayout() {
   const [{ cols, rows, size }, setLayout] = useState<Record<'cols' | 'rows' | 'size', number>>({
     cols: 1,
     rows: 1,

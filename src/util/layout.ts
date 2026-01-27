@@ -1,3 +1,5 @@
+import { PresentationLayoutType } from '@/types/components';
+
 interface LayoutOptions {
   gap?: number;
   minWidth?: number;
@@ -33,7 +35,7 @@ const getLayoutScore = (
   targetRatio: number,
   options: LayoutOptions,
 ) => {
-  const { gap = 8, minHeight = 200, minWidth = 300 } = options;
+  const { gap = 8, minHeight = 200, minWidth = 200 } = options;
 
   const tileW = (width - (c - 1) * gap) / c;
   const tileH = (height - (r - 1) * gap) / r;
@@ -44,10 +46,6 @@ const getLayoutScore = (
 
   const currentRatio = tileW / tileH;
   const ratioMatch = Math.min(currentRatio, targetRatio) / Math.max(currentRatio, targetRatio);
-
-  if (ratioMatch < 0.6) {
-    return null;
-  }
 
   const isWider = currentRatio > targetRatio;
   const actualW = isWider ? tileH * targetRatio : tileW;
@@ -68,8 +66,7 @@ const findBestLayoutForK = (
   targetRatio: number,
   options: LayoutOptions,
 ): LayoutResult | null => {
-  const startC = Math.ceil(Math.sqrt(k));
-  const range = Array.from({ length: k - startC + 1 }, (_, i) => i + startC);
+  const range = Array.from({ length: k }, (_, i) => i + 1);
 
   return range.reduce<LayoutResult | null>((best, c) => {
     const r = Math.ceil(k / c);
@@ -95,5 +92,51 @@ export const calculateGridLayout = (totalSize: number, width: number, height: nu
     cols: finalLayout?.cols ?? 1,
     rows: finalLayout?.rows ?? 1,
     size: finalLayout?.size ?? Math.min(totalSize, 1),
+  };
+};
+
+export const calculatePresentationLayout = (
+  participantCount: number,
+  width: number,
+  height: number,
+  options: LayoutOptions = {},
+): PresentationLayoutType => {
+  const gap = options.gap ?? 8;
+
+  if (width < 600) {
+    return {
+      mainArea: { height, width },
+      mode: 'full',
+      participantArea: { cols: 0, height: 0, rows: 0, size: 0, width: 0 },
+    };
+  }
+
+  if (width > 1000) {
+    const sidebarWidth = Math.min(Math.max(width * 0.25, 200), 320);
+    const mainWidth = width - sidebarWidth - gap;
+
+    const grid = calculateGridLayout(participantCount, sidebarWidth, height, {
+      ...options,
+      minWidth: 200,
+    });
+
+    return {
+      mainArea: { height, width: mainWidth },
+      mode: 'sidebar',
+      participantArea: { height, width: sidebarWidth, ...grid },
+    };
+  }
+  const topHeight = 150;
+  const mainHeight = height - topHeight - gap;
+
+  const grid = calculateGridLayout(participantCount, width, topHeight, {
+    ...options,
+    minHeight: 100,
+  });
+
+  return {
+    mainArea: { height: mainHeight, width },
+    mode: 'top',
+    participantArea: { height: topHeight, width, ...grid },
   };
 };
