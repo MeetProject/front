@@ -1,28 +1,42 @@
 'use client';
 
 import clsx from 'clsx';
+import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import ParticipantTile from './ParticipantTile';
 import UserTile from './UserTile';
 
-import { useResponsiveGrid } from '@/hook/useResponsiveGrid';
+import { useResizeObserver } from '@/hook';
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { calculateGridLayout } from '@/util/layout';
 
 const MAX_STREAM_SIZE = 36;
 
 export default function GridLayout() {
+  const [{ cols, rows, size }, setLayout] = useState<Record<'cols' | 'rows' | 'size', number>>({
+    cols: 1,
+    rows: 1,
+    size: 0,
+  });
+
   const { info, participants } = useParticipantStore(
     useShallow((state) => ({
       info: state.info,
       participants: state.participants,
     })),
   );
-  const participantsSize = Math.min(participants.length, MAX_STREAM_SIZE);
-  const {
-    containerRef,
-    layout: { cols, rows, size },
-  } = useResponsiveGrid<HTMLDivElement>(participantsSize, 12);
+
+  const handleResize = useCallback(
+    (width: number, height: number) => {
+      const participantsSize = Math.min(participants.length, MAX_STREAM_SIZE);
+      const gridLayout = calculateGridLayout(participantsSize, width, height, { gap: 12 });
+      setLayout(gridLayout);
+    },
+    [participants],
+  );
+
+  const { containerRef } = useResizeObserver<HTMLDivElement>(handleResize);
 
   const isOverflow = Boolean(size - 1 < participants.length);
   const lastRowIndex = size - cols - (size % cols);
