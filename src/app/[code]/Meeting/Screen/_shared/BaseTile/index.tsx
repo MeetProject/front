@@ -82,23 +82,25 @@ export default function BaseTile({ color, emoji, isHandsUp, name, stream, video 
 
   return (
     <div className='@container-[size] relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
-      <div className='size-full max-h-full overflow-hidden'>
-        <Media
-          className='size-full object-cover'
-          muted={true}
-          stream={stream ?? undefined}
-          tag='video'
-          onPlaying={handlePlaying}
-        />
-      </div>
-
-      {(isVideoOff || !isReady) && (
-        <div className='absolute inset-0 z-1'>
-          <VideoOffOverlay color={color} name={name} />
+      <div className='relative size-full max-h-[calc(100cqw*4/3)] max-w-[calc(100cqh*16/9)]'>
+        <div className='size-full max-h-full overflow-hidden'>
+          <Media
+            className='size-full rounded-xl object-cover'
+            muted={true}
+            stream={stream ?? undefined}
+            tag='video'
+            onPlaying={handlePlaying}
+          />
         </div>
-      )}
-      <NameTag isHandsUp={isHandsUp} name={name} />
-      <Emoji emoji={emoji} />
+
+        {(isVideoOff || !isReady) && (
+          <div className='absolute inset-0 z-1'>
+            <VideoOffOverlay color={color} name={name} />
+          </div>
+        )}
+        <NameTag isHandsUp={isHandsUp} name={name} />
+        <Emoji emoji={emoji} />
+      </div>
     </div>
   );
 }

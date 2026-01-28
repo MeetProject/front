@@ -4,7 +4,7 @@ import StagedLayout from './StagedLayout';
 import TiledLayout from './TiledLayout';
 
 export default function Screen() {
-  const screenStream = 1;
+  const screenStream = null;
 
   if (screenStream) {
     return <StagedLayout />;
