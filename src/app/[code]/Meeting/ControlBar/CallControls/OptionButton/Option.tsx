@@ -1,8 +1,7 @@
 'use client';
 
-import clsx from 'clsx';
-
 import * as Icon from '@/asset/svg';
+import { cn } from '@/lib/cn';
 
 interface OptionProps {
   isFullscreen: boolean;
@@ -57,7 +56,7 @@ export default function Option({
   ];
   return (
     <div
-      className={clsx(
+      className={cn(
         'bg-surface-base absolute top-0 w-81 -translate-y-[calc(100%+8px)] rounded-xl py-2',
         'max-[906px]:right-0 max-[906px]:w-52',
       )}

@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import { MouseEvent } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -9,6 +8,7 @@ import SpeakerTestButton from './SpeakerTest';
 
 import * as Icon from '@/asset/svg';
 import { useDevice } from '@/hook';
+import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceType } from '@/types/deviceType';
 
@@ -49,7 +49,7 @@ export default function DeviceSelector({
 
   const isDark = theme === 'dark';
 
-  const wrapperCn = clsx(
+  const wrapperCn = cn(
     'animate-slide-in-bottom absolute z-10 max-h-94 origin-top overflow-hidden rounded rounded-2xl py-1.5 py-2 transition-all',
     !overflow && 'w-full',
     positionY === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
@@ -61,7 +61,7 @@ export default function DeviceSelector({
     <div className={wrapperCn}>
       {deviceList[type].map((device) => (
         <button
-          className={clsx(
+          className={cn(
             'group relative flex h-11 w-full items-center px-4 pl-14 transition-colors',
             isDark
               ? device.deviceId === currentValue.deviceId
@@ -74,7 +74,7 @@ export default function DeviceSelector({
           onClick={(e) => handleDeviceButtonClick(e, device)}
         >
           <span
-            className={clsx(
+            className={cn(
               'truncate text-left text-sm font-medium',
               isDark
                 ? device.deviceId === currentValue.deviceId
@@ -88,7 +88,7 @@ export default function DeviceSelector({
             {device.label}
           </span>
           {device.deviceId === currentValue.deviceId && (
-            <Icon.Check className={clsx('absolute left-4 size-6', isDark ? 'fill-blue-300' : 'fill-blue-600')} />
+            <Icon.Check className={cn('absolute left-4 size-6', isDark ? 'fill-blue-300' : 'fill-blue-600')} />
           )}
         </button>
       ))}

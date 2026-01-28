@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import { useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -8,6 +7,7 @@ import ChatContent from './ChatContent';
 import Header from './Header';
 import InfoContent from './InfoContent';
 
+import { cn } from '@/lib/cn';
 import { useDrawerStore } from '@/store/useDrawer';
 import { RightDrawerKeyType } from '@/types/drawerType';
 
@@ -50,14 +50,14 @@ export default function RightDrawer() {
 
   return (
     <aside
-      className={clsx(
+      className={cn(
         'relative h-full transition-[width,margin] duration-500 ease-in-out',
         isOpen ? 'w-93.5' : 'w-0',
         'max-[600px]:w-0',
       )}
     >
       <div
-        className={clsx(
+        className={cn(
           'bg-surface-base absolute top-0 right-0 flex h-full transform flex-col shadow-xl transition-all duration-500 ease-in-out',
           'w-89.5 rounded-[20px]',
           'max-[400px]:w-[calc(100vw-32px)]',

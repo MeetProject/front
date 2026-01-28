@@ -1,12 +1,11 @@
 'use client';
 
-import clsx from 'clsx';
-
 import OverflowTile from './OverflowTile';
 import ParticipantTile from './ParticipantTile';
 import UserTile from './UserTile';
 
 import { useResizeObserver, useStagedLayout } from '@/hook';
+import { cn } from '@/lib/cn';
 
 export default function StagedLayout() {
   const { handleResize, layout, participantData } = useStagedLayout();
@@ -29,7 +28,7 @@ export default function StagedLayout() {
 
   return (
     <div className='size-full' ref={containerRef}>
-      <div className={clsx('size-full', layout.mode === null && 'hidden')}>
+      <div className={cn('size-full', layout.mode === null && 'hidden')}>
         <div className='grid size-full gap-3 overflow-hidden' style={gridStyle}>
           <section
             className='relative flex size-full items-center justify-center overflow-hidden border border-white shadow-xl'

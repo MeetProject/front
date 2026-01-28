@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import { MouseEvent, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -8,6 +7,7 @@ import * as Icon from '@/asset/svg';
 import { ButtonTag, Visualizer } from '@/components';
 import { useDevice } from '@/hook';
 import useShortcutKey from '@/hook/useShortcutKey';
+import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { formatShortcut } from '@/util/formatter';
 
@@ -89,7 +89,7 @@ export default function DeviceButton({
                 <Visualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' stream={stream} />
               )}
               <Icon.Chevron
-                className={clsx(
+                className={cn(
                   !isOptionOpen && 'rotate-180',
                   type === 'audio' && enableMute && deviceEnable.audio && 'hidden group-hover:inline-block',
                   'fill-white',
@@ -103,7 +103,7 @@ export default function DeviceButton({
       </div>
 
       <div
-        className={clsx(
+        className={cn(
           'absolute top-1/2 right-0 z-1 -translate-y-1/2',
           'max-[450px]:relative max-[450px]:top-0 max-[450px]:translate-0',
         )}
@@ -119,7 +119,7 @@ export default function DeviceButton({
           position='top'
         >
           <button
-            className={clsx(
+            className={cn(
               'group flex size-12 items-center justify-center transition-[border-radius,background-color,transform] duration-200 ease-in-out',
               deviceEnable[type] || permission[type] !== 'granted'
                 ? 'bg-state-layer hover:bg-surface-elevated rounded-full'

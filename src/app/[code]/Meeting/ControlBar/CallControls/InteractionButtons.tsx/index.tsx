@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -7,6 +6,7 @@ import InteractionButton from './InteractionButton';
 import * as Icon from '@/asset/svg';
 import { ButtonTag } from '@/components';
 import { useOutsideClick } from '@/hook';
+import { cn } from '@/lib/cn';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useInteractionStore } from '@/store/useInteractionStore';
 
@@ -85,7 +85,7 @@ export default function InteractionButtons() {
   return (
     <div className='relative' ref={targetRef}>
       <div
-        className={clsx(
+        className={cn(
           'flex items-center gap-2.5',
           !isOpenOption && 'max-[850px]:hidden',
           isOpenOption && [
@@ -108,7 +108,7 @@ export default function InteractionButtons() {
             onClick={handleOptionButtonClick}
           >
             <Icon.Chevron
-              className={clsx('fill-on-surface-bright transition-all', !isOpenOption && 'rotate-180')}
+              className={cn('fill-on-surface-bright transition-all', !isOpenOption && 'rotate-180')}
               height={12}
               width={12}
             />

@@ -1,12 +1,11 @@
 'use client';
 
-import clsx from 'clsx';
-
 import OverflowTile from './OverflowTile';
 import ParticipantTile from './ParticipantTile';
 import UserTile from './UserTile';
 
 import { useResizeObserver, useTiledLayout } from '@/hook';
+import { cn } from '@/lib/cn';
 
 export default function TiledLayout() {
   const {
@@ -36,7 +35,7 @@ export default function TiledLayout() {
         ))}
 
         <div
-          className={clsx(
+          className={cn(
             'col-span-full flex h-full items-center justify-center gap-3',
             gridData?.isOverflow && size === 1 && 'flex-col',
           )}

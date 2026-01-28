@@ -1,6 +1,5 @@
-import clsx from 'clsx';
-
 import * as Icon from '@/asset/svg';
+import { cn } from '@/lib/cn';
 
 interface NameTagProps {
   isHandsUp: boolean;
@@ -9,7 +8,7 @@ interface NameTagProps {
 
 export default function NameTag({ isHandsUp, name }: NameTagProps) {
   return (
-    <div className={clsx('absolute bottom-0 left-0 px-2 pb-2')}>
+    <div className={cn('absolute bottom-0 left-0 px-2 pb-2')}>
       <div
         className={`flex h-8 items-center justify-start gap-2 overflow-hidden rounded-2xl pr-3 pl-2 ${isHandsUp ? 'animate-expand-pill bg-success-subtle origin-bottom' : 'bg-transparent'} `}
       >
@@ -17,9 +16,7 @@ export default function NameTag({ isHandsUp, name }: NameTagProps) {
           {isHandsUp && <Icon.FrontHand className='fill-success-deep' height={16} width={16} />}
         </div>
         <div className='shrink'>
-          <p
-            className={clsx('font-google-sans font-medium', isHandsUp ? 'text-success-deep' : 'text-on-surface-white')}
-          >
+          <p className={cn('font-google-sans font-medium', isHandsUp ? 'text-success-deep' : 'text-on-surface-white')}>
             {name}
           </p>
         </div>

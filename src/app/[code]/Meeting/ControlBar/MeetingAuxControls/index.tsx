@@ -1,12 +1,12 @@
 'use client';
 
-import clsx from 'clsx';
 import { useState, useCallback } from 'react';
 
 import { Button } from './Button';
 
 import * as Icon from '@/asset/svg';
 import { useOutsideClick } from '@/hook';
+import { cn } from '@/lib/cn';
 import { RightDrawerKeyType } from '@/types/drawerType';
 
 const BUTTON_TYPES: RightDrawerKeyType[] = ['info', 'chat'];
@@ -24,13 +24,13 @@ export default function MeetingAuxControls() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <Icon.Chevron
-          className={clsx('fill-on-surface-bright transition-all', !isOpen && 'rotate-180')}
+          className={cn('fill-on-surface-bright transition-all', !isOpen && 'rotate-180')}
           height={12}
           width={12}
         />
       </button>
       <div
-        className={clsx(
+        className={cn(
           'flex items-center gap-2',
           !isOpen && 'max-[905px]:hidden',
           isOpen && [

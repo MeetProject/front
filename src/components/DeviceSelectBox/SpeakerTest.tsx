@@ -1,11 +1,11 @@
 'use client';
 
-import clsx from 'clsx';
 import { useCallback, useRef, useState } from 'react';
 
 import Media from '../Media';
 
 import * as Icon from '@/asset/svg';
+import { cn } from '@/lib/cn';
 
 interface SpeakerTestButtonProps {
   color: 'white' | 'black';
@@ -39,7 +39,7 @@ export default function SpeakerTestButton({ color, onPlay }: SpeakerTestButtonPr
       onClick={handleAudioButtonClick}
     >
       <Icon.Sound
-        className={clsx(
+        className={cn(
           color === 'white'
             ? 'fill-on-surface group-disabled:fill-state-disabled'
             : 'fill-outline-dark group-disabled:fill-gray-400',

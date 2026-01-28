@@ -6,5 +6,6 @@ export { default as Loading } from './Loading';
 export { default as Media } from './Media';
 export { default as MediaPermissionDeniedDialog } from './MediaPermissionDeniedDialog';
 export { default as MediaPermissionDialog } from './MediaPermissionDialog';
+export { default as Profile } from './Profile';
 export { default as Setting } from './Setting';
 export { default as Visualizer } from './Visualizer';

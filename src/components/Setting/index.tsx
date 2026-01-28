@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Dialog from '../_shared/Dialog';
@@ -11,6 +10,7 @@ import VideoSetting from './VideoSetting';
 
 import * as Icon from '@/asset/svg';
 import { useDevice } from '@/hook';
+import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
@@ -36,7 +36,7 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
     container: `group relative flex h-12 w-full items-center gap-3 rounded-r-full px-6 transition-all ${
       isActive ? 'z-10 bg-primary-ghost hover:shadow-md' : 'bg-white hover:bg-surface-bright'
     }`,
-    icon: clsx('transition-colors', isActive ? 'fill-primary-vivid' : 'fill-on-surface-muted'),
+    icon: cn('transition-colors', isActive ? 'fill-primary-vivid' : 'fill-on-surface-muted'),
     text: `max-[640px]:hidden ${isActive ? 'text-primary-dark font-medium' : 'text-on-surface-muted'}`,
   });
 

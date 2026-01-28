@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import React, { useCallback, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -8,6 +7,7 @@ import DeviceSelector from './DeviceSelector';
 
 import * as Icon from '@/asset/svg';
 import { useOutsideClick } from '@/hook';
+import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceType } from '@/types/deviceType';
 
@@ -79,12 +79,12 @@ export default function DeviceSelectBox({
 
   const CurrentIcon = ICON_MAP[type];
 
-  const cn = {
+  const CN = {
     dark: `${disabled ? 'fill-outline-dark' : 'fill-on-surface'}`,
     default: `${disabled ? 'fill-outline-strong' : 'fill-surface-elevated'}`,
   };
 
-  const wrapperCn = clsx(
+  const wrapperCn = cn(
     'flex h-14 max-h-full w-full min-w-16 items-center gap-2 truncate rounded border border-solid pr-6.25 pl-2.5',
     theme === 'dark' && 'border-outline-dark',
     !disabled && (theme === 'default' ? 'hover:$bg-surface-info' : 'hover:bg-outline-dark'),
@@ -94,15 +94,15 @@ export default function DeviceSelectBox({
   return (
     <div className='@container relative flex size-full' ref={targetRef}>
       <button className={wrapperCn} type='button' onClick={handleSelectButtonClick}>
-        <CurrentIcon className={cn[theme]} height={16} width={16} />
+        <CurrentIcon className={CN[theme]} height={16} width={16} />
         <p
-          className={clsx('w-full truncate text-left text-sm', theme === 'dark' && 'text-on-surface-white')}
-          style={{ color: cn[theme] }}
+          className={cn('w-full truncate text-left text-sm', theme === 'dark' && 'text-on-surface-white')}
+          style={{ color: CN[theme] }}
         >
           {disabled ? '권한 필요' : isPlaying ? '재생 중' : (device[type]?.label ?? '시스템 장치')}
         </p>
         <Icon.ChevronFill
-          className={clsx('absolute top-1/2 right-3 -translate-y-1/2', cn[theme])}
+          className={cn('absolute top-1/2 right-3 -translate-y-1/2', CN[theme])}
           height={18}
           width={18}
         />

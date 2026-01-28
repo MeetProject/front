@@ -1,10 +1,10 @@
 'use client';
 
-import clsx from 'clsx';
 import { useCallback, useEffect, useRef } from 'react';
 
 import { ButtonTag } from '@/components';
 import { useShortcutKey } from '@/hook';
+import { cn } from '@/lib/cn';
 import { formatShortcut } from '@/util/formatter';
 
 interface InteractionButtonProps {
@@ -62,7 +62,7 @@ export default function InteractionButton({
   return (
     <ButtonTag align='center' name={name + formatedShortcut} position='top'>
       <button
-        className={clsx(
+        className={cn(
           'flex h-12 w-14 items-center justify-center rounded-3xl transition-[border-radius,background-color,transform] duration-200 ease-in-out',
           isActive && 'bg-primary-container hover:bg-primary-container-hover rounded-xl',
           'max-[850px]:size-14 max-[850px]:rounded-full',
