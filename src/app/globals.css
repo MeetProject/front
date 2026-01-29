@@ -1,6 +1,18 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@keyframes move-up {
+  0% {
+    opacity: 0.7;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes move-bottom-up {
   0% {
     opacity: 1;
@@ -166,7 +178,7 @@
 
   /* 상태별 색상 (States) */
   --color-state-hover: rgb(82, 83, 83);            /* 일반 요소 호버 */
-  --color-state-active: rgb(53, 55, 54);           /* 일반 요소 선택 */
+  --color-state-active: rgb(43, 45, 44);           /* 일반 요소 선택 */
   --color-state-pressed: rgb(68, 69, 69);          /* 클릭 시 입력 상태 */
   --color-state-dim: rgb(44, 44, 44);              /* 비활성화/보조 영역 상태 */
   --color-state-dim-hover: rgb(51, 51, 51);        /* 비활성화 영역 hover 상태 */
@@ -174,6 +186,7 @@
   --color-state-hover-light: rgb(232, 233, 232);   /* 라이트: 요소 호버 */
   
   --color-state-layer: rgb(51, 53, 55);            /* 중간 레이어 상태 */
+  --color-state-layer-light: rgb(60, 62, 64);
 
   /* 경계선 (Outline) */
   --color-outline-dark: rgb(68, 71, 70);           /* 다크: 구역 구분선 */
@@ -203,7 +216,7 @@
   --color-primary-main: rgb(26, 115, 232);         /* 표준 블루 */
   --color-primary-main-hover: rgb(26,109,222);     /* 블루 버튼 호버 */
   --color-primary-dark: rgb(25, 103, 210);         /* 고대비/텍스트용 블루 */
-  --color-primary-ghost: rgb(232, 240, 254);       /* 옅은 블루 버튼 */
+  --color-primary-ghost: rgba(138, 180, 248, 0.1);       /* 옅은 블루 버튼 */
   --color-primary-light: rgb(138, 180, 248);       /* 다크: 강조 블루 */
   --color-primary-selection: rgb(31, 10, 212);     /* 다크: 선택된 요소 배경 */
   --color-primary-vivid: rgb(11, 87, 213);         /* 고대비 블루 */
@@ -246,6 +259,7 @@
 
   --animate-expand-pill: expand-pill 2s ease-out forwards;
   --animate-wave-hands: wave-hand 2s ease-out forwards;
+  --animate-move-up: move-up 0.3s ease-out forwards;
 }
 
 :root {

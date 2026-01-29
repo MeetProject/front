@@ -51,7 +51,7 @@ export default function RightDrawer() {
   return (
     <aside
       className={cn(
-        'relative h-full transition-[width,margin] duration-500 ease-in-out',
+        'relative h-full shrink-0 transition-[width,margin] duration-500 ease-in-out',
         isOpen ? 'w-93.5' : 'w-0',
         'max-[600px]:w-0',
       )}

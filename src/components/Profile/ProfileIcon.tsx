@@ -8,7 +8,7 @@ interface ProfileIconProps {
 }
 
 export default function ProfileIcon({ className, color, name }: ProfileIconProps) {
-  const isLight = getLuminance(color) >= 0.8;
+  const isLight = getLuminance(color) >= 0.65;
   return (
     <div
       className={cn(

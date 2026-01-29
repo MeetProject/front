@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/shallow';
 import BottomDrawer from './BottomDrawer';
 import ControlBar from './ControlBar';
 import EmojiReaction from './EmojiReaction';
+import Header from './Header';
 import RightDrawer from './RightDrawer';
 import Screen from './Screen';
 
@@ -55,9 +56,10 @@ export default function Meeting() {
 
   return (
     <div className='bg-surface-deep relative flex h-svh w-svw flex-col overflow-hidden select-none'>
-      <div className='flex size-full flex-1 flex-col'>
+      <Header />
+      <div className='flex flex-1 flex-col'>
         <div className='relative flex flex-1 flex-col'>
-          <div className='relative flex flex-1 shrink overflow-hidden p-4'>
+          <div className='relative flex flex-1 shrink overflow-hidden px-4'>
             <div className='flex size-full shrink overflow-hidden rounded-[20px]'>
               <Screen />
             </div>

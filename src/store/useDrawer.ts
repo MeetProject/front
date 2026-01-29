@@ -9,6 +9,7 @@ interface DrawerState {
   emoji: boolean;
   info: boolean;
   chat: boolean;
+  participants: boolean;
   toggleDrawer: (type: DrawerKeyType) => void;
   reset: () => void;
 }
@@ -18,7 +19,7 @@ export const useDrawerStore = create<DrawerState>((set) => ({
   chat: false,
   emoji: false,
   info: false,
-
+  participants: false,
   reset: () => set(useDrawerStore.getInitialState()),
   toggleDrawer: (type) =>
     set((state) => {

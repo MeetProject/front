@@ -140,3 +140,37 @@ export const calculatePresentationLayout = (
     participantArea: { height: topHeight, width, ...grid },
   };
 };
+
+export const getTruncatedWords = (
+  words: string[],
+  suffix: string,
+  maxWidth: number,
+  font: string = "12px 'Google Sans', Roboto, Arial, sans-serif",
+) => {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  if (words.length === 0 || !context) {
+    return { count: 0, text: '' };
+  }
+
+  context.font = font;
+  const sufficWidth = context.measureText(suffix).width;
+
+  const { count, text } = words.reduce(
+    (acc, word, i) => {
+      if (acc.isOver) {
+        return acc;
+      }
+      const nextText = acc.text ? [acc.text, word].join(', ') : word;
+      const isOver = context.measureText(nextText).width + sufficWidth + 10 >= maxWidth;
+
+      if (isOver) {
+        return { count: acc.count, isOver: isOver, text: `${acc.text}${suffix}` };
+      }
+      return { count: i + 1, isOver: false, text: nextText };
+    },
+    { count: 0, isOver: false, text: '' },
+  );
+
+  return { count, text };
+};

@@ -21,7 +21,7 @@ export default function TiledLayout() {
   };
 
   return (
-    <div className='flex size-full flex-col' ref={containerRef}>
+    <div className='flex size-full shrink flex-col' ref={containerRef}>
       <div
         className='grid size-full min-h-0 min-w-0 justify-center gap-3 transition-all duration-300 ease-in-out'
         style={{
