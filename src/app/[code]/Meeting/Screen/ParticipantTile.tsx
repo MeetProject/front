@@ -18,7 +18,7 @@ export default function ParticipantTile({ id }: ParticipantTileProps) {
       device: state.devices.get(id),
       emoji: state.emoji.get(id),
       info: state.info.get(id),
-      isHandsUp: state.isHandsUp.get(id),
+      isHandsUp: state.isHandsUp.has(id),
       stream: state.streams.get(id),
     })),
   );

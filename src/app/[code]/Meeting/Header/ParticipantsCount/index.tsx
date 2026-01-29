@@ -37,8 +37,11 @@ export default function ParticipantCount() {
   }, []);
 
   return (
-    <div className='group relative' onMouseEnter={handleToggleOn} onMouseLeave={handleToggleOff}>
-      <button className='bg-surface-base hover:bg-state-layer flex h-9 items-center gap-2 rounded-full pr-3 pl-0.5 transition-colors'>
+    <div className='relative' onMouseEnter={handleToggleOn} onMouseLeave={handleToggleOff}>
+      <button
+        className='bg-surface-base hover:bg-state-layer flex h-9 items-center gap-2 rounded-full pr-3 pl-0.5 transition-colors'
+        onClick={handleDrawerOpenButtonClick}
+      >
         <ParticipantTileCluster
           participants={[
             { color: userColor ?? '', name: userName ?? '' },

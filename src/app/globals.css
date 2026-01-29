@@ -238,7 +238,8 @@
   
   --color-success-main: rgb(26, 115, 40);          /* 성공 그린 */
   --color-success-subtle: rgb(109, 213, 140);      /* 연한 그린 */
-  --color-success-deep: rgb(10, 56, 24);           /* 진한 그린 */
+  --color-success-light: rgb(128, 218, 136);
+  --color-success-deep: rgb(0, 56, 31);           /* 진한 그린 */
 
   --color-warning-main: rgb(251, 188, 4);          /* 경고 옐로우 (#FBBC04) */
 

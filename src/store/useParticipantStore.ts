@@ -7,7 +7,7 @@ import { UserDataType, UserRegisterPayloadType } from '@/types/userType';
 interface ParticipantState {
   participants: string[];
   streams: Map<string, MediaStream | null>;
-  isHandsUp: Map<string, boolean>;
+  isHandsUp: Set<string>;
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
@@ -29,9 +29,9 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newStreams = new Map(prev.streams);
       newStreams.set(id, stream);
 
-      const newHandsUp = new Map(prev.isHandsUp);
+      const newHandsUp = new Set(prev.isHandsUp);
       if (isHandsUp) {
-        newHandsUp.set(id, isHandsUp);
+        newHandsUp.add(id);
       }
 
       const newDevices = new Map(prev.devices);
@@ -67,7 +67,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     ['Sierra', { color: '#8D6E63', name: 'Sierra' }],
     ['Tango', { color: '#78909C', name: 'Tango' }],
   ]),
-  isHandsUp: new Map(),
+  isHandsUp: new Set(['Alpha', 'Delta', 'Lima']),
   participants: [
     'Alpha',
     'Bravo',
@@ -97,7 +97,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newStreams = new Map(prev.streams);
       newStreams.delete(id);
 
-      const newHandsUp = new Map(prev.isHandsUp);
+      const newHandsUp = new Set(prev.isHandsUp);
       newHandsUp.delete(id);
 
       const newDevices = new Map(prev.devices);
@@ -142,19 +142,14 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { devices: newDevices };
     });
   },
-  toggleHandsUp: (id, value) => {
-    if (!get().devices.has(id)) {
-      return;
-    }
-
+  toggleHandsUp: (id) => {
     set((prev) => {
-      const newHandsUp = new Map(prev.isHandsUp);
-      const prevData = prev.devices.get(id);
+      const newHandsUp = new Set(prev.isHandsUp);
 
-      if (value || !prevData) {
-        newHandsUp.set(id, true);
-      } else {
+      if (newHandsUp.has(id)) {
         newHandsUp.delete(id);
+      } else {
+        newHandsUp.add(id);
       }
 
       return { isHandsUp: newHandsUp };
