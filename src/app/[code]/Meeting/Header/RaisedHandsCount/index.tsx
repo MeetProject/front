@@ -1,22 +1,19 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { useShallow } from 'zustand/shallow';
+import { useCallback, useMemo, useState } from 'react';
 
 import RaisedHandsInfo from './RaisedHandsInfo';
 
 import * as Icon from '@/asset/svg';
 import { useDrawerStore } from '@/store/useDrawer';
+import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 export default function RaisedHandsCount() {
   const [isHover, setIsHover] = useState<boolean>(false);
-  const { info, isHandsUp } = useParticipantStore(
-    useShallow((state) => ({
-      info: state.info,
-      isHandsUp: state.isHandsUp,
-    })),
-  );
+  const info = useParticipantStore((state) => state.info);
+  const handsUp = useInteractionStore((state) => state.handsUp);
 
   const handleToggleOn = () => {
     setIsHover(true);
@@ -32,6 +29,22 @@ export default function RaisedHandsCount() {
     setIsHover(false);
   }, []);
 
+  const displayedText = useMemo(() => {
+    const { userId, userName } = useUserInfoStore.getState();
+    if (handsUp.size === 0) {
+      return '';
+    }
+
+    const suffix = handsUp.size > 1 ? `외 ${handsUp.size - 1}명` : '';
+
+    const id = handsUp.values().next().value;
+    if (userId === id) {
+      return userName + suffix;
+    }
+
+    return info.get(id ?? '')?.name ?? '알 수 없는 사용자' + suffix;
+  }, [info, handsUp]);
+
   return (
     <div className='relative' onMouseEnter={handleToggleOn} onMouseLeave={handleToggleOff}>
       <button
@@ -41,7 +54,7 @@ export default function RaisedHandsCount() {
         <div className='bg-success-deep flex size-8 items-center justify-center rounded-full'>
           <Icon.FrontHand className='fill-success-light size-5' />
         </div>
-        <p className='text-success-deep font-google-sans text-xs'>{`${info.get(isHandsUp.values().next().value ?? '')?.name} ${isHandsUp.size > 1 && `외 ${isHandsUp.size}명`}`}</p>
+        <p className='text-success-deep font-google-sans text-xs'>{displayedText}</p>
       </button>
       {isHover && <RaisedHandsInfo onClick={handleDrawerOpenButtonClick} />}
     </div>

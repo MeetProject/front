@@ -4,19 +4,24 @@ import { useShallow } from 'zustand/shallow';
 
 import * as Icon from '@/asset/svg';
 import { Profile } from '@/components';
+import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 interface RaisedHandsInfoProps {
   onClick: (value?: boolean) => void;
 }
 
 export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
-  const { info, isHandsUp } = useParticipantStore(
+  const { userColor, userId, userName } = useUserInfoStore(
     useShallow((state) => ({
-      info: state.info,
-      isHandsUp: state.isHandsUp,
+      userColor: state.userColor,
+      userId: state.userId,
+      userName: state.userName,
     })),
   );
+  const info = useParticipantStore((state) => state.info);
+  const handsUp = useInteractionStore((state) => state.handsUp);
 
   return (
     <div className='animate-move-up absolute right-0 bottom-0 z-9999 translate-y-full group-hover:inline-block'>
@@ -28,15 +33,17 @@ export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
         <div className='bg-state-layer-light mt-5 w-full rounded-xl px-2 py-2.5 text-left'>
           <p className='text-on-surface-white text-xs'>처음부터 끝까지</p>
           <div className='mt-4 flex w-full flex-col gap-4'>
-            {[...isHandsUp.values()].slice(0, 4).map((userId) => (
-              <div className='itesm-center flex gap-4' key={userId}>
+            {[...handsUp.values()].slice(0, 4).map((id) => (
+              <div className='itesm-center flex gap-4' key={id}>
                 <Profile
                   className='size-10'
-                  color={info.get(userId)?.color ?? ''}
-                  name={info.get(userId)?.name ?? ''}
+                  color={(id === userId ? userColor : info.get(id)?.color) ?? ''}
+                  name={(id === userId ? userName : info.get(id)?.name) ?? '알 수 없는 사용자'}
                 />
                 <div className='flex flex-1 items-center'>
-                  <p className='text-outline-light font-google-sans truncate align-middle'>test</p>
+                  <p className='text-outline-light font-google-sans truncate align-middle'>
+                    {(id === userId ? userName : info.get(id)?.name) ?? '알 수 없는 사용자'}
+                  </p>
                 </div>
               </div>
             ))}
@@ -49,7 +56,7 @@ export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
           onClick={() => onClick(true)}
         >
           <div className='flex items-center gap-2'>
-            <p className='text-primary-light text-sm'>{`모두 보기(${isHandsUp.size}명)`}</p>
+            <p className='text-primary-light text-sm'>{`모두 보기(${handsUp.size}명)`}</p>
             <Icon.Chevron className='fill-primary-light size-2.5 -rotate-90' />
           </div>
         </button>

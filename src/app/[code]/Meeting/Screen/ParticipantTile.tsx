@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 
 import BaseTile from './_shared/BaseTile';
 
+import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 
 interface ParticipantTileProps {
@@ -10,15 +11,16 @@ interface ParticipantTileProps {
 }
 
 export default function ParticipantTile({ id }: ParticipantTileProps) {
-  const { device, emoji, info, isHandsUp, stream } = useParticipantStore(
+  const { device, emoji, info, stream } = useParticipantStore(
     useShallow((state) => ({
       device: state.devices.get(id),
       emoji: state.emoji.get(id),
       info: state.info.get(id),
-      isHandsUp: state.isHandsUp.has(id),
       stream: state.streams.get(id),
     })),
   );
+
+  const isHandsUp = useInteractionStore((state) => state.handsUp.has(id));
 
   const handleRemoveEmoji = useCallback(() => {
     const { setEmoji } = useParticipantStore.getState();
@@ -29,7 +31,7 @@ export default function ParticipantTile({ id }: ParticipantTileProps) {
     <BaseTile
       color={info?.color ?? '#ffffff'}
       emoji={emoji ?? null}
-      isHandsUp={isHandsUp ?? false}
+      isHandsUp={isHandsUp}
       name={info?.name ?? ''}
       stream={stream ?? null}
       video={device?.video ?? false}

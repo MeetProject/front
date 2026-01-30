@@ -11,6 +11,14 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 export default function UserTile() {
+  const { color, name, userId } = useUserInfoStore(
+    useShallow((state) => ({
+      color: state.userColor,
+      name: state.userName,
+      userId: state.userId,
+    })),
+  );
+
   const emoji = useParticipantStore((state) => state.userEmoji);
   const { stream, video } = useDeviceStore(
     useShallow((state) => ({
@@ -19,14 +27,7 @@ export default function UserTile() {
     })),
   );
 
-  const { color, name } = useUserInfoStore(
-    useShallow((state) => ({
-      color: state.userColor,
-      name: state.userName,
-    })),
-  );
-
-  const isHandsUp = useInteractionStore((state) => state.handsUp);
+  const isHandsUp = useInteractionStore((state) => state.handsUp.has(userId ?? ''));
 
   const handleRemoveEmoji = useCallback(() => {
     useParticipantStore.setState({ userEmoji: null });

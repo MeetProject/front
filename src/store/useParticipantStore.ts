@@ -7,7 +7,6 @@ import { UserDataType, UserRegisterPayloadType } from '@/types/userType';
 interface ParticipantState {
   participants: string[];
   streams: Map<string, MediaStream | null>;
-  isHandsUp: Set<string>;
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
@@ -17,23 +16,17 @@ interface ParticipantState {
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
   toggleDevices: (id: string, key: DeviceKindType, value?: boolean) => void;
-  toggleHandsUp: (id: string, value?: boolean) => void;
   reset: () => void;
   setEmoji: (id: string, value: EmojiType | null) => void;
 }
 
 export const useParticipantStore = create<ParticipantState>((set, get) => ({
-  addParticipant: ({ color, device, id, isHandsUp, name, stream }) =>
+  addParticipant: ({ color, device, id, name, stream }) =>
     set((prev) => {
       const newIds = [...prev.participants, id];
 
       const newStreams = new Map(prev.streams);
       newStreams.set(id, stream);
-
-      const newHandsUp = new Set(prev.isHandsUp);
-      if (isHandsUp) {
-        newHandsUp.add(id);
-      }
 
       const newDevices = new Map(prev.devices);
       newDevices.set(id, device);
@@ -41,7 +34,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newInfo = new Map(prev.info);
       newInfo.set(id, { color, name });
 
-      return { devices: newDevices, info: newInfo, isHandsUp: newHandsUp, participants: newIds, streams: newStreams };
+      return { devices: newDevices, info: newInfo, participants: newIds, streams: newStreams };
     }),
 
   devices: new Map(),
@@ -68,7 +61,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     ['Sierra', { color: '#8D6E63', name: 'Sierra' }],
     ['Tango', { color: '#78909C', name: 'Tango' }],
   ]),
-  isHandsUp: new Set(['Alpha', 'Delta', 'Lima']),
   participants: [
     'Alpha',
     'Bravo',
@@ -98,16 +90,13 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newStreams = new Map(prev.streams);
       newStreams.delete(id);
 
-      const newHandsUp = new Set(prev.isHandsUp);
-      newHandsUp.delete(id);
-
       const newDevices = new Map(prev.devices);
       newDevices.delete(id);
 
       const newInfo = new Map(prev.info);
       newInfo.delete(id);
 
-      return { devices: newDevices, info: newInfo, isHandsUp: newHandsUp, participants: newIds, streams: newStreams };
+      return { devices: newDevices, info: newInfo, participants: newIds, streams: newStreams };
     }),
 
   removeStream: (id: string) =>
@@ -141,19 +130,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       }
       newDevices.set(id, { ...prevData, [key]: value ?? !prevData[key] });
       return { devices: newDevices };
-    });
-  },
-  toggleHandsUp: (id) => {
-    set((prev) => {
-      const newHandsUp = new Set(prev.isHandsUp);
-
-      if (newHandsUp.has(id)) {
-        newHandsUp.delete(id);
-      } else {
-        newHandsUp.add(id);
-      }
-
-      return { isHandsUp: newHandsUp };
     });
   },
   userEmoji: null,

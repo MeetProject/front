@@ -9,8 +9,10 @@ import { useOutsideClick } from '@/hook';
 import { cn } from '@/lib/cn';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useInteractionStore } from '@/store/useInteractionStore';
+import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 export default function InteractionButtons() {
+  const userId = useUserInfoStore((state) => state.userId);
   const { cc, emoji } = useDrawerStore(
     useShallow((state) => ({
       cc: state.cc,
@@ -52,9 +54,12 @@ export default function InteractionButtons() {
 
   const handleHandUpButtonClick = useCallback(() => {
     const { toggleHandsUp } = useInteractionStore.getState();
-    toggleHandsUp();
+    if (!userId) {
+      return;
+    }
+    toggleHandsUp(userId);
     handleOptionClose();
-  }, [handleOptionClose]);
+  }, [handleOptionClose, userId]);
 
   const BUTTON = [
     {
@@ -73,7 +78,7 @@ export default function InteractionButtons() {
     },
     {
       icon: Icon.Handup,
-      isActive: handsUp,
+      isActive: handsUp.has(userId ?? ''),
       name: handsUp ? '손 내리기' : '손들기',
       onClick: handleHandUpButtonClick,
       shortcutKey: ['Control', 'Meta', 'h'],
