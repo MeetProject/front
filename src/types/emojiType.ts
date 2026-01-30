@@ -12,5 +12,4 @@ export type EmojiType =
 export interface EmojiDataType {
   userId: string;
   emoji: EmojiType;
-  timestamp: string;
 }

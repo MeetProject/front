@@ -11,6 +11,7 @@ interface ParticipantState {
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
+  userEmoji: EmojiType | null;
 
   addParticipant: (value: UserDataType) => void;
   removeParticipant: (id: string) => void;
@@ -155,4 +156,5 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { isHandsUp: newHandsUp };
     });
   },
+  userEmoji: null,
 }));

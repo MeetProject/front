@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 import EmojiButton from './EmojiButton';
 
 import * as image from '@/asset/image';
 import * as wepb from '@/asset/webp';
-import { useEmojiStore } from '@/store/useEmojiStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
+import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { EmojiType } from '@/types/emojiType';
 
@@ -23,17 +24,16 @@ const EMOJI_BUTTON = [
 
 export default function EmojiDrawer() {
   const handleEmojiButtonClick = useCallback((emoji: EmojiType) => {
-    const { setEmoji } = useInteractionStore.getState();
-    const { addEmoji } = useEmojiStore.getState();
+    const { addEmoji } = useInteractionStore.getState();
     const { userId } = useUserInfoStore.getState();
 
     if (!userId) {
       return;
     }
 
-    const timestamp = new Date().toISOString();
-    addEmoji({ emoji, timestamp, userId });
-    setEmoji(emoji);
+    const id = uuidv4();
+    addEmoji(id, { emoji, userId });
+    useParticipantStore.setState({ userEmoji: emoji });
   }, []);
   return (
     <div className='flex w-full items-center justify-center px-6'>

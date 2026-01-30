@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Emoji from './Emoji';
 import NameTag from './NameTag';
@@ -16,69 +16,89 @@ interface BaseTileProps {
   video: boolean;
   isHandsUp: boolean;
   emoji: EmojiType | null;
+  onRemoveEmoji: () => void;
 }
 
-export default function BaseTile({ color, emoji, isHandsUp, name, stream, video }: BaseTileProps) {
+export default function BaseTile({ color, emoji, isHandsUp, name, onRemoveEmoji, stream, video }: BaseTileProps) {
   const timerRef = useRef<NodeJS.Timeout>(null);
-  const [isReady, setIsReady] = useState(false);
+  const emojiTimerRef = useRef<NodeJS.Timeout>(null);
 
-  const [isMuted, setIsMuted] = useState(video);
-  const [isEnded, setIsEnded] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [trackStatus, setTrackStatus] = useState({ isEnded: false, isMuted: !video });
+  const [currentEmoji, setCurrentEmoji] = useState<EmojiType | null>(emoji);
 
   useEffect(() => {
-    if (!stream) {
-      return;
-    }
-
-    const videoTrack = (stream?.getVideoTracks() ?? [])[0];
+    const videoTrack = stream?.getVideoTracks()[0];
     if (!videoTrack) {
-      setIsEnded(true);
+      setTrackStatus({ isEnded: true, isMuted: true });
       return;
     }
 
-    setIsMuted(!videoTrack.enabled || videoTrack.readyState !== 'live');
-    setIsEnded(videoTrack.readyState === 'ended');
-
-    const handleMute = () => {
-      setIsReady(false);
-      setIsMuted(true);
-    };
-    const handleUnmute = () => setIsMuted(false);
-    const handleEnded = () => {
-      setIsReady(false);
-      setIsEnded(true);
+    const updateStatus = () => {
+      setTrackStatus({
+        isEnded: videoTrack.readyState === 'ended',
+        isMuted: !videoTrack.enabled || videoTrack.readyState !== 'live',
+      });
     };
 
-    videoTrack.addEventListener('mute', handleMute);
-    videoTrack.addEventListener('unmute', handleUnmute);
-    videoTrack.addEventListener('ended', handleEnded);
+    updateStatus();
+
+    videoTrack.addEventListener('mute', updateStatus);
+    videoTrack.addEventListener('unmute', updateStatus);
+    videoTrack.addEventListener('ended', updateStatus);
 
     return () => {
-      videoTrack.removeEventListener('mute', handleMute);
-      videoTrack.removeEventListener('unmute', handleUnmute);
-      videoTrack.removeEventListener('ended', handleEnded);
+      videoTrack.removeEventListener('mute', updateStatus);
+      videoTrack.removeEventListener('unmute', updateStatus);
+      videoTrack.removeEventListener('ended', updateStatus);
     };
   }, [stream]);
 
   useEffect(() => {
-    if (!video) {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-      setIsReady(false);
+    if (video) {
+      return;
     }
-  }, [video]);
 
-  const handlePlaying = () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
-    timerRef.current = setTimeout(() => {
-      setIsReady(true);
-    }, 200);
-  };
+    setIsReady(false);
+  }, [video]);
 
-  const isVideoOff = !video || isMuted || isEnded;
+  const handlePlaying = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => setIsReady(true), 200);
+  }, []);
+
+  useEffect(() => {
+    if (!emoji) {
+      return;
+    }
+
+    const currentTimer = emojiTimerRef.current;
+
+    if (currentTimer) {
+      clearTimeout(currentTimer);
+    }
+
+    setCurrentEmoji(emoji);
+
+    emojiTimerRef.current = setTimeout(() => {
+      onRemoveEmoji();
+      emojiTimerRef.current = null;
+    }, 8000);
+
+    return () => {
+      if (emojiTimerRef.current) {
+        clearTimeout(emojiTimerRef.current);
+        emojiTimerRef.current = null;
+      }
+    };
+  }, [emoji, onRemoveEmoji]);
+
+  const isVideoOff = useMemo(() => !video || trackStatus.isMuted || trackStatus.isEnded, [video, trackStatus]);
 
   return (
     <div className='@container-[size] relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
@@ -99,7 +119,7 @@ export default function BaseTile({ color, emoji, isHandsUp, name, stream, video 
           </div>
         )}
         <NameTag isHandsUp={isHandsUp} name={name} />
-        <Emoji emoji={emoji} />
+        <Emoji emoji={currentEmoji} />
       </div>
     </div>
   );

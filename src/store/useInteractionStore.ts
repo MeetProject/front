@@ -1,32 +1,30 @@
 import { create } from 'zustand';
 
-import { EmojiType } from '@/types/emojiType';
+import { EmojiDataType } from '@/types/emojiType';
 
 interface InteractionState {
   handsUp: boolean;
-  emoji: EmojiType | null;
-  timer: NodeJS.Timeout | null;
+  emoji: Map<string, EmojiDataType>;
 
   toggleHandsUp: (value?: boolean) => void;
-  setEmoji: (value: EmojiType) => void;
+  addEmoji: (id: string, value: EmojiDataType) => void;
+  removeEmoji: (id: string) => void;
 }
 
-export const useInteractionStore = create<InteractionState>((set, get) => ({
-  emoji: null,
+export const useInteractionStore = create<InteractionState>((set) => ({
+  addEmoji: (id, value) =>
+    set((prev) => {
+      const newMap = new Map(prev.emoji);
+      newMap.set(id, value);
+      return { emoji: newMap };
+    }),
+  emoji: new Map(),
   handsUp: false,
-  setEmoji: (value) => {
-    const currentTimer = get().timer;
-    if (currentTimer) {
-      clearTimeout(currentTimer);
-    }
-
-    set({ emoji: value });
-    const newTimer = setTimeout(() => {
-      set({ emoji: null, timer: null });
-    }, 8000);
-
-    set({ timer: newTimer });
-  },
-  timer: null,
+  removeEmoji: (id) =>
+    set((prev) => {
+      const newMap = new Map(prev.emoji);
+      newMap.delete(id);
+      return { emoji: newMap };
+    }),
   toggleHandsUp: (value) => set((prev) => (value ? { handsUp: value } : { handsUp: !prev.handsUp })),
 }));
