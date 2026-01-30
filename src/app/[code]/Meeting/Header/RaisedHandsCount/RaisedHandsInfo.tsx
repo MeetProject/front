@@ -7,7 +7,7 @@ import { Profile } from '@/components';
 import { useParticipantStore } from '@/store/useParticipantStore';
 
 interface RaisedHandsInfoProps {
-  onClick: () => void;
+  onClick: (value?: boolean) => void;
 }
 
 export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
@@ -43,7 +43,11 @@ export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
           </div>
         </div>
 
-        <button className='hover:bg-primary-ghost mt-3 rounded-3xl px-7 py-2.5' type='button' onClick={onClick}>
+        <button
+          className='hover:bg-primary-ghost mt-3 rounded-3xl px-7 py-2.5'
+          type='button'
+          onClick={() => onClick(true)}
+        >
           <div className='flex items-center gap-2'>
             <p className='text-primary-light text-sm'>{`모두 보기(${isHandsUp.size}명)`}</p>
             <Icon.Chevron className='fill-primary-light size-2.5 -rotate-90' />

@@ -8,7 +8,7 @@ import { useDrawerStore } from '@/store/useDrawer';
 import { RightDrawerKeyType } from '@/types/drawerType';
 
 interface SingleButtonProps {
-  type: RightDrawerKeyType;
+  type: Exclude<RightDrawerKeyType, 'participants'>;
   onClick?: () => void;
   align?: 'center' | 'right';
 }

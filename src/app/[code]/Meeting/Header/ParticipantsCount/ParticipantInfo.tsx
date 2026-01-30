@@ -11,7 +11,7 @@ import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { getTruncatedWords } from '@/util/layout';
 
 interface ParticipantInfoProps {
-  onClick: () => void;
+  onClick: (value?: boolean) => void;
 }
 
 export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
@@ -39,7 +39,7 @@ export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
         <button
           className='bg-state-layer-light hover:bg-outline-dark mt-5 w-full rounded-xl px-2 py-2.5'
           type='button'
-          onClick={onClick}
+          onClick={() => onClick(true)}
         >
           <div className='size-full text-left'>
             <p className='text-on-surface-white text-sm'>{`${participant.size + 1}명 참석`}</p>
@@ -57,7 +57,11 @@ export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
             </div>
           </div>
         </button>
-        <button className='hover:bg-primary-ghost mt-3 rounded-3xl px-7 py-2.5' type='button' onClick={onClick}>
+        <button
+          className='hover:bg-primary-ghost mt-3 rounded-3xl px-7 py-2.5'
+          type='button'
+          onClick={() => onClick(true)}
+        >
           <div className='flex items-center gap-2'>
             <p className='text-primary-light text-sm'>통화에 참여중인 모든 사용자 보기</p>
             <Icon.Chevron className='fill-primary-light size-2.5 -rotate-90' />

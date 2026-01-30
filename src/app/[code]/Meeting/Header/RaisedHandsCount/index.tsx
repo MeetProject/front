@@ -26,9 +26,9 @@ export default function RaisedHandsCount() {
     setIsHover(false);
   };
 
-  const handleDrawerOpenButtonClick = useCallback(() => {
+  const handleDrawerOpenButtonClick = useCallback((value?: boolean) => {
     const { toggleDrawer } = useDrawerStore.getState();
-    toggleDrawer('participants');
+    toggleDrawer('participants', value);
     setIsHover(false);
   }, []);
 
@@ -36,7 +36,7 @@ export default function RaisedHandsCount() {
     <div className='relative' onMouseEnter={handleToggleOn} onMouseLeave={handleToggleOff}>
       <button
         className='bg-success-light flex items-center gap-1 rounded-[48px] p-0.5 pr-3 transition-[width] duration-300'
-        onClick={handleDrawerOpenButtonClick}
+        onClick={() => handleDrawerOpenButtonClick()}
       >
         <div className='bg-success-deep flex size-8 items-center justify-center rounded-full'>
           <Icon.FrontHand className='fill-success-light size-5' />

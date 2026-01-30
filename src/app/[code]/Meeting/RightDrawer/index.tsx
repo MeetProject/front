@@ -6,16 +6,18 @@ import { useShallow } from 'zustand/shallow';
 import ChatContent from './ChatContent';
 import Header from './Header';
 import InfoContent from './InfoContent';
+import ParticipantContent from './ParticipantContent';
 
 import { cn } from '@/lib/cn';
 import { useDrawerStore } from '@/store/useDrawer';
 import { RightDrawerKeyType } from '@/types/drawerType';
 
 export default function RightDrawer() {
-  const { chat, info } = useDrawerStore(
+  const { chat, info, participants } = useDrawerStore(
     useShallow((state) => ({
       chat: state.chat,
       info: state.info,
+      participants: state.participants,
     })),
   );
 
@@ -26,6 +28,10 @@ export default function RightDrawer() {
 
     if (info) {
       return 'info';
+    }
+
+    if (participants) {
+      return 'participants';
     }
 
     return null;
@@ -41,11 +47,13 @@ export default function RightDrawer() {
   const name = {
     chat: '회의 중 메시지',
     info: '회의 세부정보',
+    participants: '사용자',
   };
 
   const content = {
     chat: <ChatContent />,
     info: <InfoContent />,
+    participants: <ParticipantContent />,
   };
 
   return (
@@ -67,7 +75,7 @@ export default function RightDrawer() {
         {isOpen && (
           <>
             <Header name={name[isOpen]} onClose={() => handleClose(isOpen)} />
-            <main className='flex-1 overflow-hidden'>{content[isOpen]}</main>
+            <main className='m-2 mt-0 flex-1 overflow-y-scroll p-2 pt-0'>{content[isOpen]}</main>
           </>
         )}
       </div>

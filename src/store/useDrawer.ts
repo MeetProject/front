@@ -10,7 +10,7 @@ interface DrawerState {
   info: boolean;
   chat: boolean;
   participants: boolean;
-  toggleDrawer: (type: DrawerKeyType) => void;
+  toggleDrawer: (type: DrawerKeyType, value?: boolean) => void;
   reset: () => void;
 }
 
@@ -21,11 +21,11 @@ export const useDrawerStore = create<DrawerState>((set) => ({
   info: false,
   participants: false,
   reset: () => set(useDrawerStore.getInitialState()),
-  toggleDrawer: (type) =>
+  toggleDrawer: (type, value) =>
     set((state) => {
       if (Object.hasOwn(RIGHT_DRAWER_STATE, type)) {
-        return { ...RIGHT_DRAWER_STATE, [type]: !state[type] };
+        return { ...RIGHT_DRAWER_STATE, [type]: value === undefined ? !state[type] : value };
       }
-      return { [type]: !state[type] };
+      return { [type]: value === undefined ? !state[type] : value };
     }),
 }));

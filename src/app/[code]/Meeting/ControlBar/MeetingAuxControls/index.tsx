@@ -9,7 +9,7 @@ import { useOutsideClick } from '@/hook';
 import { cn } from '@/lib/cn';
 import { RightDrawerKeyType } from '@/types/drawerType';
 
-const BUTTON_TYPES: RightDrawerKeyType[] = ['info', 'chat'];
+const BUTTON_TYPES: Exclude<RightDrawerKeyType, 'participants'>[] = ['info', 'chat'];
 
 export default function MeetingAuxControls() {
   const [isOpen, setIsOpen] = useState(false);

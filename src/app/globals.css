@@ -207,7 +207,7 @@
   
 
   /* 인터랙션 및 버튼 (Action) */
-  --color-action-hover: rgb(72, 82, 95);           /* 일반 아이콘 버튼 호버 */
+  --color-action-hover: rgba(256, 256, 256, 0.1);           /* 일반 아이콘 버튼 호버 */
   --color-action-active: rgb(88, 90, 92);          /* 버튼 액티브 상태 */
   --color-danger-base: rgb(234, 67, 53);           /* 경고 버튼 */
   --color-on-surface-red-strong: rgb(179, 38, 30); /* 삭제 버튼 아이콘 */

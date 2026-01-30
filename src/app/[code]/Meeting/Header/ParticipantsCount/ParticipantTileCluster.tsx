@@ -23,7 +23,7 @@ export default function ParticipantTileCluster({ participants }: ParticipantTile
     cn(count === 3 && 'size-[8.32px] text-[5px]', count >= 4 && 'size-2.25 text-[6px]'),
     'size-[10.88px] text-[5px]',
   ];
-  console.log(participants);
+
   return (
     <div
       className={cn(

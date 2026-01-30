@@ -30,9 +30,9 @@ export default function ParticipantCount() {
     setIsHover(false);
   };
 
-  const handleDrawerOpenButtonClick = useCallback(() => {
+  const handleDrawerOpenButtonClick = useCallback((value?: boolean) => {
     const { toggleDrawer } = useDrawerStore.getState();
-    toggleDrawer('participants');
+    toggleDrawer('participants', value);
     setIsHover(false);
   }, []);
 
@@ -40,7 +40,7 @@ export default function ParticipantCount() {
     <div className='relative' onMouseEnter={handleToggleOn} onMouseLeave={handleToggleOff}>
       <button
         className='bg-surface-base hover:bg-state-layer flex h-9 items-center gap-2 rounded-full pr-3 pl-0.5 transition-colors'
-        onClick={handleDrawerOpenButtonClick}
+        onClick={() => handleDrawerOpenButtonClick()}
       >
         <ParticipantTileCluster
           participants={[

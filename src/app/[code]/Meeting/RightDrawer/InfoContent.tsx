@@ -34,7 +34,7 @@ export default function InfoContent() {
   };
 
   return (
-    <div className='px-6'>
+    <div className='px-4'>
       <div className='my-2 pt-2'>
         <p className='font-google-sans text-on-surface-bright text-sm'>참여 정보</p>
       </div>
