@@ -11,16 +11,49 @@ interface ParticipantState {
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
   userEmoji: EmojiType | null;
+  timer: Map<string, NodeJS.Timeout | null>;
 
   addParticipant: (value: UserDataType) => void;
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
   toggleDevices: (id: string, key: DeviceKindType, value?: boolean) => void;
   reset: () => void;
-  setEmoji: (id: string, value: EmojiType | null) => void;
+  addEmoji: (id: string, value: EmojiType | null, isMe?: boolean) => void;
 }
 
 export const useParticipantStore = create<ParticipantState>((set, get) => ({
+  addEmoji: (id, value, isMe) => {
+    const existingTimer = get().timer.get(id);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const timerId = setTimeout(() => {
+      set((state) => {
+        state.timer.delete(id);
+
+        if (isMe) {
+          return { userEmoji: null };
+        }
+        const nextEmoji = new Map(state.emoji);
+        nextEmoji.delete(id);
+
+        return { emoji: nextEmoji };
+      });
+    }, 8000);
+
+    set((state) => {
+      state.timer.set(id, timerId);
+      if (isMe) {
+        return { userEmoji: value };
+      }
+      const nextEmoji = new Map(state.emoji);
+      nextEmoji.set(id, value);
+
+      return { emoji: nextEmoji };
+    });
+  },
+
   addParticipant: ({ color, device, id, name, stream }) =>
     set((prev) => {
       const newIds = [...prev.participants, id];
@@ -36,7 +69,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
       return { devices: newDevices, info: newInfo, participants: newIds, streams: newStreams };
     }),
-
   devices: new Map(),
   emoji: new Map(),
   info: new Map([
@@ -96,7 +128,15 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newInfo = new Map(prev.info);
       newInfo.delete(id);
 
-      return { devices: newDevices, info: newInfo, participants: newIds, streams: newStreams };
+      const newEmoji = new Map(prev.emoji);
+      newEmoji.delete(id);
+
+      if (prev.timer.has(id)) {
+        clearTimeout(prev.timer.get(id) as NodeJS.Timeout);
+        prev.timer.delete(id);
+      }
+
+      return { devices: newDevices, emoji: newEmoji, info: newInfo, participants: newIds, streams: newStreams };
     }),
 
   removeStream: (id: string) =>
@@ -106,16 +146,15 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
       return { streams: newStreams };
     }),
-  reset: () => set(useParticipantStore.getInitialState()),
 
-  setEmoji: (id, value) =>
-    set((prev) => {
-      const newMap = new Map(prev.emoji);
-      newMap.set(id, value);
-      return { emoji: newMap };
-    }),
+  reset: () => {
+    get().timer.forEach((t) => t && clearTimeout(t));
+    set(useParticipantStore.getInitialState());
+  },
 
   streams: new Map(),
+
+  timer: new Map(),
 
   toggleDevices: (id, key, value) => {
     if (!get().devices.has(id)) {

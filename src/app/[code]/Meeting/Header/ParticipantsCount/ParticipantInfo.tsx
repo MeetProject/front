@@ -15,17 +15,16 @@ interface ParticipantInfoProps {
 }
 
 export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
-  const { userColor, userName } = useUserInfoStore(
+  const { userName } = useUserInfoStore(
     useShallow((state) => ({
-      userColor: state.userColor,
       userName: state.userName,
     })),
   );
 
-  const participant = useParticipantStore((state) => state.info);
+  const participants = useParticipantStore((state) => state.info);
 
   const { count, text } = getTruncatedWords(
-    [userName ?? '', ...participant.entries().map(([_, { name }]) => name)],
+    [userName ?? '', ...participants.entries().map(([_, { name }]) => name)],
     ' 등',
     150,
   );
@@ -42,17 +41,17 @@ export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
           onClick={() => onClick(true)}
         >
           <div className='size-full text-left'>
-            <p className='text-on-surface-white text-sm'>{`${participant.size + 1}명 참석`}</p>
+            <p className='text-on-surface-white text-sm'>{`${participants.size + 1}명 참석`}</p>
             <div className='text-on-surface-dark font-google-sans w-full truncate overflow-hidden text-xs'>
-              {`${text} ${participant.size - count + 1}명`}
+              {`${text} ${participants.size - count + 1}명`}
             </div>
             <div className='mt-3 flex items-center gap-2'>
-              <Profile className='size-9 text-sm' color={userColor ?? ''} name={userName ?? ''} />
-              {[...participant.entries()].slice(0, 4).map(([id, { color, name }]) => (
-                <Profile className='size-9 text-sm' color={color} key={id} name={name} />
+              <Profile className='size-9 text-sm' isMe={true} />
+              {[...participants.entries()].slice(0, 4).map(([id, _]) => (
+                <Profile className='size-9 text-sm' id={id} key={id} />
               ))}
-              {participant.size >= 5 && (
-                <ParticipantTileCluster participants={[...participant.entries()].slice(4).map(([_, user]) => user)} />
+              {participants.size >= 5 && (
+                <ParticipantTileCluster participants={[...participants.entries()].slice(4).map(([id, _]) => id)} />
               )}
             </div>
           </div>

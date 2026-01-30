@@ -25,6 +25,7 @@ const EMOJI_BUTTON = [
 export default function EmojiDrawer() {
   const handleEmojiButtonClick = useCallback((emoji: EmojiType) => {
     const { addEmoji } = useInteractionStore.getState();
+    const { addEmoji: setEmoji } = useParticipantStore.getState();
     const { userId } = useUserInfoStore.getState();
 
     if (!userId) {
@@ -33,7 +34,7 @@ export default function EmojiDrawer() {
 
     const id = uuidv4();
     addEmoji(id, { emoji, userId });
-    useParticipantStore.setState({ userEmoji: emoji });
+    setEmoji(userId, emoji, true);
   }, []);
   return (
     <div className='flex w-full items-center justify-center px-6'>

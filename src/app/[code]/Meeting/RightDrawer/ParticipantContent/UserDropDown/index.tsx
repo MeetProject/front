@@ -39,8 +39,8 @@ export default function UserDropDown({ keyword }: UserDropDownProps) {
     <ParticipantDropDown name='참여자' size={size}>
       <div className='px-4'>
         {isMatchKeyword && <UserCard />}
-        {filteredUser.map(([userId, { color, name }]) => (
-          <ParticipantCard color={color} key={userId} name={name} option={{ audio: true }} userId={userId} />
+        {filteredUser.map(([userId, { name }]) => (
+          <ParticipantCard key={userId} name={name} option={{ audio: true }} userId={userId} />
         ))}
 
         {size === 0 && <div className='text-surface-variant size-full py-2 text-center'>검색결과 없음</div>}

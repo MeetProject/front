@@ -1,12 +1,20 @@
+'use client';
+
 import * as Icon from '@/asset/svg';
 import { cn } from '@/lib/cn';
+import { useInteractionStore } from '@/store/useInteractionStore';
+import { useParticipantStore } from '@/store/useParticipantStore';
+import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 interface NameTagProps {
-  isHandsUp: boolean;
-  name: string;
+  id: string;
+  isMe?: boolean;
 }
 
-export default function NameTag({ isHandsUp, name }: NameTagProps) {
+export default function NameTag({ id, isMe }: NameTagProps) {
+  const userName = useUserInfoStore((state) => state.userName);
+  const isHandsUp = useInteractionStore((state) => state.handsUp.has(id));
+  const name = useParticipantStore((state) => state.info.get(id)?.name ?? '');
   return (
     <div className={cn('absolute bottom-0 left-0 px-2 pb-2')}>
       <div
@@ -17,7 +25,7 @@ export default function NameTag({ isHandsUp, name }: NameTagProps) {
         </div>
         <div className='shrink'>
           <p className={cn('font-google-sans font-medium', isHandsUp ? 'text-success-deep' : 'text-on-surface-white')}>
-            {name}
+            {isMe ? userName : name}
           </p>
         </div>
       </div>

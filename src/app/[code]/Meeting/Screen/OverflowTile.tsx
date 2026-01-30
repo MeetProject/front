@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import { Profile } from '@/components';
 
 interface OverflowTileProps {
@@ -12,13 +14,13 @@ export default function OverflowTile({ count, user }: OverflowTileProps) {
         <div className='flex items-center justify-center'>
           {user.map((id, i) => (
             <Profile
-              className={i !== 0 ? 'border-state-layer relative -left-1 size-10 border-2 text-xl' : undefined}
+              className={clsx('border-state-layer relative size-10 border-2 text-xl', i !== 0 && '-left-2')}
               id={id}
               key={id}
             />
           ))}
         </div>
-        {count > 0 && <div className='mt-1 text-center text-xs text-white'>{`다른 참여자 ${count}명`}</div>}
+        {count > 0 && <div className='mt-3 text-center text-xs text-white'>{`다른 참여자 ${count}명`}</div>}
       </div>
     </div>
   );

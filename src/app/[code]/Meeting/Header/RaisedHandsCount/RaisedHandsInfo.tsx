@@ -13,9 +13,8 @@ interface RaisedHandsInfoProps {
 }
 
 export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
-  const { userColor, userId, userName } = useUserInfoStore(
+  const { userId, userName } = useUserInfoStore(
     useShallow((state) => ({
-      userColor: state.userColor,
       userId: state.userId,
       userName: state.userName,
     })),
@@ -35,11 +34,7 @@ export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
           <div className='mt-4 flex w-full flex-col gap-4'>
             {[...handsUp.values()].slice(0, 4).map((id) => (
               <div className='itesm-center flex gap-4' key={id}>
-                <Profile
-                  className='size-10'
-                  color={(id === userId ? userColor : info.get(id)?.color) ?? ''}
-                  name={(id === userId ? userName : info.get(id)?.name) ?? '알 수 없는 사용자'}
-                />
+                <Profile className='size-10' id={id} isMe={userId === id} />
                 <div className='flex flex-1 items-center'>
                   <p className='text-outline-light font-google-sans truncate align-middle'>
                     {(id === userId ? userName : info.get(id)?.name) ?? '알 수 없는 사용자'}

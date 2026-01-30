@@ -10,22 +10,18 @@ import { Media } from '@/components';
 import { EmojiType } from '@/types/emojiType';
 
 interface BaseTileProps {
-  name: string;
-  color: string;
+  id: string;
   stream: MediaStream | null;
   video: boolean;
-  isHandsUp: boolean;
   emoji: EmojiType | null;
-  onRemoveEmoji: () => void;
+  isMe?: boolean;
 }
 
-export default function BaseTile({ color, emoji, isHandsUp, name, onRemoveEmoji, stream, video }: BaseTileProps) {
+export default function BaseTile({ emoji, id, isMe, stream, video }: BaseTileProps) {
   const timerRef = useRef<NodeJS.Timeout>(null);
-  const emojiTimerRef = useRef<NodeJS.Timeout>(null);
 
   const [isReady, setIsReady] = useState(false);
   const [trackStatus, setTrackStatus] = useState({ isEnded: false, isMuted: !video });
-  const [currentEmoji, setCurrentEmoji] = useState<EmojiType | null>(emoji);
 
   useEffect(() => {
     const videoTrack = stream?.getVideoTracks()[0];
@@ -72,32 +68,6 @@ export default function BaseTile({ color, emoji, isHandsUp, name, onRemoveEmoji,
     timerRef.current = setTimeout(() => setIsReady(true), 200);
   }, []);
 
-  useEffect(() => {
-    if (!emoji) {
-      return;
-    }
-
-    const currentTimer = emojiTimerRef.current;
-
-    if (currentTimer) {
-      clearTimeout(currentTimer);
-    }
-
-    setCurrentEmoji(emoji);
-
-    emojiTimerRef.current = setTimeout(() => {
-      onRemoveEmoji();
-      emojiTimerRef.current = null;
-    }, 8000);
-
-    return () => {
-      if (emojiTimerRef.current) {
-        clearTimeout(emojiTimerRef.current);
-        emojiTimerRef.current = null;
-      }
-    };
-  }, [emoji, onRemoveEmoji]);
-
   const isVideoOff = useMemo(() => !video || trackStatus.isMuted || trackStatus.isEnded, [video, trackStatus]);
 
   return (
@@ -106,7 +76,7 @@ export default function BaseTile({ color, emoji, isHandsUp, name, onRemoveEmoji,
         <div className='size-full max-h-full overflow-hidden'>
           <Media
             className='size-full rounded-xl object-cover'
-            muted={true}
+            muted={isMe}
             stream={stream ?? undefined}
             tag='video'
             onPlaying={handlePlaying}
@@ -115,11 +85,11 @@ export default function BaseTile({ color, emoji, isHandsUp, name, onRemoveEmoji,
 
         {(isVideoOff || !isReady) && (
           <div className='absolute inset-0 z-1'>
-            <VideoOffOverlay color={color} name={name} />
+            <VideoOffOverlay id={id} isMe={isMe} />
           </div>
         )}
-        <NameTag isHandsUp={isHandsUp} name={name} />
-        <Emoji emoji={currentEmoji} />
+        <NameTag id={id} isMe={isMe} />
+        <Emoji emoji={emoji} />
       </div>
     </div>
   );

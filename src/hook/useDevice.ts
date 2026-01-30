@@ -188,6 +188,7 @@ const useDevice = () => {
     if (!stream) {
       return;
     }
+
     const prevEnable = deviceEnable.audio;
     toggleDeviceEnalbe('audio');
 

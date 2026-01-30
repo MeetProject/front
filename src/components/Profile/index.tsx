@@ -1,34 +1,24 @@
 import ParticipantProfile from './ParticipantProfile';
-import ProfileIcon from './ProfileIcon';
-
-interface PropsWithId {
-  id: string;
-  name?: never;
-  color?: never;
-}
-
-interface PropsWithNameAndColor {
-  id?: never;
-  name: string;
-  color: string;
-}
+import UserProfile from './UserProfile';
 
 interface BaseProps {
   className?: string;
 }
 
-type ProfileProps = BaseProps & (PropsWithId | PropsWithNameAndColor);
+interface MyProfileProps extends BaseProps {
+  isMe: true;
+  id?: string;
+}
 
-export default function Profile(props: ProfileProps) {
-  const { className, color, id, name } = props;
+interface ParticipantProps extends BaseProps {
+  isMe?: false;
+  id: string;
+}
+type ProfileProps = MyProfileProps | ParticipantProps;
 
-  if (id) {
-    return <ParticipantProfile className={className} id={id} />;
+export default function Profile({ className, id, isMe }: ProfileProps) {
+  if (isMe) {
+    return <UserProfile className={className} />;
   }
-
-  if (name && color) {
-    return <ProfileIcon className={className} color={color} name={name} />;
-  }
-
-  return null;
+  return <ParticipantProfile className={className} id={id} />;
 }

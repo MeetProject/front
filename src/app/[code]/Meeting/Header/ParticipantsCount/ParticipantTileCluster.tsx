@@ -1,9 +1,8 @@
 import { Profile } from '@/components';
 import { cn } from '@/lib/cn';
-import { UserRegisterPayloadType } from '@/types/userType';
 
 interface ParticipantTileClusterProps {
-  participants: UserRegisterPayloadType[];
+  participants: string[];
 }
 
 export default function ParticipantTileCluster({ participants }: ParticipantTileClusterProps) {
@@ -31,8 +30,8 @@ export default function ParticipantTileCluster({ participants }: ParticipantTile
         count === 2 ? 'flex-col justify-between p-1.25' : 'flex-wrap content-center gap-px',
       )}
     >
-      {participants.slice(0, 4).map((user, i) => (
-        <Profile className={style[i]} color={user.color} key={i} name={user.name} />
+      {participants.slice(0, 4).map((id, i) => (
+        <Profile className={style[i]} id={id} key={id} />
       ))}
     </div>
   );
