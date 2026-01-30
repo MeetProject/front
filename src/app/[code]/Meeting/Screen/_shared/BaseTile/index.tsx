@@ -6,22 +6,24 @@ import Emoji from './Emoji';
 import NameTag from './NameTag';
 import VideoOffOverlay from './VideoOffOverlay';
 
+import * as Icon from '@/asset/svg';
 import { Media } from '@/components';
+import { DeviceEnableType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
 
 interface BaseTileProps {
   id: string;
   stream: MediaStream | null;
-  video: boolean;
+  device: DeviceEnableType;
   emoji: EmojiType | null;
   isMe?: boolean;
 }
 
-export default function BaseTile({ emoji, id, isMe, stream, video }: BaseTileProps) {
+export default function BaseTile({ device, emoji, id, isMe, stream }: BaseTileProps) {
   const timerRef = useRef<NodeJS.Timeout>(null);
 
   const [isReady, setIsReady] = useState(false);
-  const [trackStatus, setTrackStatus] = useState({ isEnded: false, isMuted: !video });
+  const [trackStatus, setTrackStatus] = useState({ isEnded: false, isMuted: !device.video });
 
   useEffect(() => {
     const videoTrack = stream?.getVideoTracks()[0];
@@ -51,7 +53,7 @@ export default function BaseTile({ emoji, id, isMe, stream, video }: BaseTilePro
   }, [stream]);
 
   useEffect(() => {
-    if (video) {
+    if (device.video) {
       return;
     }
 
@@ -59,7 +61,7 @@ export default function BaseTile({ emoji, id, isMe, stream, video }: BaseTilePro
       clearTimeout(timerRef.current);
     }
     setIsReady(false);
-  }, [video]);
+  }, [device.video]);
 
   const handlePlaying = useCallback(() => {
     if (timerRef.current) {
@@ -68,7 +70,10 @@ export default function BaseTile({ emoji, id, isMe, stream, video }: BaseTilePro
     timerRef.current = setTimeout(() => setIsReady(true), 200);
   }, []);
 
-  const isVideoOff = useMemo(() => !video || trackStatus.isMuted || trackStatus.isEnded, [video, trackStatus]);
+  const isVideoOff = useMemo(
+    () => !device.video || trackStatus.isMuted || trackStatus.isEnded,
+    [device.video, trackStatus],
+  );
 
   return (
     <div className='@container-[size] relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
@@ -90,6 +95,11 @@ export default function BaseTile({ emoji, id, isMe, stream, video }: BaseTilePro
         )}
         <NameTag id={id} isMe={isMe} />
         <Emoji emoji={emoji} />
+        {!device.audio && (
+          <div className='bg-outline-dark absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full opacity-80'>
+            <Icon.MicOffFill className='fill-surface-info size-4.5' />
+          </div>
+        )}
       </div>
     </div>
   );

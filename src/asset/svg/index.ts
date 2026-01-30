@@ -33,6 +33,7 @@ export { default as Menu } from './menu.svg';
 export { default as Mic } from './mic.svg';
 export { default as MicOn } from './micOn.svg';
 export { default as MicOff } from './micOff.svg';
+export { default as MicOffFill } from './micOffFill.svg';
 export { default as PermissionSetting } from './permissionSetting.svg';
 export { default as Profile } from './profile.svg';
 export { default as Remove } from './remove.svg';

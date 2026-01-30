@@ -12,12 +12,16 @@ export default function UserTile() {
   const userId = useUserInfoStore((state) => state.userName);
 
   const emoji = useParticipantStore((state) => state.userEmoji);
-  const { stream, video } = useDeviceStore(
+  const { device, stream } = useDeviceStore(
     useShallow((state) => ({
+      device: state.deviceEnable,
       stream: state.stream,
-      video: state.deviceEnable.video,
     })),
   );
 
-  return <BaseTile emoji={emoji} id={userId ?? ''} isMe={true} stream={stream} video={video} />;
+  if (!userId) {
+    return null;
+  }
+
+  return <BaseTile device={device} emoji={emoji} id={userId ?? ''} isMe={true} stream={stream} />;
 }

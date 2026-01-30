@@ -18,5 +18,9 @@ export default function ParticipantTile({ id }: ParticipantTileProps) {
     })),
   );
 
-  return <BaseTile emoji={emoji ?? null} id={id} stream={stream ?? null} video={device?.video ?? false} />;
+  if (device === undefined || stream === undefined) {
+    return null;
+  }
+
+  return <BaseTile device={device} emoji={emoji ?? null} id={id} stream={stream ?? null} />;
 }

@@ -4,6 +4,29 @@ import { DeviceEnableType, DeviceKindType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
 import { UserDataType, UserRegisterPayloadType } from '@/types/userType';
 
+const TEST_PARTICIPANTS = [
+  'Alpha',
+  'Bravo',
+  'Charlie',
+  'Delta',
+  'Echo',
+  'Foxtrot',
+  'Golf',
+  'Hotel',
+  'India',
+  'Juliet',
+  'Kilo',
+  'Lima',
+  'Mike',
+  'November',
+  'Oscar',
+  'Papa',
+  'Quebec',
+  'Romeo',
+  'Sierra',
+  'Tango',
+];
+
 interface ParticipantState {
   participants: string[];
   streams: Map<string, MediaStream | null>;
@@ -69,7 +92,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
       return { devices: newDevices, info: newInfo, participants: newIds, streams: newStreams };
     }),
-  devices: new Map(),
+  devices: new Map(TEST_PARTICIPANTS.map((id) => [id, { audio: true, video: true }])),
   emoji: new Map(),
   info: new Map([
     ['Alpha', { color: '#FF6B6B', name: 'Alpha' }],
@@ -93,28 +116,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     ['Sierra', { color: '#8D6E63', name: 'Sierra' }],
     ['Tango', { color: '#78909C', name: 'Tango' }],
   ]),
-  participants: [
-    'Alpha',
-    'Bravo',
-    'Charlie',
-    'Delta',
-    'Echo',
-    'Foxtrot',
-    'Golf',
-    'Hotel',
-    'India',
-    'Juliet',
-    'Kilo',
-    'Lima',
-    'Mike',
-    'November',
-    'Oscar',
-    'Papa',
-    'Quebec',
-    'Romeo',
-    'Sierra',
-    'Tango',
-  ],
+  participants: TEST_PARTICIPANTS,
   removeParticipant: (id: string) =>
     set((prev) => {
       const newIds = prev.participants.filter((i) => i !== id);
@@ -152,7 +154,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     set(useParticipantStore.getInitialState());
   },
 
-  streams: new Map(),
+  streams: new Map(TEST_PARTICIPANTS.map((id) => [id, null])),
 
   timer: new Map(),
 
