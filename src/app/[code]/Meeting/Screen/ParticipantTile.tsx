@@ -9,7 +9,7 @@ interface ParticipantTileProps {
 }
 
 export default function ParticipantTile({ id }: ParticipantTileProps) {
-  const { device, emoji, stream } = useParticipantStore(
+  const { device, emoji, info, stream } = useParticipantStore(
     useShallow((state) => ({
       device: state.devices.get(id),
       emoji: state.emoji.get(id),
@@ -22,5 +22,14 @@ export default function ParticipantTile({ id }: ParticipantTileProps) {
     return null;
   }
 
-  return <BaseTile device={device} emoji={emoji ?? null} id={id} stream={stream ?? null} />;
+  return (
+    <BaseTile
+      color={info?.color ?? ''}
+      device={device}
+      emoji={emoji ?? null}
+      id={id}
+      name={info?.name ?? ''}
+      stream={stream ?? null}
+    />
+  );
 }

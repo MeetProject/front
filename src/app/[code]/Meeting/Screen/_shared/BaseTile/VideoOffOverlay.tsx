@@ -1,25 +1,13 @@
-import { useShallow } from 'zustand/shallow';
-
 import { Profile } from '@/components';
 import { cn } from '@/lib/cn';
-import { useParticipantStore } from '@/store/useParticipantStore';
-import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { getHue, getSaturation, parseRGB } from '@/util/color';
 
 interface VideoOffOverlayProps {
-  id: string;
-  isMe?: boolean;
+  name: string;
+  color: string;
 }
 
-export default function VideoOffOverlay({ id, isMe }: VideoOffOverlayProps) {
-  const userInfo = useUserInfoStore(
-    useShallow((state) => ({
-      userColor: state.userColor,
-      userName: state.userName,
-    })),
-  );
-  const info = useParticipantStore((state) => state.info.get(id));
-
+export default function VideoOffOverlay({ color, name }: VideoOffOverlayProps) {
   const getVideoOffColor = (hex: string) => {
     const { b, g, r } = parseRGB(hex);
 
@@ -32,7 +20,7 @@ export default function VideoOffOverlay({ id, isMe }: VideoOffOverlayProps) {
     };
   };
 
-  const layoutColor = getVideoOffColor(isMe ? (userInfo.userColor ?? '') : (info?.color ?? ''));
+  const layoutColor = getVideoOffColor(color);
   return (
     <div
       className={cn(
@@ -46,7 +34,7 @@ export default function VideoOffOverlay({ id, isMe }: VideoOffOverlayProps) {
         } as React.CSSProperties
       }
     >
-      <Profile className='size-24 text-3xl' id={id} isMe={isMe} />
+      <Profile className='size-24 text-3xl' color={color} name={name} />
     </div>
   );
 }

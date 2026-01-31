@@ -57,6 +57,8 @@ export default function InteractionButtons() {
     if (!userId) {
       return;
     }
+
+    console.log(userId);
     toggleHandsUp(userId);
     handleOptionClose();
   }, [handleOptionClose, userId]);
@@ -91,13 +93,13 @@ export default function InteractionButtons() {
     <div className='relative' ref={targetRef}>
       <div
         className={cn(
-          'flex items-center gap-2.5',
+          'flex items-center gap-2.5 shadow-xl',
           !isOpenOption && 'max-[850px]:hidden',
           isOpenOption && [
             'max-[850px]:flex-col',
             'max-[850px]:absolute max-[850px]:top-0 max-[850px]:right-1/2',
             'max-[850px]:translate-x-1/2 max-[850px]:-translate-y-[calc(100%+8px)]',
-            'max-[850px]:bg-surface-base max-[850px]:w-16 max-[850px]:rounded-lg max-[850px]:p-2 max-[850px]:shadow-xl',
+            'max-[850px]:bg-surface-base max-[850px]:w-16 max-[850px]:rounded-lg max-[850px]:p-2',
           ],
         )}
       >

@@ -9,7 +9,13 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 export default function UserTile() {
-  const userId = useUserInfoStore((state) => state.userName);
+  const { userColor, userId, userName } = useUserInfoStore(
+    useShallow((state) => ({
+      userColor: state.userColor,
+      userId: state.userId,
+      userName: state.userName,
+    })),
+  );
 
   const emoji = useParticipantStore((state) => state.userEmoji);
   const { device, stream } = useDeviceStore(
@@ -19,9 +25,11 @@ export default function UserTile() {
     })),
   );
 
-  if (!userId) {
+  if (!userId || !userName || !userColor) {
     return null;
   }
 
-  return <BaseTile device={device} emoji={emoji} id={userId ?? ''} isMe={true} stream={stream} />;
+  return (
+    <BaseTile color={userColor} device={device} emoji={emoji} id={userId} isMe={true} name={userName} stream={stream} />
+  );
 }

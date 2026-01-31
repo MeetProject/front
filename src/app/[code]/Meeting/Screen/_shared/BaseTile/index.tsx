@@ -17,9 +17,11 @@ interface BaseTileProps {
   device: DeviceEnableType;
   emoji: EmojiType | null;
   isMe?: boolean;
+  name: string;
+  color: string;
 }
 
-export default function BaseTile({ device, emoji, id, isMe, stream }: BaseTileProps) {
+export default function BaseTile({ color, device, emoji, id, isMe, name, stream }: BaseTileProps) {
   const timerRef = useRef<NodeJS.Timeout>(null);
 
   const [isReady, setIsReady] = useState(false);
@@ -90,10 +92,10 @@ export default function BaseTile({ device, emoji, id, isMe, stream }: BaseTilePr
 
         {(isVideoOff || !isReady) && (
           <div className='absolute inset-0 z-1'>
-            <VideoOffOverlay id={id} isMe={isMe} />
+            <VideoOffOverlay color={color} name={name} />
           </div>
         )}
-        <NameTag id={id} isMe={isMe} />
+        <NameTag id={id} name={name} />
         <Emoji emoji={emoji} />
         {!device.audio && (
           <div className='bg-outline-dark absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full opacity-80'>

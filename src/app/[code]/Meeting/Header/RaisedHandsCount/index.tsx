@@ -15,6 +15,8 @@ export default function RaisedHandsCount() {
   const info = useParticipantStore((state) => state.info);
   const handsUp = useInteractionStore((state) => state.handsUp);
 
+  console.log(info.get('Alpha'), handsUp);
+
   const handleToggleOn = () => {
     setIsHover(true);
   };
@@ -42,19 +44,19 @@ export default function RaisedHandsCount() {
       return userName + suffix;
     }
 
-    return info.get(id ?? '')?.name ?? '알 수 없는 사용자' + suffix;
+    return (info.get(id ?? '')?.name ?? '알 수 없는 사용자') + suffix;
   }, [info, handsUp]);
 
   return (
     <div className='relative' onMouseEnter={handleToggleOn} onMouseLeave={handleToggleOff}>
       <button
-        className='bg-success-light flex items-center gap-1 rounded-[48px] p-0.5 pr-3 transition-[width] duration-300'
+        className='bg-success-light animate-expand-handup-count flex items-center gap-1 overflow-hidden rounded-[48px] p-0.5 pr-3 transition-all [interpolate-size:allow-keywords]'
         onClick={() => handleDrawerOpenButtonClick()}
       >
-        <div className='bg-success-deep flex size-8 items-center justify-center rounded-full'>
+        <div className='bg-success-deep flex size-8 shrink-0 items-center justify-center rounded-full'>
           <Icon.FrontHand className='fill-success-light size-5' />
         </div>
-        <p className='text-success-deep font-google-sans text-xs'>{displayedText}</p>
+        <div className='text-success-deep font-google-sans px-1 text-xs whitespace-nowrap'>{displayedText}</div>
       </button>
       {isHover && <RaisedHandsInfo onClick={handleDrawerOpenButtonClick} />}
     </div>

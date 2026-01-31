@@ -37,8 +37,8 @@ export default function EmojiDrawer() {
     setEmoji(userId, emoji, true);
   }, []);
   return (
-    <div className='flex w-full items-center justify-center px-6'>
-      <div className='bg-state-hover-dim flex items-center rounded-[36px]'>
+    <div className='mt-3 flex w-full items-center justify-center px-6'>
+      <div className='bg-state-dim flex items-center rounded-[36px]'>
         {EMOJI_BUTTON.map((value) => (
           <EmojiButton key={value.name} {...value} onClick={() => handleEmojiButtonClick(value.name as EmojiType)} />
         ))}
