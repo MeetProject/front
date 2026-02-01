@@ -13,7 +13,6 @@ export interface UserDataType {
   id: string;
   name: string;
   color: string;
-  device: DeviceEnableType;
+  deviceEnable: DeviceEnableType;
   stream: MediaStream | null;
-  isHandsUp?: boolean;
 }

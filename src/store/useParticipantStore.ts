@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 
+import { GroupChatType } from '@/types/chatType';
 import { DeviceEnableType, DeviceKindType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
+import { ChatResponseType } from '@/types/session';
 import { UserDataType, UserRegisterPayloadType } from '@/types/userType';
 
 const TEST_PARTICIPANTS = [
@@ -30,12 +32,15 @@ const TEST_PARTICIPANTS = [
 interface ParticipantState {
   participants: string[];
   streams: Map<string, MediaStream | null>;
+  screenStream: MediaStream | null;
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
   userEmoji: EmojiType | null;
   timer: Map<string, NodeJS.Timeout | null>;
+  chat: GroupChatType[];
 
+  addChat: (value: ChatResponseType) => void;
   addParticipant: (value: UserDataType) => void;
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
@@ -45,6 +50,20 @@ interface ParticipantState {
 }
 
 export const useParticipantStore = create<ParticipantState>((set, get) => ({
+  addChat: (data: ChatResponseType) => {
+    set((prev) => {
+      const newChat = [...prev.chat];
+      const { userId, ...chatData } = data;
+      if (newChat.length !== 0 && newChat[newChat.length - 1].userId === userId) {
+        newChat[newChat.length - 1].messages.push(chatData);
+        return { chat: newChat };
+      }
+
+      newChat.push({ messages: [chatData], userId: data.userId });
+      return { chat: newChat };
+    });
+  },
+
   addEmoji: (id, value, isMe) => {
     const existingTimer = get().timer.get(id);
     if (existingTimer) {
@@ -77,7 +96,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     });
   },
 
-  addParticipant: ({ color, device, id, name, stream }) =>
+  addParticipant: ({ color, deviceEnable, id, name, stream }) =>
     set((prev) => {
       const newIds = [...prev.participants, id];
 
@@ -85,13 +104,19 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       newStreams.set(id, stream);
 
       const newDevices = new Map(prev.devices);
-      newDevices.set(id, device);
+      newDevices.set(id, deviceEnable);
 
       const newInfo = new Map(prev.info);
       newInfo.set(id, { color, name });
 
-      return { devices: newDevices, info: newInfo, participants: newIds, streams: newStreams };
+      return {
+        devices: newDevices,
+        info: newInfo,
+        participants: newIds,
+        streams: newStreams,
+      };
     }),
+  chat: [],
   devices: new Map(TEST_PARTICIPANTS.map((id) => [id, { audio: true, video: true }])),
   emoji: new Map(),
   info: new Map([
@@ -154,6 +179,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     set(useParticipantStore.getInitialState());
   },
 
+  screenStream: null,
   streams: new Map(TEST_PARTICIPANTS.map((id) => [id, null])),
 
   timer: new Map(),

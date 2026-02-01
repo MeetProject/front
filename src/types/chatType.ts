@@ -1,11 +1,6 @@
-export type MessageGroup = 'single' | 'start' | 'middle' | 'end';
+import { ChatResponseType } from './session';
 
-export interface ChatResponseType {
-  id: string;
-  userId: string;
-  message: string;
-  timestamp: string;
-}
+export type MessageGroup = 'single' | 'start' | 'middle' | 'end';
 
 export interface GroupChatType {
   userId: string;
