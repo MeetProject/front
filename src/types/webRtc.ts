@@ -8,7 +8,10 @@ import {
 import { TrackType } from './deviceType';
 
 export type Direction = 'send' | 'recv';
-export type AppData = PrimitiveAppData & Record<'kind', TrackType>;
+export type AppData = PrimitiveAppData & {
+  kind: TrackType;
+  userId: string;
+};
 
 export interface CapabilitiesResponseType {
   capabilities: RtpCapabilities;

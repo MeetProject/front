@@ -1,10 +1,12 @@
+import { partition } from 'lodash';
 import { create } from 'zustand';
 
 import { GroupChatType } from '@/types/chatType';
 import { DeviceEnableType, DeviceKindType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
-import { ChatResponseType } from '@/types/session';
-import { UserDataType, UserRegisterPayloadType } from '@/types/userType';
+import { ChatResponseType, ParticipantDataType } from '@/types/session';
+import { UserRegisterPayloadType } from '@/types/userType';
+import { AppData } from '@/types/webRtc';
 
 const TEST_PARTICIPANTS = [
   'Alpha',
@@ -41,7 +43,14 @@ interface ParticipantState {
   chat: GroupChatType[];
 
   addChat: (value: ChatResponseType) => void;
-  addParticipant: (value: UserDataType) => void;
+
+  addParticipant: (
+    value: ParticipantDataType,
+    consumeTrack: (id: string) => Promise<{
+      appData: AppData;
+      track: MediaStreamTrack;
+    } | null>,
+  ) => void;
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
   toggleDevices: (id: string, key: DeviceKindType, value?: boolean) => void;
@@ -96,26 +105,35 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     });
   },
 
-  addParticipant: ({ color, deviceEnable, id, name, stream }) =>
-    set((prev) => {
-      const newIds = [...prev.participants, id];
+  addParticipant: async ({ produceId, ...userData }, consumeTrack) => {
+    const results = await Promise.allSettled(produceId.map((id) => consumeTrack(id)));
+    const tracksInfo = results
+      .filter((res): res is PromiseFulfilledResult<any> => res.status === 'fulfilled' && res.value !== null)
+      .map((res) => res.value);
 
-      const newStreams = new Map(prev.streams);
-      newStreams.set(id, stream);
+    const [screenTracks, userTracks] = partition(tracksInfo, ({ appData }) => appData.trackType?.includes('screen'));
 
-      const newDevices = new Map(prev.devices);
+    if (screenTracks.length > 0) {
+      set({ screenStream: new MediaStream(screenTracks.map((t) => t.track)) });
+    }
+
+    const userStream = new MediaStream(userTracks.map((t) => t.track));
+
+    set((state) => {
+      const { color, deviceEnable, id, name } = userData;
+
+      const newInfo = new Map(state.info);
+      newInfo.set(userData.id, { color, name });
+
+      const newStreams = new Map(state.streams);
+      newStreams.set(id, userStream);
+
+      const newDevices = new Map(state.devices);
       newDevices.set(id, deviceEnable);
 
-      const newInfo = new Map(prev.info);
-      newInfo.set(id, { color, name });
-
-      return {
-        devices: newDevices,
-        info: newInfo,
-        participants: newIds,
-        streams: newStreams,
-      };
-    }),
+      return { devices: newDevices, info: newInfo, participants: [...state.participants, id], streams: newStreams };
+    });
+  },
   chat: [],
   devices: new Map(TEST_PARTICIPANTS.map((id) => [id, { audio: true, video: true }])),
   emoji: new Map(),

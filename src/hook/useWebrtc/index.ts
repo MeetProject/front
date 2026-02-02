@@ -1,109 +1,86 @@
 'use client';
 
-import { partition } from 'lodash';
 import { useCallback, useState } from 'react';
 
-import { useEventHandler } from './useEventHandler';
 import { useMediasoup } from './useMediasoup';
-import { useStomp } from './useStomp';
+import { useSignalingHandler } from './useSignalingHandler';
 
 import { requestJoinRoom } from '@/service/webRtc';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
-import { ParticipantDataType } from '@/types/session';
-
-const SERVER_URL = 'http://localhost:8080/ws';
 
 const useWebrtc = () => {
   const [isPending, setIsPending] = useState<boolean>(false);
-  const { connect, subscribe } = useStomp(SERVER_URL);
-  const { consumeTrack, createTransport, produceTrack } = useMediasoup();
-  const { handleChat, handleEmoji, handleJoinUser, handleToggleDevice, handleToggleHandsUp } = useEventHandler();
+  const {
+    consumeTrack,
+    createTransport,
+    disconnectTransport,
+    produceTrack,
+    removeConsumer,
+    removeProducer,
+    replaceProducerTrack,
+  } = useMediasoup();
+  const { initSignaling, unsubscribeAll } = useSignalingHandler(consumeTrack, removeConsumer);
 
-  const initWebrtc = useCallback(async () => {
-    const { initDevice } = useWebrtcStore.getState();
-    const device = await initDevice();
+  const initWebrtc = useCallback(
+    async (roomId: string) => {
+      const { initDevice } = useWebrtcStore.getState();
+      const device = await initDevice();
 
-    if (!device) {
-      return [];
-    }
-
-    await Promise.all([createTransport('send'), createTransport('recv'), connect()]);
-
-    const { stream } = useDeviceStore.getState();
-    return Promise.all((stream?.getTracks() ?? []).map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')));
-  }, [connect, createTransport, produceTrack]);
-
-  const processParticipant = useCallback(
-    async (data: ParticipantDataType) => {
-      const { addParticipant } = useParticipantStore.getState();
-      const { produceId: participantProduceId, ...userData } = data;
-
-      type ConsumeResult = Awaited<ReturnType<typeof consumeTrack>>;
-      type ValidTrackInfo = NonNullable<ConsumeResult>;
-
-      const results = await Promise.allSettled(participantProduceId.map((id) => consumeTrack(id)));
-      const tracksInfo = results
-        .filter(
-          (res): res is PromiseFulfilledResult<ValidTrackInfo> => res.status === 'fulfilled' && res.value !== null,
-        )
-        .map((res) => res.value);
-
-      const [screenTracks, userTracks] = partition(tracksInfo, ({ appData }) => appData.kind.includes('screen'));
-
-      if (screenTracks.length > 0) {
-        const screenStream = new MediaStream(screenTracks.map((t) => t.track));
-        useParticipantStore.setState({ screenStream });
+      if (!device) {
+        return [];
       }
 
-      const userStream = new MediaStream(userTracks.map((t) => t.track));
-      addParticipant({ ...userData, stream: userStream });
-    },
-    [consumeTrack],
-  );
+      await Promise.all([createTransport('send'), createTransport('recv'), initSignaling(roomId)]);
 
-  const initSubscribe = useCallback(
-    (roomId: string) => {
-      subscribe<ParticipantDataType>(`/topic/room/${roomId}/join`, (data) => handleJoinUser(data, processParticipant));
-      subscribe(`topic/room/${roomId}/device`, handleToggleDevice);
-      subscribe(`topic/room/${roomId}/handsUp`, handleToggleHandsUp);
-      subscribe(`topic/room/${roomId}/emoji`, handleEmoji);
-      subscribe(`topic/room/${roomId}/chat`, handleChat);
+      const { stream } = useDeviceStore.getState();
+      return Promise.all(
+        (stream?.getTracks() ?? []).map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')),
+      );
     },
-    [subscribe, handleJoinUser, handleChat, handleEmoji, handleToggleDevice, handleToggleHandsUp, processParticipant],
+    [createTransport, produceTrack, initSignaling],
   );
 
   const joinRoom = useCallback(
     async (roomId: string) => {
-      setIsPending(false);
-
-      const produceId = await initWebrtc();
-      initSubscribe(roomId);
-
-      const { userColor, userName } = useUserInfoStore.getState();
-      const { deviceEnable } = useDeviceStore.getState();
-      if (!userColor || !userName) {
-        return;
-      }
-
-      const existingParticipants = await requestJoinRoom({
-        deviceEnable,
-        produceId,
-        roomId,
-        userColor,
-        userName,
-      });
-
-      await Promise.all(existingParticipants.map((item) => processParticipant(item)));
-
       setIsPending(true);
+      const { addParticipant } = useParticipantStore.getState();
+
+      try {
+        const produceId = await initWebrtc(roomId);
+        const { userColor, userName } = useUserInfoStore.getState();
+        const { deviceEnable } = useDeviceStore.getState();
+        if (!userColor || !userName) {
+          return;
+        }
+
+        const existingParticipants = await requestJoinRoom({
+          deviceEnable,
+          produceId,
+          roomId,
+          userColor,
+          userName,
+        });
+
+        await Promise.all(existingParticipants.map((item) => addParticipant(item, consumeTrack)));
+      } catch {
+      } finally {
+        setIsPending(false);
+      }
     },
-    [initSubscribe, initWebrtc, processParticipant],
+    [initWebrtc, consumeTrack],
   );
 
-  return { isPending, joinRoom };
+  const leaveRoom = useCallback(() => {
+    const { reset } = useParticipantStore.getState();
+    unsubscribeAll();
+    disconnectTransport();
+    reset();
+  }, [unsubscribeAll, disconnectTransport]);
+
+  return { isPending, joinRoom, leaveRoom, removeTrack: removeProducer, replaceTrack: replaceProducerTrack };
 };
 
 export default useWebrtc;

@@ -1,6 +1,7 @@
-import { AppData, DtlsParameters, RtpCapabilities, RtpParameters } from 'mediasoup-client/types';
+import { DtlsParameters, RtpCapabilities, RtpParameters } from 'mediasoup-client/types';
 
 import { JoinRoomPayloadType, JoinRoomResponseType } from '@/types/session';
+import { AppData } from '@/types/webRtc';
 import {
   CapabilitiesResponseType,
   ConsumeParamsResponseType,

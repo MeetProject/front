@@ -37,3 +37,7 @@ export interface ChatResponseType {
   message: string;
   timestamp: string;
 }
+
+export interface LeaveResponseType {
+  userId: string;
+}

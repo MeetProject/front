@@ -4,7 +4,7 @@ import { Client, IFrame, Message, StompConfig, StompSubscription } from '@stomp/
 import { useCallback, useRef } from 'react';
 import SockJS from 'sockjs-client';
 
-export const useStomp = (url: string) => {
+export const useSignaling = (url: string) => {
   const client = useRef<Client>(null);
   const subscription = useRef<Map<string, StompSubscription>>(new Map());
 
@@ -69,15 +69,20 @@ export const useStomp = (url: string) => {
     subscription.current.delete(destination);
   }, []);
 
-  const disconnect = () => {
+  const unsubscribeAll = useCallback(() => {
+    subscription.current.values().forEach((sub) => sub.unsubscribe());
+    subscription.current.clear();
+  }, []);
+
+  const disconnect = useCallback(() => {
     if (!client.current) {
       return;
     }
 
-    subscription.current.forEach((sub) => sub.unsubscribe());
+    unsubscribeAll();
     client.current.deactivate();
     client.current = null;
-  };
+  }, [unsubscribeAll]);
 
   return {
     client: client.current,
@@ -86,5 +91,6 @@ export const useStomp = (url: string) => {
     publish,
     subscribe,
     unsubscribe,
+    unsubscribeAll,
   };
 };
