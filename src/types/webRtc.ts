@@ -21,3 +21,7 @@ export interface TransportParamsResponseType {
 export interface ConsumeParamsResponseType {
   params: ConsumerOptions<AppData>;
 }
+
+export interface RTLSRegisterResponseType {
+  id: string;
+}

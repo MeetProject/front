@@ -5,6 +5,7 @@ import {
   CapabilitiesResponseType,
   ConsumeParamsResponseType,
   Direction,
+  RTLSRegisterResponseType,
   TransportParamsResponseType,
 } from '@/types/webRtc';
 
@@ -29,7 +30,7 @@ export const requestRegisterDTLS = async (transportId: string, dtlsParameters: D
 };
 
 export const requestRegisterRTLS = async (transportId: string, rtpParameters: RtpParameters, appData: AppData) => {
-  await fetch('/api/rtls', {
+  const response = await fetch('/api/rtls', {
     body: JSON.stringify({
       appData,
       rtpParameters,
@@ -37,6 +38,8 @@ export const requestRegisterRTLS = async (transportId: string, rtpParameters: Rt
     }),
     method: 'POST',
   });
+
+  return ((await response.json()) as RTLSRegisterResponseType).id;
 };
 
 export const requestConsumeParams = async (

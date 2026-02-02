@@ -1,7 +1,7 @@
 'use client';
 
 import { partition } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useEventHandler } from './useEventHandler';
 import { useMediasoup } from './useMediasoup';
@@ -11,26 +11,30 @@ import { requestJoinRoom } from '@/service/webRtc';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
+import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { ParticipantDataType } from '@/types/session';
 
 const SERVER_URL = 'http://localhost:8080/ws';
 
 const useWebrtc = () => {
+  const [isPending, setIsPending] = useState<boolean>(false);
   const { connect, subscribe } = useStomp(SERVER_URL);
-  const { consumeTrack, createTransport, initDevice, produceTrack } = useMediasoup();
+  const { consumeTrack, createTransport, produceTrack } = useMediasoup();
   const { handleChat, handleEmoji, handleJoinUser, handleToggleDevice, handleToggleHandsUp } = useEventHandler();
 
   const initWebrtc = useCallback(async () => {
-    await initDevice();
-    await connect();
+    const { initDevice } = useWebrtcStore.getState();
+    const device = await initDevice();
 
-    await createTransport('send');
-    await createTransport('recv');
+    if (!device) {
+      return [];
+    }
+
+    await Promise.all([createTransport('send'), createTransport('recv'), connect()]);
 
     const { stream } = useDeviceStore.getState();
-
     return Promise.all((stream?.getTracks() ?? []).map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')));
-  }, [initDevice, connect, createTransport, produceTrack]);
+  }, [connect, createTransport, produceTrack]);
 
   const processParticipant = useCallback(
     async (data: ParticipantDataType) => {
@@ -73,6 +77,8 @@ const useWebrtc = () => {
 
   const joinRoom = useCallback(
     async (roomId: string) => {
+      setIsPending(false);
+
       const produceId = await initWebrtc();
       initSubscribe(roomId);
 
@@ -91,11 +97,13 @@ const useWebrtc = () => {
       });
 
       await Promise.all(existingParticipants.map((item) => processParticipant(item)));
+
+      setIsPending(true);
     },
     [initSubscribe, initWebrtc, processParticipant],
   );
 
-  return { joinRoom };
+  return { isPending, joinRoom };
 };
 
 export default useWebrtc;

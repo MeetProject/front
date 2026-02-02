@@ -1,53 +1,52 @@
 'use client';
 
-import { Device } from 'mediasoup-client';
-import { Transport } from 'mediasoup-client/types';
+import { Producer, Transport } from 'mediasoup-client/types';
 import { useCallback, useRef } from 'react';
 
 import {
-  requestCapability,
   requestConsumeParams,
   requestRegisterDTLS,
   requestRegisterRTLS,
   requestResume,
   requestTransportParams,
 } from '@/service/webRtc';
+import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { TrackType } from '@/types/deviceType';
 import { Direction } from '@/types/webRtc';
 
 export const useMediasoup = () => {
-  const deviceRef = useRef<Device | null>(null);
   const sendTransport = useRef<Transport | null>(null);
   const recvTransport = useRef<Transport | null>(null);
-
-  const initDevice = useCallback(async () => {
-    if (deviceRef.current) {
-      return;
-    }
-    const device = new Device();
-    const routerRtpCapabilities = await requestCapability();
-    await device.load({ routerRtpCapabilities });
-    deviceRef.current = device;
-  }, []);
+  const producers = useRef<Map<TrackType, Producer>>(new Map());
 
   const createTransport = useCallback(async (direction: Direction) => {
-    if (!deviceRef.current) {
+    const { device } = useWebrtcStore.getState();
+    if (!device) {
       return;
     }
 
     const option = await requestTransportParams(direction);
 
-    const transport =
-      direction === 'send'
-        ? deviceRef.current.createSendTransport(option)
-        : deviceRef.current.createRecvTransport(option);
+    const transport = direction === 'send' ? device.createSendTransport(option) : device.createRecvTransport(option);
 
-    transport.on('connect', async ({ dtlsParameters }) => requestRegisterDTLS(transport.id, dtlsParameters));
+    transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
+      try {
+        await requestRegisterDTLS(transport.id, dtlsParameters);
+        callback();
+      } catch (e) {
+        errback(e as Error);
+      }
+    });
 
     if (direction === 'send') {
-      transport.on('produce', async ({ appData, rtpParameters }) =>
-        requestRegisterRTLS(transport.id, rtpParameters, appData),
-      );
+      transport.on('produce', async ({ appData, rtpParameters }, callback, errback) => {
+        try {
+          const producerId = await requestRegisterRTLS(transport.id, rtpParameters, appData);
+          callback({ id: producerId });
+        } catch (e) {
+          errback(e as Error);
+        }
+      });
       sendTransport.current = transport;
     } else {
       recvTransport.current = transport;
@@ -64,19 +63,18 @@ export const useMediasoup = () => {
       track,
     });
 
+    producers.current.set(trackType, producer);
+
     return producer.id;
   }, []);
 
   const consumeTrack = useCallback(async (producerId: string) => {
-    if (!recvTransport.current || !deviceRef.current) {
+    const { device } = useWebrtcStore.getState();
+    if (!recvTransport.current || !device) {
       return null;
     }
 
-    const consumeParams = await requestConsumeParams(
-      recvTransport.current.id,
-      producerId,
-      deviceRef.current.rtpCapabilities,
-    );
+    const consumeParams = await requestConsumeParams(recvTransport.current.id, producerId, device.rtpCapabilities);
 
     const consumer = await recvTransport.current.consume(consumeParams);
     await requestResume(consumer.id);
@@ -88,6 +86,28 @@ export const useMediasoup = () => {
     };
   }, []);
 
+  const removeProducer = useCallback((trackType: TrackType) => {
+    const oldProducer = producers.current.get(trackType);
+    if (!oldProducer) {
+      return;
+    }
+
+    oldProducer.close();
+    producers.current.delete(trackType);
+  }, []);
+
+  const replaceProducerTrack = useCallback(async (trackType: TrackType, newTrack: MediaStreamTrack) => {
+    const producer = producers.current.get(trackType);
+    if (!producer) {
+      return;
+    }
+
+    try {
+      producer.track?.stop();
+      await producer.replaceTrack({ track: newTrack });
+    } catch {}
+  }, []);
+
   const disconnectTransport = useCallback(() => {
     sendTransport.current?.close();
     recvTransport.current?.close();
@@ -96,8 +116,16 @@ export const useMediasoup = () => {
   }, []);
 
   const disconnectMediasoup = useCallback(() => {
-    deviceRef.current = null;
+    useWebrtcStore.setState({ device: null });
   }, []);
 
-  return { consumeTrack, createTransport, disconnectMediasoup, disconnectTransport, initDevice, produceTrack };
+  return {
+    consumeTrack,
+    createTransport,
+    disconnectMediasoup,
+    disconnectTransport,
+    produceTrack,
+    removeProducer,
+    replaceProducerTrack,
+  };
 };
