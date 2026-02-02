@@ -10,6 +10,7 @@ import {
   requestResume,
   requestTransportParams,
 } from '@/service/webRtc';
+import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { TrackType } from '@/types/deviceType';
@@ -73,6 +74,7 @@ export const useMediasoup = () => {
 
   const consumeTrack = useCallback(async (producerId: string) => {
     const { device } = useWebrtcStore.getState();
+    const { removeTrack } = useParticipantStore.getState();
     if (!recvTransport.current || !device) {
       return null;
     }
@@ -84,19 +86,23 @@ export const useMediasoup = () => {
       await requestResume(consumer.id);
 
       const { appData, track } = consumer;
-      const { userId } = appData;
+      const { kind, userId } = appData as AppData;
       if (!consumers.current.has(userId)) {
         consumers.current.set(userId, new Set());
       }
       consumers.current.get(userId)!.add(consumer);
       consumer.on('@close', () => {
         const userSet = consumers.current.get(userId);
-        if (userSet) {
-          userSet.delete(consumer);
-          if (userSet.size === 0) {
-            consumers.current.delete(userId);
-          }
+        if (!userSet) {
+          return;
         }
+
+        userSet.delete(consumer);
+        if (userSet.size === 0) {
+          consumers.current.delete(userId);
+        }
+
+        removeTrack(userId, kind, track);
       });
 
       return {
@@ -116,6 +122,7 @@ export const useMediasoup = () => {
 
     oldProducer.close();
     producers.current.delete(trackType);
+    return oldProducer.id;
   }, []);
 
   const removeConsumer = useCallback((userId: string) => {

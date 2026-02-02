@@ -2,7 +2,7 @@ import { partition } from 'lodash';
 import { create } from 'zustand';
 
 import { GroupChatType } from '@/types/chatType';
-import { DeviceEnableType, DeviceKindType } from '@/types/deviceType';
+import { DeviceEnableType, DeviceKindType, TrackType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
 import { ChatResponseType, ParticipantDataType, TrackResponseType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
@@ -60,6 +60,7 @@ interface ParticipantState {
   ) => Promise<void>;
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
+  removeTrack: (userId: string, trackType: TrackType, track: MediaStreamTrack) => void;
   toggleDevices: (id: string, key: DeviceKindType, value?: boolean) => void;
   reset: () => void;
   addEmoji: (id: string, value: EmojiType | null, isMe?: boolean) => void;
@@ -169,6 +170,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     }
   },
   chat: [],
+
   devices: new Map(TEST_PARTICIPANTS.map((id) => [id, { audio: true, video: true }])),
   emoji: new Map(),
   info: new Map([
@@ -217,7 +219,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
       return { devices: newDevices, emoji: newEmoji, info: newInfo, participants: newIds, streams: newStreams };
     }),
-
   removeStream: (id: string) =>
     set((prev) => {
       const newStreams = new Map(prev.streams);
@@ -225,6 +226,42 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
       return { streams: newStreams };
     }),
+
+  removeTrack: async (userId, trackType, track) => {
+    const { screenStream, streams } = get();
+    if (trackType === 'audio' || trackType === 'video') {
+      const currentStream = streams.get(userId);
+      if (!currentStream) {
+        return;
+      }
+
+      currentStream.removeTrack(track);
+      const remainingTracks = currentStream.getTracks();
+
+      set((prev) => {
+        const newStreams = new Map(prev.streams);
+
+        if (remainingTracks.length === 0) {
+          newStreams.delete(userId);
+        } else {
+          newStreams.set(userId, new MediaStream(remainingTracks));
+        }
+        return { streams: newStreams };
+      });
+      return;
+    }
+
+    if (!screenStream) {
+      return;
+    }
+
+    screenStream.removeTrack(track);
+    const remainingTracks = screenStream.getTracks();
+
+    set(() => ({
+      screenStream: remainingTracks.length > 0 ? new MediaStream(remainingTracks) : null,
+    }));
+  },
 
   reset: () => {
     get().timer.forEach((t) => t && clearTimeout(t));
