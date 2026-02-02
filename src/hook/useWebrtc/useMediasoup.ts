@@ -128,7 +128,7 @@ export const useMediasoup = () => {
     consumers.current.delete(userId);
   }, []);
 
-  const replaceProducerTrack = useCallback(async (trackType: TrackType, newTrack: MediaStreamTrack) => {
+  const replaceProducerTrack = useCallback(async (trackType: TrackType, newTrack: MediaStreamTrack | null) => {
     const producer = producers.current.get(trackType);
     if (!producer) {
       return;

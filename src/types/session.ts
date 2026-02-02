@@ -23,6 +23,11 @@ export interface ToggleDeviceEnalbeResponseType {
   deviceType: DeviceKindType;
 }
 
+export interface TrackResponseType {
+  userId: string;
+  produceId: string[];
+}
+
 export interface ToggleHandsUpResponseType {
   userId: string;
 }

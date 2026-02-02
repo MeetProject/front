@@ -13,6 +13,7 @@ import {
   ParticipantDataType,
   ToggleDeviceEnalbeResponseType,
   ToggleHandsUpResponseType,
+  TrackResponseType,
 } from '@/types/session';
 import { AppData } from '@/types/webRtc';
 
@@ -25,14 +26,14 @@ export const useSignalingHandler = (
   } | null>,
   removeConsumer: (id: string) => void,
 ) => {
-  const { connect, disconnect, subscribe, unsubscribeAll } = useSignaling(SERVER_URL);
+  const { connect, disconnect, publish, subscribe, unsubscribeAll } = useSignaling(SERVER_URL);
   const handleJoinUser = useCallback(
     async (participantData: ParticipantDataType) => {
       const { addParticipant, info } = useParticipantStore.getState();
-      if (info.has(participantData.id)) {
+      if (!participantData.id || info.has(participantData.id)) {
         return;
       }
-      addParticipant(participantData, consumeTrack);
+      await addParticipant(participantData, consumeTrack);
     },
     [consumeTrack],
   );
@@ -42,6 +43,14 @@ export const useSignalingHandler = (
     const { deviceType, userId } = data;
     toggleDevices(userId, deviceType);
   }, []);
+
+  const handleTrack = useCallback(
+    async (data: TrackResponseType) => {
+      const { addTrack } = useParticipantStore.getState();
+      addTrack(data, consumeTrack);
+    },
+    [consumeTrack],
+  );
 
   const handleToggleHandsUp = useCallback(async (data: ToggleHandsUpResponseType) => {
     const { toggleHandsUp } = useInteractionStore.getState();
@@ -77,13 +86,24 @@ export const useSignalingHandler = (
       await connect();
       subscribe(`topic/room/${roomId}/join`, handleJoinUser);
       subscribe(`topic/room/${roomId}/device`, handleToggleDevice);
+      subscribe(`topic/room/${roomId}/track`, handleTrack);
       subscribe(`topic/room/${roomId}/handsUp`, handleToggleHandsUp);
       subscribe(`topic/room/${roomId}/emoji`, handleEmoji);
       subscribe(`topic/room/${roomId}/chat`, handleChat);
       subscribe(`topic/room/${roomId}/leave`, handleLeave);
     },
-    [connect, subscribe, handleToggleDevice, handleJoinUser, handleChat, handleEmoji, handleToggleHandsUp, handleLeave],
+    [
+      connect,
+      subscribe,
+      handleToggleDevice,
+      handleJoinUser,
+      handleChat,
+      handleTrack,
+      handleEmoji,
+      handleToggleHandsUp,
+      handleLeave,
+    ],
   );
 
-  return { disconnect, initSignaling, unsubscribeAll };
+  return { disconnect, initSignaling, publish, unsubscribeAll };
 };

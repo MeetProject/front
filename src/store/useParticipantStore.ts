@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { GroupChatType } from '@/types/chatType';
 import { DeviceEnableType, DeviceKindType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
-import { ChatResponseType, ParticipantDataType } from '@/types/session';
+import { ChatResponseType, ParticipantDataType, TrackResponseType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
 import { AppData } from '@/types/webRtc';
 
@@ -50,7 +50,14 @@ interface ParticipantState {
       appData: AppData;
       track: MediaStreamTrack;
     } | null>,
-  ) => void;
+  ) => Promise<void>;
+  addTrack: (
+    value: TrackResponseType,
+    consumeTrack: (id: string) => Promise<{
+      appData: AppData;
+      track: MediaStreamTrack;
+    } | null>,
+  ) => Promise<void>;
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
   toggleDevices: (id: string, key: DeviceKindType, value?: boolean) => void;
@@ -133,6 +140,33 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
       return { devices: newDevices, info: newInfo, participants: [...state.participants, id], streams: newStreams };
     });
+  },
+
+  addTrack: async ({ produceId, userId }: TrackResponseType, consumeTrack) => {
+    const results = await Promise.allSettled(produceId.map((id) => consumeTrack(id)));
+    const tracksInfo = results
+      .filter((res): res is PromiseFulfilledResult<any> => res.status === 'fulfilled' && res.value !== null)
+      .map((res) => res.value);
+
+    const [screenTracks, userTracks] = partition(tracksInfo, ({ appData: { trackType } }) =>
+      trackType.includes('screen'),
+    );
+
+    if (screenTracks.length > 0) {
+      set({ screenStream: new MediaStream(screenTracks.map((t) => t.track)) });
+    }
+
+    if (userTracks.length > 0) {
+      set((state) => {
+        const newStreams = new Map(state.streams);
+        const existingStream = newStreams.get(userId) || new MediaStream();
+
+        userTracks.forEach(({ track }) => existingStream.addTrack(track));
+
+        newStreams.set(userId, existingStream);
+        return { streams: newStreams };
+      });
+    }
   },
   chat: [],
   devices: new Map(TEST_PARTICIPANTS.map((id) => [id, { audio: true, video: true }])),

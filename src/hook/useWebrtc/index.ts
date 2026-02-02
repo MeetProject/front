@@ -22,7 +22,7 @@ const useWebrtc = () => {
     removeProducer,
     replaceProducerTrack,
   } = useMediasoup();
-  const { initSignaling, unsubscribeAll } = useSignalingHandler(consumeTrack, removeConsumer);
+  const { initSignaling, publish, unsubscribeAll } = useSignalingHandler(consumeTrack, removeConsumer);
 
   const initWebrtc = useCallback(
     async (roomId: string) => {
@@ -80,7 +80,35 @@ const useWebrtc = () => {
     reset();
   }, [unsubscribeAll, disconnectTransport]);
 
-  return { isPending, joinRoom, leaveRoom, removeTrack: removeProducer, replaceTrack: replaceProducerTrack };
+  const screenShare = useCallback(
+    async (roomId: string) => {
+      const { screenStream } = useDeviceStore.getState();
+      if (!screenStream) {
+        return;
+      }
+
+      const producerId = await Promise.all(
+        screenStream
+          .getTracks()
+          .map(async (track) => await produceTrack(track, track.kind === 'audio' ? 'screenAudio' : 'screenVideo')),
+      );
+
+      useParticipantStore.setState({ screenStream: screenStream });
+      publish(`/app/room/${roomId}/track`, {
+        producerId,
+      });
+    },
+    [produceTrack, publish],
+  );
+
+  return {
+    isPending,
+    joinRoom,
+    leaveRoom,
+    removeTrack: removeProducer,
+    replaceTrack: replaceProducerTrack,
+    screenShare,
+  };
 };
 
 export default useWebrtc;
