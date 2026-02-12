@@ -9,48 +9,20 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import {
   ChatResponseType,
   EmojiResponseType,
-  LeaveResponseType,
-  ParticipantDataType,
   ToggleDeviceEnalbeResponseType,
   ToggleHandsUpResponseType,
-  TrackResponseType,
 } from '@/types/session';
-import { AppData } from '@/types/webRtc';
 
 const SERVER_URL = 'http://localhost:8080/ws';
 
-export const useSignalingHandler = (
-  consumeTrack: (id: string) => Promise<{
-    appData: AppData;
-    track: MediaStreamTrack;
-  } | null>,
-  removeConsumer: (id: string) => void,
-) => {
-  const { connect, disconnect, publish, subscribe, unsubscribeAll } = useSignaling(SERVER_URL);
-  const handleJoinUser = useCallback(
-    async (participantData: ParticipantDataType) => {
-      const { addParticipant, info } = useParticipantStore.getState();
-      if (!participantData.id || info.has(participantData.id)) {
-        return;
-      }
-      await addParticipant(participantData, consumeTrack);
-    },
-    [consumeTrack],
-  );
+export const useSignalingHandler = () => {
+  const { connect, disconnect, publish, request, subscribe, unsubscribeAll } = useSignaling(SERVER_URL);
 
   const handleToggleDevice = useCallback(async (data: ToggleDeviceEnalbeResponseType) => {
     const { toggleDevices } = useParticipantStore.getState();
     const { deviceType, userId } = data;
     toggleDevices(userId, deviceType);
   }, []);
-
-  const handleTrack = useCallback(
-    async (data: TrackResponseType) => {
-      const { addTrack } = useParticipantStore.getState();
-      addTrack(data, consumeTrack);
-    },
-    [consumeTrack],
-  );
 
   const handleToggleHandsUp = useCallback(async (data: ToggleHandsUpResponseType) => {
     const { toggleHandsUp } = useInteractionStore.getState();
@@ -72,38 +44,19 @@ export const useSignalingHandler = (
     addChat(data);
   }, []);
 
-  const handleLeave = useCallback(
-    async ({ userId }: LeaveResponseType) => {
-      const { removeParticipant } = useParticipantStore.getState();
-      removeParticipant(userId);
-      removeConsumer(userId);
-    },
-    [removeConsumer],
-  );
-
   const initSignaling = useCallback(
     async (roomId: string) => {
       await connect();
-      subscribe(`topic/room/${roomId}/join`, handleJoinUser);
+      //subscribe(`topic/room/${roomId}/join`, handleJoinUser);
       subscribe(`topic/room/${roomId}/device`, handleToggleDevice);
-      subscribe(`topic/room/${roomId}/track`, handleTrack);
+      //subscribe(`topic/room/${roomId}/track`, handleTrack);
       subscribe(`topic/room/${roomId}/handsUp`, handleToggleHandsUp);
       subscribe(`topic/room/${roomId}/emoji`, handleEmoji);
       subscribe(`topic/room/${roomId}/chat`, handleChat);
-      subscribe(`topic/room/${roomId}/leave`, handleLeave);
+      //subscribe(`topic/room/${roomId}/leave`, handleLeave);
     },
-    [
-      connect,
-      subscribe,
-      handleToggleDevice,
-      handleJoinUser,
-      handleChat,
-      handleTrack,
-      handleEmoji,
-      handleToggleHandsUp,
-      handleLeave,
-    ],
+    [connect, subscribe, handleToggleDevice, handleChat, handleEmoji, handleToggleHandsUp],
   );
 
-  return { disconnect, initSignaling, publish, unsubscribeAll };
+  return { disconnect, initSignaling, publish, request, subscribe, unsubscribeAll };
 };

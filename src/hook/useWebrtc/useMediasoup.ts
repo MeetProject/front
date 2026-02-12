@@ -1,61 +1,66 @@
 'use client';
 
-import { Consumer, Producer, Transport } from 'mediasoup-client/types';
+import { Consumer, ConsumerOptions, Producer, Transport, TransportOptions } from 'mediasoup-client/types';
 import { useCallback, useRef } from 'react';
 
-import {
-  requestConsumeParams,
-  requestRegisterDTLS,
-  requestRegisterRTLS,
-  requestResume,
-  requestTransportParams,
-} from '@/service/webRtc';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { TrackType } from '@/types/deviceType';
 import { AppData, Direction } from '@/types/webRtc';
 
-export const useMediasoup = () => {
+export const useMediasoup = (request: <T>(destination: string, payload: any) => Promise<T>) => {
   const sendTransport = useRef<Transport | null>(null);
   const recvTransport = useRef<Transport | null>(null);
 
   const producers = useRef<Map<TrackType, Producer>>(new Map());
   const consumers = useRef<Map<string, Set<Consumer>>>(new Map());
 
-  const createTransport = useCallback(async (direction: Direction) => {
-    const { device } = useWebrtcStore.getState();
-    if (!device) {
-      return;
-    }
-
-    const option = await requestTransportParams(direction);
-
-    const transport = direction === 'send' ? device.createSendTransport(option) : device.createRecvTransport(option);
-
-    transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
-      try {
-        await requestRegisterDTLS(transport.id, dtlsParameters);
-        callback();
-      } catch (e) {
-        errback(e as Error);
+  const createTransport = useCallback(
+    async (direction: Direction) => {
+      const { device } = useWebrtcStore.getState();
+      if (!device) {
+        return;
       }
-    });
 
-    if (direction === 'send') {
-      transport.on('produce', async ({ appData, rtpParameters }, callback, errback) => {
+      const option = await request<TransportOptions<AppData>>('/app/request/dtls', {
+        direction,
+      });
+
+      const transport = direction === 'send' ? device.createSendTransport(option) : device.createRecvTransport(option);
+
+      transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
         try {
-          const producerId = await requestRegisterRTLS(transport.id, rtpParameters, appData as AppData);
-          callback({ id: producerId });
+          await request('/app/request/dtls', {
+            dtlsParameters,
+            transportId: transport.id,
+          });
+          callback();
         } catch (e) {
           errback(e as Error);
         }
       });
-      sendTransport.current = transport;
-    } else {
-      recvTransport.current = transport;
-    }
-  }, []);
+
+      if (direction === 'send') {
+        transport.on('produce', async ({ appData, rtpParameters }, callback, errback) => {
+          try {
+            const producerId = await request<string>('/app/request/rtls', {
+              appData,
+              rtpParameters,
+              transportId: transport.id,
+            });
+            callback({ id: producerId });
+          } catch (e) {
+            errback(e as Error);
+          }
+        });
+        sendTransport.current = transport;
+      } else {
+        recvTransport.current = transport;
+      }
+    },
+    [request],
+  );
 
   const produceTrack = useCallback(async (track: MediaStreamTrack, trackType: TrackType) => {
     const { userId } = useUserInfoStore.getState();
@@ -72,47 +77,56 @@ export const useMediasoup = () => {
     return producer.id;
   }, []);
 
-  const consumeTrack = useCallback(async (producerId: string) => {
-    const { device } = useWebrtcStore.getState();
-    const { removeTrack } = useParticipantStore.getState();
-    if (!recvTransport.current || !device) {
-      return null;
-    }
-
-    try {
-      const consumeParams = await requestConsumeParams(recvTransport.current.id, producerId, device.rtpCapabilities);
-
-      const consumer = await recvTransport.current.consume(consumeParams);
-      await requestResume(consumer.id);
-
-      const { appData, track } = consumer;
-      const { kind, userId } = appData as AppData;
-      if (!consumers.current.has(userId)) {
-        consumers.current.set(userId, new Set());
+  const consumeTrack = useCallback(
+    async (producerId: string) => {
+      const { device } = useWebrtcStore.getState();
+      const { removeTrack } = useParticipantStore.getState();
+      if (!recvTransport.current || !device) {
+        return null;
       }
-      consumers.current.get(userId)!.add(consumer);
-      consumer.on('@close', () => {
-        const userSet = consumers.current.get(userId);
-        if (!userSet) {
-          return;
+
+      try {
+        const consumeParams = await request<ConsumerOptions<AppData>>('/app/request/consumerParams', {
+          producerId,
+          rtpCapabilities: device.rtpCapabilities,
+          transportId: recvTransport.current.id,
+        });
+
+        const consumer = await recvTransport.current.consume(consumeParams);
+        await request<void>('/app/request/resume', {
+          consumerId: consumer.id,
+        });
+
+        const { appData, track } = consumer;
+        const { kind, userId } = appData as AppData;
+        if (!consumers.current.has(userId)) {
+          consumers.current.set(userId, new Set());
         }
+        consumers.current.get(userId)!.add(consumer);
+        consumer.on('@close', () => {
+          const userSet = consumers.current.get(userId);
+          if (!userSet) {
+            return;
+          }
 
-        userSet.delete(consumer);
-        if (userSet.size === 0) {
-          consumers.current.delete(userId);
-        }
+          userSet.delete(consumer);
+          if (userSet.size === 0) {
+            consumers.current.delete(userId);
+          }
 
-        removeTrack(userId, kind, track);
-      });
+          removeTrack(userId, kind, track);
+        });
 
-      return {
-        appData,
-        track,
-      };
-    } catch {
-      return null;
-    }
-  }, []);
+        return {
+          appData,
+          track,
+        };
+      } catch {
+        return null;
+      }
+    },
+    [request],
+  );
 
   const removeProducer = useCallback((trackType: TrackType) => {
     const oldProducer = producers.current.get(trackType);

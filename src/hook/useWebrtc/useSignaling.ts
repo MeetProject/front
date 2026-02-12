@@ -4,6 +4,8 @@ import { Client, IFrame, Message, StompConfig, StompSubscription } from '@stomp/
 import { useCallback, useRef } from 'react';
 import SockJS from 'sockjs-client';
 
+const STOMP_TIMEOUT = 10000;
+
 export const useSignaling = (url: string) => {
   const client = useRef<Client>(null);
   const subscription = useRef<Map<string, StompSubscription>>(new Map());
@@ -84,11 +86,52 @@ export const useSignaling = (url: string) => {
     client.current = null;
   }, [unsubscribeAll]);
 
+  const request = useCallback(
+    <T>(destination: string, payload?: any): Promise<T> =>
+      new Promise((resolve, reject) => {
+        if (!client.current?.active) {
+          return reject(new Error('STOMP client is not connected'));
+        }
+
+        const correlationId = crypto.randomUUID();
+        const replyDestination = '/user/queue/replies';
+
+        const timeoutId = setTimeout(() => {
+          sub.unsubscribe();
+          reject(new Error(`STOMP Timeout: ${destination}`));
+        }, STOMP_TIMEOUT);
+
+        const sub = client.current.subscribe(replyDestination, (message) => {
+          try {
+            const body = JSON.parse(message.body);
+            if (body.correlationId === correlationId) {
+              clearTimeout(timeoutId);
+              sub.unsubscribe();
+
+              if (body.status === 'ERROR') {
+                reject(new Error(body.message || 'Unknown Server Error'));
+              } else {
+                resolve(body.data as T);
+              }
+            }
+          } catch {}
+        });
+
+        client.current.publish({
+          body: JSON.stringify({ ...payload, correlationId }),
+          destination: destination,
+          headers: { 'content-type': 'application/json' },
+        });
+      }),
+    [],
+  );
+
   return {
     client: client.current,
     connect,
     disconnect,
     publish,
+    request,
     subscribe,
     unsubscribe,
     unsubscribeAll,
