@@ -54,7 +54,6 @@ const useDevice = () => {
 
         useDeviceStore.setState({
           ...deviceInfo,
-          isInit: false,
           permission: {
             audio: constraint.audio ? 'granted' : 'denied',
             video: constraint.video ? 'granted' : 'denied',

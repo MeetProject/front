@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -12,16 +13,20 @@ import Screen from './Screen';
 
 import { Loading } from '@/components';
 import { useDevice } from '@/hook';
+import useWebrtc from '@/hook/useWebrtc';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 
 export default function Meeting() {
+  const roomId = usePathname().slice(1);
   const { initStream } = useDevice();
   const { isInit } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
     })),
   );
+
+  const { joinRoom } = useWebrtc();
   const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
@@ -31,12 +36,14 @@ export default function Meeting() {
 
     const init = async () => {
       await initStream();
+      await joinRoom(roomId);
       //peerConnection
       setIsPending(false);
     };
 
+    console.log(isInit);
     init();
-  }, [isInit, initStream]);
+  }, [isInit, initStream, joinRoom]);
 
   useEffect(
     () => () => {

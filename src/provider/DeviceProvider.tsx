@@ -42,6 +42,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
       } catch {
         setIsSupportedPermission(false);
       } finally {
+        console.log('init');
         useDeviceStore.setState({
           isInit: true,
         });

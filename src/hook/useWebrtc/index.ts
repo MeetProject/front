@@ -8,7 +8,6 @@ import { useSignalingHandler } from './useSignalingHandler';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
-import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { TrackType } from '@/types/deviceType';
 import { LeaveResponseType, ParticipantDataType, TrackResponseType } from '@/types/session';
@@ -34,7 +33,7 @@ const useWebrtc = () => {
       return;
     }
 
-    const routerRtpCapabilities = await request<RtpCapabilities>('/app/request/capability');
+    const routerRtpCapabilities = await request<RtpCapabilities>('/app/signal/capabilities');
     initDevice(routerRtpCapabilities);
 
     await Promise.all([createTransport('send'), createTransport('recv')]);
@@ -45,15 +44,9 @@ const useWebrtc = () => {
 
   const joinRoom = useCallback(
     async (roomId: string) => {
-      const { addParticipant, addTrack, info } = useParticipantStore.getState();
+      const { addParticipant, addTrack } = useParticipantStore.getState();
       setIsPending(true);
       await initSignaling(roomId);
-      subscribe(`topic/room/${roomId}/join`, async (participantData: ParticipantDataType) => {
-        if (!participantData.id || info.has(participantData.id)) {
-          return;
-        }
-        await addParticipant(participantData, consumeTrack);
-      });
       subscribe(`topic/room/${roomId}/track`, async (data: TrackResponseType) => {
         await addTrack(data, consumeTrack);
       });
@@ -64,20 +57,15 @@ const useWebrtc = () => {
       });
 
       try {
-        const produceId = await initWebrtc();
-        const { userColor, userName } = useUserInfoStore.getState();
+        await initWebrtc();
         const { deviceEnable } = useDeviceStore.getState();
-        if (!userColor || !userName) {
-          return;
-        }
 
-        const existingParticipants = await request<ParticipantDataType[]>('/app/request/join', {
+        const existingParticipants = await request<ParticipantDataType[]>('/app/signal/join', {
           deviceEnable,
-          produceId,
           roomId,
-          userColor,
-          userName,
         });
+
+        console.log(existingParticipants);
 
         await Promise.all(existingParticipants.map((item) => addParticipant(item, consumeTrack)));
         currentRoomId.current = roomId;

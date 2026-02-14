@@ -1,7 +1,7 @@
 import { UserRegisterPayloadType, UserRegisterResponseType } from '@/types/userType';
 
 export const register = async (payload: UserRegisterPayloadType) => {
-  const response = await fetch('http://localhost:8080/api/user/register', {
+  const response = await fetch('http://localhost:8080/api/users', {
     body: JSON.stringify(payload),
     headers: {
       'Content-Type': 'application/json',

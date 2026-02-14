@@ -23,7 +23,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
         return;
       }
 
-      const option = await request<TransportOptions<AppData>>('/app/request/dtls', {
+      const option = await request<TransportOptions<AppData>>('/app/signal/dtls', {
         direction,
       });
 
@@ -31,7 +31,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
 
       transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
         try {
-          await request('/app/request/dtls', {
+          await request('/app/signal/dtls/connect', {
             dtlsParameters,
             transportId: transport.id,
           });
@@ -44,7 +44,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
       if (direction === 'send') {
         transport.on('produce', async ({ appData, rtpParameters }, callback, errback) => {
           try {
-            const producerId = await request<string>('/app/request/rtls', {
+            const producerId = await request<string>('/app/signal/rtls', {
               appData,
               rtpParameters,
               transportId: transport.id,

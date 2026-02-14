@@ -51,11 +51,9 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
   useEffect(() => {
     if (isInitial.current || !isInit || !isOpen) {
       isInitial.current = false;
-      useDeviceStore.setState({ isInit: false });
       return;
     }
 
-    useDeviceStore.setState({ isInit: false });
     setIsOpenDeniedDialog(false);
     initStream();
   }, [isInit, initStream, isOpen]);

@@ -1,5 +1,6 @@
 'use client';
 
+import { StompConfig } from '@stomp/stompjs';
 import { useCallback } from 'react';
 
 import { useSignaling } from './useSignaling';
@@ -45,17 +46,14 @@ export const useSignalingHandler = () => {
   }, []);
 
   const initSignaling = useCallback(
-    async (roomId: string) => {
-      await connect();
-      //subscribe(`topic/room/${roomId}/join`, handleJoinUser);
+    async (roomId: string, config?: StompConfig) => {
+      await connect(config);
       subscribe(`topic/room/${roomId}/device`, handleToggleDevice);
-      //subscribe(`topic/room/${roomId}/track`, handleTrack);
       subscribe(`topic/room/${roomId}/handsUp`, handleToggleHandsUp);
       subscribe(`topic/room/${roomId}/emoji`, handleEmoji);
       subscribe(`topic/room/${roomId}/chat`, handleChat);
-      //subscribe(`topic/room/${roomId}/leave`, handleLeave);
     },
-    [connect, subscribe, handleToggleDevice, handleChat, handleEmoji, handleToggleHandsUp],
+    [handleChat, handleEmoji, handleToggleDevice, handleToggleHandsUp, subscribe, connect],
   );
 
   return { disconnect, initSignaling, publish, request, subscribe, unsubscribeAll };
