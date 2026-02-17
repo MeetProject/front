@@ -7,14 +7,15 @@ import { useMediasoup } from './useMediasoup';
 import { useSignalingHandler } from './useSignalingHandler';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
+import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { TrackType } from '@/types/deviceType';
-import { LeaveResponseType, ParticipantDataType, TrackResponseType } from '@/types/session';
+import { JoinRoomResponseType } from '@/types/session';
 
 const useWebrtc = () => {
   const [isPending, setIsPending] = useState<boolean>(false);
-  const { initSignaling, publish, request, subscribe, unsubscribeAll } = useSignalingHandler();
+  const { initSignaling, publish, request, unsubscribeAll } = useSignalingHandler();
   const {
     consumeTrack,
     createTransport,
@@ -44,37 +45,32 @@ const useWebrtc = () => {
 
   const joinRoom = useCallback(
     async (roomId: string) => {
-      const { addParticipant, addTrack } = useParticipantStore.getState();
+      const { addParticipant } = useParticipantStore.getState();
       setIsPending(true);
-      await initSignaling(roomId);
-      subscribe(`topic/room/${roomId}/track`, async (data: TrackResponseType) => {
-        await addTrack(data, consumeTrack);
-      });
-      subscribe(`topic/room/${roomId}/leave`, async ({ userId }: LeaveResponseType) => {
-        const { removeParticipant } = useParticipantStore.getState();
-        removeParticipant(userId);
-        removeConsumer(userId);
-      });
 
       try {
-        await initWebrtc();
+        const produceId = await initWebrtc();
+        await initSignaling(roomId, consumeTrack, removeConsumer);
+
         const { deviceEnable } = useDeviceStore.getState();
 
-        const existingParticipants = await request<ParticipantDataType[]>('/app/signal/join', {
-          deviceEnable,
+        const { participants } = await request<JoinRoomResponseType>('/app/signal/join', {
+          mediaOption: deviceEnable,
+          producers: produceId,
           roomId,
         });
 
-        console.log(existingParticipants);
-
-        await Promise.all(existingParticipants.map((item) => addParticipant(item, consumeTrack)));
+        await Promise.all(participants.map((item) => addParticipant(item, consumeTrack)));
+        useInteractionStore.setState({
+          handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
+        });
         currentRoomId.current = roomId;
       } catch {
       } finally {
         setIsPending(false);
       }
     },
-    [initWebrtc, consumeTrack, initSignaling, removeConsumer, subscribe, request],
+    [initWebrtc, consumeTrack, initSignaling, removeConsumer, request],
   );
 
   const leaveRoom = useCallback(() => {

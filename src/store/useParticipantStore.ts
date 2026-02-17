@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { GroupChatType } from '@/types/chatType';
 import { DeviceEnableType, DeviceKindType, TrackType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
-import { ChatResponseType, ParticipantDataType, TrackResponseType } from '@/types/session';
+import { ChatResponseType, ParticipantDataType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
 import { AppData } from '@/types/webRtc';
 
@@ -52,7 +52,7 @@ interface ParticipantState {
     } | null>,
   ) => Promise<void>;
   addTrack: (
-    value: TrackResponseType,
+    producerId: string[],
     consumeTrack: (id: string) => Promise<{
       appData: AppData;
       track: MediaStreamTrack;
@@ -64,6 +64,11 @@ interface ParticipantState {
   toggleDevices: (id: string, key: DeviceKindType, value?: boolean) => void;
   reset: () => void;
   addEmoji: (id: string, value: EmojiType | null, isMe?: boolean) => void;
+}
+
+interface ConsumerResult {
+  appData: AppData;
+  track: MediaStreamTrack;
 }
 
 export const useParticipantStore = create<ParticipantState>((set, get) => ({
@@ -113,8 +118,8 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     });
   },
 
-  addParticipant: async ({ produceId, ...userData }, consumeTrack) => {
-    const results = await Promise.allSettled(produceId.map((id) => consumeTrack(id)));
+  addParticipant: async ({ producerId, ...userData }, consumeTrack) => {
+    const results = await Promise.allSettled(producerId.map((id) => consumeTrack(id)));
     const tracksInfo = results
       .filter((res): res is PromiseFulfilledResult<any> => res.status === 'fulfilled' && res.value !== null)
       .map((res) => res.value);
@@ -128,30 +133,31 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     const userStream = new MediaStream(userTracks.map((t) => t.track));
 
     set((state) => {
-      const { color, deviceEnable, id, name } = userData;
+      const {
+        mediaOption,
+        user: { profileColor, userId, userName },
+      } = userData;
 
       const newInfo = new Map(state.info);
-      newInfo.set(userData.id, { color, name });
+      newInfo.set(userId, { color: profileColor, name: userName });
 
       const newStreams = new Map(state.streams);
-      newStreams.set(id, userStream);
+      newStreams.set(userId, userStream);
 
       const newDevices = new Map(state.devices);
-      newDevices.set(id, deviceEnable);
+      newDevices.set(userId, mediaOption);
 
-      return { devices: newDevices, info: newInfo, participants: [...state.participants, id], streams: newStreams };
+      return { devices: newDevices, info: newInfo, participants: [...state.participants, userId], streams: newStreams };
     });
   },
 
-  addTrack: async ({ produceId, userId }: TrackResponseType, consumeTrack) => {
+  addTrack: async (produceId, consumeTrack) => {
     const results = await Promise.allSettled(produceId.map((id) => consumeTrack(id)));
     const tracksInfo = results
-      .filter((res): res is PromiseFulfilledResult<any> => res.status === 'fulfilled' && res.value !== null)
+      .filter((res): res is PromiseFulfilledResult<ConsumerResult> => res.status === 'fulfilled' && res.value !== null)
       .map((res) => res.value);
 
-    const [screenTracks, userTracks] = partition(tracksInfo, ({ appData: { trackType } }) =>
-      trackType.includes('screen'),
-    );
+    const [screenTracks, userTracks] = partition(tracksInfo, ({ appData: { kind } }) => kind.includes('screen'));
 
     if (screenTracks.length > 0) {
       set({ screenStream: new MediaStream(screenTracks.map((t) => t.track)) });
@@ -159,13 +165,14 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
     if (userTracks.length > 0) {
       set((state) => {
-        const newStreams = new Map(state.streams);
-        const existingStream = newStreams.get(userId) || new MediaStream();
+        const prevStreams = new Map(state.streams);
+        userTracks.forEach(({ appData: { userId }, track }) => {
+          const existingStream = prevStreams.get(userId) || new MediaStream();
+          existingStream.addTrack(track);
+          prevStreams.set(userId, existingStream);
+        });
 
-        userTracks.forEach(({ track }) => existingStream.addTrack(track));
-
-        newStreams.set(userId, existingStream);
-        return { streams: newStreams };
+        return { streams: prevStreams };
       });
     }
   },

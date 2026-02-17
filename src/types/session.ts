@@ -1,6 +1,11 @@
+import { AppData, TransportOptions } from 'mediasoup-client/types';
+
 import { DeviceEnableType, DeviceKindType } from './deviceType';
 import { EmojiDataType } from './emojiType';
-import { UserDataType } from './userType';
+
+export interface DtlsReponseType {
+  options: TransportOptions<AppData>;
+}
 
 export interface JoinRoomPayloadType {
   userName: string;
@@ -10,12 +15,22 @@ export interface JoinRoomPayloadType {
   roomId: string;
 }
 
-export interface ParticipantDataType extends Omit<UserDataType, 'stream'> {
-  produceId: string[];
+export interface UserDataType {
+  userId: string;
+  userName: string;
+  profileColor: string;
+  roomId: string;
+}
+
+export interface ParticipantDataType {
+  user: UserDataType;
+  isHandUp: boolean;
+  mediaOption: DeviceEnableType;
+  producerId: string[];
 }
 
 export interface JoinRoomResponseType {
-  participantData: ParticipantDataType[];
+  participants: ParticipantDataType[];
 }
 
 export interface ToggleDeviceEnalbeResponseType {
@@ -24,7 +39,6 @@ export interface ToggleDeviceEnalbeResponseType {
 }
 
 export interface TrackResponseType {
-  userId: string;
   produceId: string[];
 }
 

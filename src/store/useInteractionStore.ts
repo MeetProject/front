@@ -26,6 +26,7 @@ export const useInteractionStore = create<InteractionState>((set) => ({
       newMap.delete(id);
       return { emoji: newMap };
     }),
+
   toggleHandsUp: (id) =>
     set((prev) => {
       const newSet = new Set(prev.handsUp);
