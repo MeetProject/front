@@ -18,17 +18,13 @@ export default function ParticipantTile({ id }: ParticipantTileProps) {
     })),
   );
 
-  if (device === undefined || stream === undefined) {
-    return null;
-  }
-
   return (
     <BaseTile
-      color={info?.color ?? ''}
-      device={device}
+      color={info?.userColor ?? ''}
+      device={device ?? { audio: true, video: true }}
       emoji={emoji ?? null}
       id={id}
-      name={info?.name ?? ''}
+      name={info?.userName ?? ''}
       stream={stream ?? null}
     />
   );

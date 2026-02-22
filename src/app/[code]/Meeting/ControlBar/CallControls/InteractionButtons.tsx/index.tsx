@@ -58,7 +58,6 @@ export default function InteractionButtons() {
       return;
     }
 
-    console.log(userId);
     toggleHandsUp(userId);
     handleOptionClose();
   }, [handleOptionClose, userId]);

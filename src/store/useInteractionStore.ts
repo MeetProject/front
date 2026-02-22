@@ -19,7 +19,7 @@ export const useInteractionStore = create<InteractionState>((set) => ({
       return { emoji: newMap };
     }),
   emoji: new Map(),
-  handsUp: new Set(['Alpha']),
+  handsUp: new Set([]),
   removeEmoji: (id) =>
     set((prev) => {
       const newMap = new Map(prev.emoji);

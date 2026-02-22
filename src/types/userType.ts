@@ -1,6 +1,6 @@
 export interface UserRegisterPayloadType {
-  name: string;
-  color: string;
+  userName: string;
+  userColor: string;
 }
 
 export interface UserRegisterResponseType {

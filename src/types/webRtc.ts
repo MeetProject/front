@@ -9,7 +9,7 @@ import { TrackType } from './deviceType';
 
 export type Direction = 'send' | 'recv';
 export type AppData = PrimitiveAppData & {
-  kind: TrackType;
+  trackType: TrackType;
   userId: string;
 };
 

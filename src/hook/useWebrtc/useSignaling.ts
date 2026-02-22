@@ -1,35 +1,27 @@
 'use client';
 
-import { Client, IFrame, IMessage, Message, StompConfig, StompSubscription } from '@stomp/stompjs';
-import { useCallback, useRef } from 'react';
+import { Client, IFrame, IMessage, Message, StompConfig } from '@stomp/stompjs';
+import { useCallback } from 'react';
 import SockJS from 'sockjs-client';
 
+import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 const STOMP_TIMEOUT = 10000;
 
-interface PendingRequest {
-  resolve: (value: any) => void;
-  reject: (reason: any) => void;
-  timeoutId: NodeJS.Timeout;
-}
-
 export const useSignaling = (url: string) => {
-  const client = useRef<Client>(null);
-  const subscription = useRef<Map<string, StompSubscription>>(new Map());
-  const pendingRequests = useRef<Map<string, PendingRequest>>(new Map());
-
   const handleReply = useCallback((message: IMessage) => {
+    const { pendingRequest } = useSignalStore.getState();
     const { correlationId, ...data } = JSON.parse(message.body);
 
-    const request = pendingRequests.current.get(correlationId);
+    const request = pendingRequest.get(correlationId);
 
     if (!request) {
       return;
     }
 
     clearTimeout(request.timeoutId);
-    pendingRequests.current.delete(correlationId);
+    pendingRequest.delete(correlationId);
 
     request.resolve(data);
   }, []);
@@ -37,8 +29,9 @@ export const useSignaling = (url: string) => {
   const connect = useCallback(
     async (config?: StompConfig): Promise<Client> =>
       new Promise((resolve, reject) => {
-        if (client.current?.active) {
-          resolve(client.current);
+        const { client, subscription } = useSignalStore.getState();
+        if (client?.active) {
+          resolve(client);
         }
 
         const { userId } = useUserInfoStore.getState();
@@ -51,10 +44,10 @@ export const useSignaling = (url: string) => {
           ...config,
           brokerURL: undefined,
           onConnect: (frame: IFrame) => {
-            client.current = newClient;
+            useSignalStore.setState({ client: newClient });
 
             const repliesSub = newClient.subscribe('/user/queue/replies', handleReply);
-            subscription.current.set('replies', repliesSub);
+            subscription.set('replies', repliesSub);
 
             config?.onConnect?.(frame);
             resolve(newClient);
@@ -75,11 +68,12 @@ export const useSignaling = (url: string) => {
   );
 
   const publish = useCallback(<T>(destination: string, payload?: T) => {
-    if (!client.current) {
+    const { client } = useSignalStore.getState();
+    if (!client) {
       return;
     }
 
-    client.current.publish({
+    client.publish({
       body: JSON.stringify(payload),
       destination,
       headers: { 'content-type': 'application/json' },
@@ -87,63 +81,68 @@ export const useSignaling = (url: string) => {
   }, []);
 
   const subscribe = useCallback(<T>(destination: string, callback: (response: T) => Promise<void> | void) => {
-    if (!client.current) {
+    const { client, subscription } = useSignalStore.getState();
+    if (!client) {
       return;
     }
 
-    const sub = client.current.subscribe(destination, async (message: Message) => {
+    const sub = client.subscribe(destination, async (message: Message) => {
       const data = JSON.parse(message.body) as T;
       await callback(data);
     });
 
-    subscription.current.set(destination, sub);
+    subscription.set(destination, sub);
   }, []);
 
   const unsubscribe = useCallback((destination: string) => {
-    if (!subscription.current.has(destination)) {
+    const { subscription } = useSignalStore.getState();
+    if (!subscription.has(destination)) {
       return;
     }
 
-    subscription.current.get(destination)?.unsubscribe();
-    subscription.current.delete(destination);
+    subscription.get(destination)?.unsubscribe();
+    subscription.delete(destination);
   }, []);
 
   const unsubscribeAll = useCallback(() => {
-    subscription.current.values().forEach((sub) => sub.unsubscribe());
-    subscription.current.clear();
+    const { subscription } = useSignalStore.getState();
+    subscription.values().forEach((sub) => sub.unsubscribe());
+    subscription.clear();
   }, []);
 
   const disconnect = useCallback(() => {
-    if (!client.current) {
+    const { client } = useSignalStore.getState();
+    if (!client) {
       return;
     }
 
     unsubscribeAll();
-    client.current.deactivate();
-    client.current = null;
+    client.deactivate();
+    useSignalStore.setState({ client: null });
   }, [unsubscribeAll]);
 
   const request = useCallback(
     <T>(destination: string, payload?: any): Promise<T> =>
       new Promise((resolve, reject) => {
-        if (!client.current || !client.current.active) {
+        const { client, pendingRequest } = useSignalStore.getState();
+        if (!client || !client.active) {
           return reject(new Error('STOMP client is not connected'));
         }
 
         const correlationId = crypto.randomUUID();
 
         const timeoutId = setTimeout(() => {
-          pendingRequests.current.delete(correlationId);
+          pendingRequest.delete(correlationId);
           reject(new Error(`STOMP Timeout: ${destination}`));
         }, STOMP_TIMEOUT);
 
-        pendingRequests.current.set(correlationId, {
+        pendingRequest.set(correlationId, {
           reject,
           resolve,
           timeoutId,
         });
 
-        client.current.publish({
+        client.publish({
           body: JSON.stringify({ ...payload, correlationId }),
           destination: destination,
           headers: { 'content-type': 'application/json' },
@@ -153,7 +152,6 @@ export const useSignaling = (url: string) => {
   );
 
   return {
-    client: client.current,
     connect,
     disconnect,
     publish,

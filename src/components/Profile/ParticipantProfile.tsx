@@ -16,5 +16,5 @@ export default function ParticipantProfile({ className, id }: ProfileIconProps) 
     return null;
   }
 
-  return <ProfileIcon className={className} color={info.color} name={info.name} />;
+  return <ProfileIcon className={className} color={info.userColor} name={info.userName} />;
 }

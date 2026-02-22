@@ -1,13 +1,13 @@
 'use client';
 
-import { Consumer, ConsumerOptions, Producer, Transport } from 'mediasoup-client/types';
+import { Consumer, Producer, Transport } from 'mediasoup-client/types';
 import { useCallback, useRef } from 'react';
 
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { TrackType } from '@/types/deviceType';
-import { DtlsReponseType } from '@/types/session';
+import { ConsumerParamsResponseType, DtlsReponseType } from '@/types/session';
 import { AppData, Direction } from '@/types/webRtc';
 
 export const useMediasoup = (request: <T>(destination: string, payload: any) => Promise<T>) => {
@@ -18,7 +18,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
   const consumers = useRef<Map<string, Set<Consumer>>>(new Map());
 
   const consumeTrack = useCallback(
-    async (producerId: string) => {
+    async (targetId: string, producerId: string) => {
       const { device } = useWebrtcStore.getState();
       const { removeTrack } = useParticipantStore.getState();
       if (!recvTransport.current || !device) {
@@ -26,19 +26,20 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
       }
 
       try {
-        const consumeParams = await request<ConsumerOptions<AppData>>('/app/signal/consumerParams', {
+        const { consumerParams } = await request<ConsumerParamsResponseType>('/app/signal/consumerParams', {
           producerId,
           rtpCapabilities: device.rtpCapabilities,
+          targetId,
           transportId: recvTransport.current.id,
         });
 
-        const consumer = await recvTransport.current.consume(consumeParams);
-        await request<void>('/app/signal/resume', {
+        const consumer = await recvTransport.current.consume(consumerParams);
+        await request('/app/signal/resume', {
           consumerId: consumer.id,
         });
 
         const { appData, track } = consumer;
-        const { kind, userId } = appData as AppData;
+        const { trackType, userId } = appData as AppData;
         if (!consumers.current.has(userId)) {
           consumers.current.set(userId, new Set());
         }
@@ -54,7 +55,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
             consumers.current.delete(userId);
           }
 
-          removeTrack(userId, kind, track);
+          removeTrack(userId, trackType, track);
         });
 
         return {
@@ -85,8 +86,8 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
       transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
         try {
           await request('/app/signal/dtls/connect', {
+            direction,
             dtlsParameters,
-            transportId: transport.id,
           });
           callback();
         } catch (e) {
@@ -103,6 +104,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
         try {
           const producerId = await request<string>('/app/signal/rtls', {
             appData,
+            kind: appData.trackType === 'audio' || appData.trackType === 'screenAudio' ? 'audio' : 'video',
             rtpParameters,
             transportId: transport.id,
           });

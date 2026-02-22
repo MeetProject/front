@@ -1,4 +1,3 @@
-import { partition } from 'lodash';
 import { create } from 'zustand';
 
 import { GroupChatType } from '@/types/chatType';
@@ -8,7 +7,7 @@ import { ChatResponseType, ParticipantDataType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
 import { AppData } from '@/types/webRtc';
 
-const TEST_PARTICIPANTS = [
+/* const TEST_PARTICIPANTS = [
   'Alpha',
   'Bravo',
   'Charlie',
@@ -29,12 +28,12 @@ const TEST_PARTICIPANTS = [
   'Romeo',
   'Sierra',
   'Tango',
-];
+]; */
 
 interface ParticipantState {
   participants: string[];
-  streams: Map<string, MediaStream | null>;
-  screenStream: MediaStream | null;
+  streams: Map<string, MediaStream>;
+  screenStream: Map<string, MediaStream>;
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
@@ -44,20 +43,8 @@ interface ParticipantState {
 
   addChat: (value: ChatResponseType) => void;
 
-  addParticipant: (
-    value: ParticipantDataType,
-    consumeTrack: (id: string) => Promise<{
-      appData: AppData;
-      track: MediaStreamTrack;
-    } | null>,
-  ) => Promise<void>;
-  addTrack: (
-    producerId: string[],
-    consumeTrack: (id: string) => Promise<{
-      appData: AppData;
-      track: MediaStreamTrack;
-    } | null>,
-  ) => Promise<void>;
+  addParticipant: (userData: ParticipantDataType) => void;
+  addTrack: (trackInfo: ConsumerResult) => void;
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
   removeTrack: (userId: string, trackType: TrackType, track: MediaStreamTrack) => void;
@@ -118,69 +105,49 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     });
   },
 
-  addParticipant: async ({ producerId, ...userData }, consumeTrack) => {
-    const results = await Promise.allSettled(producerId.map((id) => consumeTrack(id)));
-    const tracksInfo = results
-      .filter((res): res is PromiseFulfilledResult<any> => res.status === 'fulfilled' && res.value !== null)
-      .map((res) => res.value);
-
-    const [screenTracks, userTracks] = partition(tracksInfo, ({ appData }) => appData.trackType?.includes('screen'));
-
-    if (screenTracks.length > 0) {
-      set({ screenStream: new MediaStream(screenTracks.map((t) => t.track)) });
-    }
-
-    const userStream = new MediaStream(userTracks.map((t) => t.track));
-
+  addParticipant: (participant) => {
     set((state) => {
       const {
         mediaOption,
         user: { profileColor, userId, userName },
-      } = userData;
+      } = participant;
 
       const newInfo = new Map(state.info);
-      newInfo.set(userId, { color: profileColor, name: userName });
-
-      const newStreams = new Map(state.streams);
-      newStreams.set(userId, userStream);
+      newInfo.set(userId, { userColor: profileColor, userName: userName });
 
       const newDevices = new Map(state.devices);
       newDevices.set(userId, mediaOption);
 
-      return { devices: newDevices, info: newInfo, participants: [...state.participants, userId], streams: newStreams };
+      return { devices: newDevices, info: newInfo, participants: [...state.participants, userId] };
     });
   },
 
-  addTrack: async (produceId, consumeTrack) => {
-    const results = await Promise.allSettled(produceId.map((id) => consumeTrack(id)));
-    const tracksInfo = results
-      .filter((res): res is PromiseFulfilledResult<ConsumerResult> => res.status === 'fulfilled' && res.value !== null)
-      .map((res) => res.value);
+  addTrack: async (trackInfo) => {
+    const {
+      appData: { trackType, userId },
+      track,
+    } = trackInfo;
+    set((state) => {
+      if (trackType.includes('screen')) {
+        const newScreenStreams = new Map(state.screenStream);
+        const existingScreenStream = newScreenStreams.get(userId) || new MediaStream();
+        existingScreenStream.addTrack(track);
+        newScreenStreams.set(userId, existingScreenStream);
+        return { screenStream: newScreenStreams };
+      }
 
-    const [screenTracks, userTracks] = partition(tracksInfo, ({ appData: { kind } }) => kind.includes('screen'));
-
-    if (screenTracks.length > 0) {
-      set({ screenStream: new MediaStream(screenTracks.map((t) => t.track)) });
-    }
-
-    if (userTracks.length > 0) {
-      set((state) => {
-        const prevStreams = new Map(state.streams);
-        userTracks.forEach(({ appData: { userId }, track }) => {
-          const existingStream = prevStreams.get(userId) || new MediaStream();
-          existingStream.addTrack(track);
-          prevStreams.set(userId, existingStream);
-        });
-
-        return { streams: prevStreams };
-      });
-    }
+      const newStreams = new Map(state.streams);
+      const existingStream = newStreams.get(userId) || new MediaStream();
+      existingStream.addTrack(track);
+      newStreams.set(userId, existingStream);
+      return { streams: newStreams };
+    });
   },
   chat: [],
 
-  devices: new Map(TEST_PARTICIPANTS.map((id) => [id, { audio: true, video: true }])),
+  devices: new Map(/* TEST_PARTICIPANTS.map((id) => [id, { audio: true, video: true }]) */),
   emoji: new Map(),
-  info: new Map([
+  info: new Map(/* [
     ['Alpha', { color: '#FF6B6B', name: 'Alpha' }],
     ['Bravo', { color: '#4D96FF', name: 'Bravo' }],
     ['Charlie', { color: '#6BCB77', name: 'Charlie' }],
@@ -201,8 +168,8 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     ['Romeo', { color: '#FFA726', name: 'Romeo' }],
     ['Sierra', { color: '#8D6E63', name: 'Sierra' }],
     ['Tango', { color: '#78909C', name: 'Tango' }],
-  ]),
-  participants: TEST_PARTICIPANTS,
+  ] */),
+  participants: /* TEST_PARTICIPANTS */ [],
   removeParticipant: (id: string) =>
     set((prev) => {
       const newIds = prev.participants.filter((i) => i !== id);
@@ -234,49 +201,38 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { streams: newStreams };
     }),
 
-  removeTrack: async (userId, trackType, track) => {
-    const { screenStream, streams } = get();
-    if (trackType === 'audio' || trackType === 'video') {
-      const currentStream = streams.get(userId);
+  removeTrack: (userId, trackType, track) =>
+    set((state) => {
+      const { screenStream, streams } = state;
+      const newStreams = new Map(trackType === 'audio' || trackType === 'video' ? streams : screenStream);
+
+      const currentStream = newStreams.get(userId);
+
       if (!currentStream) {
-        return;
+        return {};
       }
 
       currentStream.removeTrack(track);
+
       const remainingTracks = currentStream.getTracks();
+      if (remainingTracks.length === 0) {
+        newStreams.delete(userId);
+      } else {
+        newStreams.set(userId, new MediaStream(remainingTracks));
+      }
 
-      set((prev) => {
-        const newStreams = new Map(prev.streams);
-
-        if (remainingTracks.length === 0) {
-          newStreams.delete(userId);
-        } else {
-          newStreams.set(userId, new MediaStream(remainingTracks));
-        }
+      if (trackType === 'audio' || trackType === 'video') {
         return { streams: newStreams };
-      });
-      return;
-    }
-
-    if (!screenStream) {
-      return;
-    }
-
-    screenStream.removeTrack(track);
-    const remainingTracks = screenStream.getTracks();
-
-    set(() => ({
-      screenStream: remainingTracks.length > 0 ? new MediaStream(remainingTracks) : null,
-    }));
-  },
-
+      }
+      return { screenStream: newStreams };
+    }),
   reset: () => {
     get().timer.forEach((t) => t && clearTimeout(t));
     set(useParticipantStore.getInitialState());
   },
 
-  screenStream: null,
-  streams: new Map(TEST_PARTICIPANTS.map((id) => [id, null])),
+  screenStream: new Map(),
+  streams: new Map(),
 
   timer: new Map(),
 

@@ -41,9 +41,8 @@ export default function Meeting() {
       setIsPending(false);
     };
 
-    console.log(isInit);
     init();
-  }, [isInit, initStream, joinRoom]);
+  }, [isInit, initStream, joinRoom, roomId]);
 
   useEffect(
     () => () => {

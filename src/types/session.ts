@@ -1,17 +1,15 @@
-import { AppData, TransportOptions } from 'mediasoup-client/types';
+import { ConsumerOptions, RtpCapabilities, TransportOptions } from 'mediasoup-client/types';
 
 import { DeviceEnableType, DeviceKindType } from './deviceType';
 import { EmojiDataType } from './emojiType';
+import { AppData } from './webRtc';
 
 export interface DtlsReponseType {
   options: TransportOptions<AppData>;
 }
 
 export interface JoinRoomPayloadType {
-  userName: string;
-  userColor: string;
-  produceId: string[];
-  deviceEnable: DeviceEnableType;
+  mediaOption: DeviceEnableType;
   roomId: string;
 }
 
@@ -26,11 +24,23 @@ export interface ParticipantDataType {
   user: UserDataType;
   isHandUp: boolean;
   mediaOption: DeviceEnableType;
-  producerId: string[];
+  producerIds: string[];
 }
 
 export interface JoinRoomResponseType {
   participants: ParticipantDataType[];
+}
+
+export interface ParticipantResponseType {
+  participant: ParticipantDataType;
+}
+
+export interface CapabilitiesResponseType {
+  capabilities: RtpCapabilities;
+}
+
+export interface ConsumerParamsResponseType {
+  consumerParams: ConsumerOptions<AppData>;
 }
 
 export interface ToggleDeviceEnalbeResponseType {
@@ -40,6 +50,7 @@ export interface ToggleDeviceEnalbeResponseType {
 
 export interface TrackResponseType {
   produceId: string[];
+  userId: string;
 }
 
 export interface ToggleHandsUpResponseType {

@@ -15,8 +15,6 @@ export default function RaisedHandsCount() {
   const info = useParticipantStore((state) => state.info);
   const handsUp = useInteractionStore((state) => state.handsUp);
 
-  console.log(info.get('Alpha'), handsUp);
-
   const handleToggleOn = () => {
     setIsHover(true);
   };
@@ -44,7 +42,7 @@ export default function RaisedHandsCount() {
       return userName + suffix;
     }
 
-    return (info.get(id ?? '')?.name ?? '알 수 없는 사용자') + suffix;
+    return (info.get(id ?? '')?.userName ?? '알 수 없는 사용자') + suffix;
   }, [info, handsUp]);
 
   return (

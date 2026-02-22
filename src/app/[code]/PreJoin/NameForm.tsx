@@ -16,22 +16,22 @@ export default function NameForm() {
   const router = useRouter();
   const sessionId = usePathname().slice(1);
 
-  const [name, setName] = useState<string>('');
+  const [userName, setUserName] = useState<string>('');
   const [isPending, setIsPending] = useState<boolean>(false);
 
   const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!name) {
+    if (!userName) {
       return;
     }
 
     const { addAlert } = useAlertStore.getState();
     setIsPending(true);
-    const color = getRandomHexColor();
+    const userColor = getRandomHexColor();
 
     const payload: UserRegisterPayloadType = {
-      color,
-      name,
+      userColor,
+      userName,
     };
 
     try {
@@ -45,7 +45,7 @@ export default function NameForm() {
         return;
       }
 
-      setUserInfo(userId, name, color);
+      setUserInfo(userId, userName, userColor);
     } catch {
       addAlert('유저 등록에 실패하였습니다.');
     } finally {
@@ -54,7 +54,7 @@ export default function NameForm() {
   };
 
   const handleNameInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value.slice(0, MAX_SIZE));
+    setUserName(e.target.value.slice(0, MAX_SIZE));
   };
   return (
     <form className='flex w-full max-w-75 flex-col items-center justify-center' onSubmit={handleFormSubmit}>
@@ -62,14 +62,14 @@ export default function NameForm() {
         <input
           className='border-surface-base h-14 w-full rounded border border-solid px-4 text-base outline-none'
           placeholder='이름'
-          value={name}
+          value={userName}
           onChange={handleNameInputChange}
         />
-        <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${name.length} / ${MAX_SIZE}`}</p>
+        <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${userName.length} / ${MAX_SIZE}`}</p>
       </div>
       <button
-        className={`mt-4 h-14 w-60 rounded-full ${name.length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled'} text-center`}
-        disabled={name.length === 0 || isPending}
+        className={`mt-4 h-14 w-60 rounded-full ${userName.length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled'} text-center`}
+        disabled={userName.length === 0 || isPending}
         type='submit'
       >
         참여하기

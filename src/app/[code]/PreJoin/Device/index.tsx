@@ -64,7 +64,6 @@ export default function Device() {
   }, [permission]);
 
   useEffect(() => {
-    console.log(isInit);
     if (!stream || !isInit) {
       return;
     }

@@ -1,6 +1,5 @@
 'use client';
 
-import { RtpCapabilities } from 'mediasoup-client/types';
 import { useCallback, useRef, useState } from 'react';
 
 import { useMediasoup } from './useMediasoup';
@@ -9,13 +8,14 @@ import { useSignalingHandler } from './useSignalingHandler';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { TrackType } from '@/types/deviceType';
-import { JoinRoomResponseType } from '@/types/session';
+import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session';
 
 const useWebrtc = () => {
   const [isPending, setIsPending] = useState<boolean>(false);
-  const { initSignaling, publish, request, unsubscribeAll } = useSignalingHandler();
+  const { connect, initSignaling, publish, request, unsubscribeAll } = useSignalingHandler();
   const {
     consumeTrack,
     createTransport,
@@ -34,8 +34,8 @@ const useWebrtc = () => {
       return;
     }
 
-    const routerRtpCapabilities = await request<RtpCapabilities>('/app/signal/capabilities');
-    initDevice(routerRtpCapabilities);
+    const { capabilities } = await request<CapabilitiesResponseType>('/app/signal/capabilities');
+    await initDevice(capabilities);
 
     await Promise.all([createTransport('send'), createTransport('recv')]);
 
@@ -45,32 +45,41 @@ const useWebrtc = () => {
 
   const joinRoom = useCallback(
     async (roomId: string) => {
-      const { addParticipant } = useParticipantStore.getState();
+      const { addParticipant, addTrack } = useParticipantStore.getState();
+      const { deviceEnable } = useDeviceStore.getState();
       setIsPending(true);
 
       try {
-        const produceId = await initWebrtc();
-        await initSignaling(roomId, consumeTrack, removeConsumer);
-
-        const { deviceEnable } = useDeviceStore.getState();
-
+        await connect({ onConnect: () => initSignaling(roomId, consumeTrack, removeConsumer) });
         const { participants } = await request<JoinRoomResponseType>('/app/signal/join', {
           mediaOption: deviceEnable,
-          producers: produceId,
           roomId,
         });
 
-        await Promise.all(participants.map((item) => addParticipant(item, consumeTrack)));
+        participants.forEach((participant) => addParticipant(participant));
+
+        await initWebrtc();
+
+        const results = await Promise.allSettled(
+          participants.flatMap(({ producerIds, user: { userId } }) =>
+            producerIds.map((id) => consumeTrack(userId, id)),
+          ),
+        );
+
+        const tracksInfo = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+        tracksInfo.forEach((t) => t && addTrack(t));
+
         useInteractionStore.setState({
           handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
         });
         currentRoomId.current = roomId;
-      } catch {
+      } catch (e) {
+        console.error(e);
       } finally {
         setIsPending(false);
       }
     },
-    [initWebrtc, consumeTrack, initSignaling, removeConsumer, request],
+    [/* initWebrtc, */ consumeTrack, initSignaling, removeConsumer, request, connect, initWebrtc],
   );
 
   const leaveRoom = useCallback(() => {
@@ -85,8 +94,9 @@ const useWebrtc = () => {
   }, [unsubscribeAll, disconnectTransport, publish]);
 
   const screenShare = useCallback(async () => {
+    const { userId } = useUserInfoStore.getState();
     const { screenStream } = useDeviceStore.getState();
-    if (!screenStream || !currentRoomId.current) {
+    if (!screenStream || !currentRoomId.current || !userId) {
       return;
     }
 
@@ -96,7 +106,7 @@ const useWebrtc = () => {
         .map(async (track) => await produceTrack(track, track.kind === 'audio' ? 'screenAudio' : 'screenVideo')),
     );
 
-    useParticipantStore.setState({ screenStream: screenStream });
+    useParticipantStore.setState({ screenStream: new Map([[userId, screenStream]]) });
     publish(`/app/room/${currentRoomId.current}/addTrack`, {
       producerId,
     });

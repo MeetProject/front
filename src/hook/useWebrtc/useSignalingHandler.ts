@@ -1,17 +1,17 @@
 'use client';
 
-import { StompConfig } from '@stomp/stompjs';
 import { useCallback } from 'react';
 
 import { useSignaling } from './useSignaling';
 
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { useUserInfoStore } from '@/store/useUserInfoStore';
 import {
   ChatResponseType,
   EmojiResponseType,
   LeaveResponseType,
-  ParticipantDataType,
+  ParticipantResponseType,
   ToggleDeviceEnalbeResponseType,
   ToggleHandsUpResponseType,
   TrackResponseType,
@@ -49,30 +49,41 @@ export const useSignalingHandler = () => {
     addChat(data);
   }, []);
 
-  const handleParticipant = useCallback(
-    async (
-      data: ParticipantDataType,
-      consumeTrack: (producerId: string) => Promise<{
-        appData: AppData;
-        track: MediaStreamTrack;
-      } | null>,
-    ) => {
-      const { addParticipant } = useParticipantStore.getState();
-      addParticipant(data, consumeTrack);
-    },
-    [],
-  );
+  const handleParticipant = useCallback(async (data: ParticipantResponseType) => {
+    const { participant } = data;
+    const { userId } = useUserInfoStore.getState();
+    if (participant.user.userId === userId) {
+      return;
+    }
+    const { addParticipant } = useParticipantStore.getState();
+    addParticipant(participant);
+  }, []);
 
   const handleConsumeTrack = useCallback(
     async (
       data: TrackResponseType,
-      consumeTrack: (producerId: string) => Promise<{
+      consumeTrack: (
+        targetId: string,
+        producerId: string,
+      ) => Promise<{
         appData: AppData;
         track: MediaStreamTrack;
       } | null>,
     ) => {
+      const { userId } = useUserInfoStore.getState();
       const { addTrack } = useParticipantStore.getState();
-      await addTrack(data.produceId, consumeTrack);
+
+      const { produceId, userId: target } = data;
+      if (userId === target) {
+        return;
+      }
+
+      const consumeResult = await Promise.allSettled(produceId.map((id) => consumeTrack(target, id)));
+      const successResult = consumeResult
+        .filter((result) => result.status === 'fulfilled')
+        .map((result) => result.value);
+
+      successResult.forEach((r) => r && addTrack(r));
     },
     [],
   );
@@ -86,25 +97,23 @@ export const useSignalingHandler = () => {
   const initSignaling = useCallback(
     async (
       roomId: string,
-      consumeTrack: (producerId: string) => Promise<{
+      consumeTrack: (
+        targetId: string,
+        producerId: string,
+      ) => Promise<{
         appData: AppData;
         track: MediaStreamTrack;
       } | null>,
       removeConsumer: (userId: string) => void,
-      config?: StompConfig,
     ) => {
-      await connect(config);
+      subscribe(`/topic/room/${roomId}/participant`, (data: ParticipantResponseType) => handleParticipant(data));
+      subscribe(`/topic/room/${roomId}/track`, (data: TrackResponseType) => handleConsumeTrack(data, consumeTrack));
+      subscribe(`/topic/room/${roomId}/leave`, (data: LeaveResponseType) => handleLeave(data, removeConsumer));
 
-      subscribe(`topic/room/${roomId}/participant`, (data: ParticipantDataType) =>
-        handleParticipant(data, consumeTrack),
-      );
-      subscribe(`topic/room/${roomId}/track`, (data: TrackResponseType) => handleConsumeTrack(data, consumeTrack));
-      subscribe(`topic/room/${roomId}/leave`, (data: LeaveResponseType) => handleLeave(data, removeConsumer));
-
-      subscribe(`topic/room/${roomId}/device`, handleToggleDevice);
-      subscribe(`topic/room/${roomId}/handsUp`, handleToggleHandsUp);
-      subscribe(`topic/room/${roomId}/emoji`, handleEmoji);
-      subscribe(`topic/room/${roomId}/chat`, handleChat);
+      subscribe(`/topic/room/${roomId}/device`, handleToggleDevice);
+      subscribe(`/topic/room/${roomId}/handsUp`, handleToggleHandsUp);
+      subscribe(`/topic/room/${roomId}/emoji`, handleEmoji);
+      subscribe(`/topic/room/${roomId}/chat`, handleChat);
     },
     [
       handleChat,
@@ -112,12 +121,11 @@ export const useSignalingHandler = () => {
       handleToggleDevice,
       handleToggleHandsUp,
       subscribe,
-      connect,
       handleConsumeTrack,
       handleLeave,
       handleParticipant,
     ],
   );
 
-  return { disconnect, initSignaling, publish, request, subscribe, unsubscribeAll };
+  return { connect, disconnect, initSignaling, publish, request, subscribe, unsubscribeAll };
 };
