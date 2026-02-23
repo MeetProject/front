@@ -26,7 +26,7 @@ export default function Meeting() {
     })),
   );
 
-  const { joinRoom, replaceTrack, sendChat, sendEmoji, sendHandUp, toggleTrack } = useWebrtc();
+  const { joinRoom, leaveRoom, replaceTrack, sendChat, sendEmoji, sendHandUp, toggleTrack } = useWebrtc();
   const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
@@ -50,9 +50,10 @@ export default function Meeting() {
       stopStream();
       stopScreenStream();
       reset();
+      leaveRoom();
       /* peerConnection clear */
     },
-    [],
+    [leaveRoom],
   );
 
   if (isPending) {

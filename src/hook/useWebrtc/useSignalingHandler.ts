@@ -2,8 +2,6 @@
 
 import { useCallback } from 'react';
 
-import { useSignaling } from './useSignaling';
-
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
@@ -12,17 +10,24 @@ import {
   EmojiResponseType,
   LeaveResponseType,
   ParticipantResponseType,
+  ProducerResponseType,
   ToggleDeviceEnalbeResponseType,
   ToggleHandsUpResponseType,
   TrackResponseType,
 } from '@/types/session';
 import { AppData } from '@/types/webRtc';
 
-const SERVER_URL = 'http://localhost:8080/ws';
-
-export const useSignalingHandler = () => {
-  const { connect, disconnect, publish, request, subscribe, unsubscribeAll } = useSignaling(SERVER_URL);
-
+export const useSignalingHandler = (
+  subscribe: <T>(destination: string, callback: (response: T) => void | Promise<void>) => void,
+  consumeTrack: (
+    targetId: string,
+    producerId: string,
+  ) => Promise<{
+    appData: AppData;
+    track: MediaStreamTrack;
+  } | null>,
+  removeConsumer: (userId: string) => void,
+) => {
   const handleToggleDevice = useCallback(async (data: ToggleDeviceEnalbeResponseType) => {
     const { toggleDevices } = useParticipantStore.getState();
     const { mediaOption, userId } = data;
@@ -51,25 +56,41 @@ export const useSignalingHandler = () => {
 
   const handleParticipant = useCallback(async (data: ParticipantResponseType) => {
     const { participant } = data;
-    const { userId } = useUserInfoStore.getState();
-    if (participant.user.userId === userId) {
+    const { userId: id } = useUserInfoStore.getState();
+    const { addParticipant } = useParticipantStore.getState();
+    const { toggleHandsUp } = useInteractionStore.getState();
+
+    const {
+      isHandUp,
+      user: { userId },
+    } = participant;
+
+    if (participant.user.userId === id) {
       return;
     }
-    const { addParticipant } = useParticipantStore.getState();
     addParticipant(participant);
+
+    if (isHandUp) {
+      toggleHandsUp(userId);
+    }
   }, []);
 
+  const handleProducer = useCallback(
+    async (data: ProducerResponseType) => {
+      const { addTrack } = useParticipantStore.getState();
+      const { producerId, userId } = data;
+
+      const trackInfo = await consumeTrack(userId, producerId);
+      if (!trackInfo) {
+        return;
+      }
+      addTrack(trackInfo);
+    },
+    [consumeTrack],
+  );
+
   const handleConsumeTrack = useCallback(
-    async (
-      data: TrackResponseType,
-      consumeTrack: (
-        targetId: string,
-        producerId: string,
-      ) => Promise<{
-        appData: AppData;
-        track: MediaStreamTrack;
-      } | null>,
-    ) => {
+    async (data: TrackResponseType) => {
       const { userId } = useUserInfoStore.getState();
       const { addTrack } = useParticipantStore.getState();
 
@@ -85,30 +106,24 @@ export const useSignalingHandler = () => {
 
       successResult.forEach((r) => r && addTrack(r));
     },
-    [],
+    [consumeTrack],
   );
 
-  const handleLeave = useCallback(async ({ userId }: LeaveResponseType, removeConsumer: (userId: string) => void) => {
-    const { removeParticipant } = useParticipantStore.getState();
-    removeParticipant(userId);
-    removeConsumer(userId);
-  }, []);
+  const handleLeave = useCallback(
+    async ({ userId }: LeaveResponseType) => {
+      const { removeParticipant } = useParticipantStore.getState();
+      removeParticipant(userId);
+      removeConsumer(userId);
+    },
+    [removeConsumer],
+  );
 
   const initSignaling = useCallback(
-    async (
-      roomId: string,
-      consumeTrack: (
-        targetId: string,
-        producerId: string,
-      ) => Promise<{
-        appData: AppData;
-        track: MediaStreamTrack;
-      } | null>,
-      removeConsumer: (userId: string) => void,
-    ) => {
+    async (roomId: string) => {
       subscribe(`/topic/room/${roomId}/participant`, (data: ParticipantResponseType) => handleParticipant(data));
-      subscribe(`/topic/room/${roomId}/track`, (data: TrackResponseType) => handleConsumeTrack(data, consumeTrack));
-      subscribe(`/topic/room/${roomId}/leave`, (data: LeaveResponseType) => handleLeave(data, removeConsumer));
+      subscribe(`/topic/room/${roomId}/track`, (data: TrackResponseType) => handleConsumeTrack(data));
+      subscribe(`/topic/room/${roomId}/rtls`, handleProducer);
+      subscribe(`/topic/room/${roomId}/leave`, (data: LeaveResponseType) => handleLeave(data));
 
       subscribe(`/topic/room/${roomId}/device`, handleToggleDevice);
       subscribe(`/topic/room/${roomId}/handup`, handleToggleHandsUp);
@@ -124,8 +139,9 @@ export const useSignalingHandler = () => {
       handleConsumeTrack,
       handleLeave,
       handleParticipant,
+      handleProducer,
     ],
   );
 
-  return { connect, disconnect, initSignaling, publish, request, subscribe, unsubscribeAll };
+  return { initSignaling };
 };

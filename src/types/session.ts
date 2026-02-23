@@ -53,6 +53,11 @@ export interface TrackResponseType {
   userId: string;
 }
 
+export interface ProducerResponseType {
+  userId: string;
+  producerId: string;
+}
+
 export interface ToggleHandsUpResponseType {
   userId: string;
 }

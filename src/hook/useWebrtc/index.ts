@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { useMediasoup } from './useMediasoup';
+import { useSignaling } from './useSignaling';
 import { useSignalingHandler } from './useSignalingHandler';
 import { useSignalSender } from './useSignalSender';
 
@@ -14,10 +15,12 @@ import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session';
 
+const SERVER_URL = 'http://localhost:8080/ws';
+
 const useWebrtc = () => {
   const [isPending, setIsPending] = useState<boolean>(false);
-  const { connect, initSignaling, publish, request, unsubscribeAll } = useSignalingHandler();
-  const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave } = useSignalSender(publish);
+
+  const { connect, publish, request, subscribe, unsubscribeAll } = useSignaling(SERVER_URL);
   const {
     consumeTrack,
     createTransport,
@@ -28,6 +31,9 @@ const useWebrtc = () => {
     replaceProducerTrack,
     toggleProducerTrack,
   } = useMediasoup(request);
+  const { initSignaling } = useSignalingHandler(subscribe, consumeTrack, removeConsumer);
+  const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave } = useSignalSender(publish);
+
   const currentRoomId = useRef<string | null>(null);
 
   const initWebrtc = useCallback(async () => {
@@ -53,7 +59,7 @@ const useWebrtc = () => {
       setIsPending(true);
 
       try {
-        await connect({ onConnect: () => initSignaling(roomId, consumeTrack, removeConsumer) });
+        await connect({ onConnect: () => initSignaling(roomId) });
         const { participants } = await request<JoinRoomResponseType>('/app/signal/join', {
           mediaOption: deviceEnable,
           roomId,
@@ -82,7 +88,7 @@ const useWebrtc = () => {
         setIsPending(false);
       }
     },
-    [/* initWebrtc, */ consumeTrack, initSignaling, removeConsumer, request, connect, initWebrtc],
+    [consumeTrack, initSignaling, request, connect, initWebrtc],
   );
 
   const leaveRoom = useCallback(() => {
