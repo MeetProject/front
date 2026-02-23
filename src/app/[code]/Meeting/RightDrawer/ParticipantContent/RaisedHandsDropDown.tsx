@@ -28,7 +28,7 @@ export default function RaisedHandsDropDown({ keyword }: RaisedHandsDropDownProp
   const handsUpUser = useMemo(() => {
     const matcher = charMatcher(keyword.toLocaleLowerCase());
     return [...handsUp.values()]
-      .map((id) => [id, (id === userId ? userName : info.get(id)?.name) ?? ''])
+      .map((id) => [id, (id === userId ? userName : info.get(id)?.userName) ?? ''])
       .filter(([_, name]) => matcher.test(name));
   }, [handsUp, info, keyword, userId, userName]);
 

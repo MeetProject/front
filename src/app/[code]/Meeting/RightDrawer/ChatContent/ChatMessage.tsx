@@ -3,6 +3,7 @@
 import { useShallow } from 'zustand/shallow';
 
 import { cn } from '@/lib/cn';
+import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { GroupChatType } from '@/types/chatType';
 import { formatTime } from '@/util/formatter';
@@ -11,14 +12,11 @@ interface ChatMessageProps {
   chat: GroupChatType;
 }
 
-const userData: Record<string, Record<'color' | 'name', string>> = {
-  user_02: {
-    color: '#ffaa00',
-    name: 'user_02',
-  },
-};
-
 export default function ChatMessage({ chat }: ChatMessageProps) {
+  const user = useParticipantStore((state) => state.info.get(chat.userId)) ?? {
+    userColor: '#ccc',
+    userName: 'Unknown',
+  };
   const { id } = useUserInfoStore(
     useShallow((state) => ({
       id: state.userId,
@@ -26,22 +24,21 @@ export default function ChatMessage({ chat }: ChatMessageProps) {
   );
 
   const isMe = chat.userId === id;
-  const user = userData[chat.userId] || { color: '#ccc', name: 'Unknown' };
 
   return (
     <div className={cn('flex gap-2 px-3 py-1', isMe ? 'flex-row-reverse' : 'flex-row')}>
       {!isMe && (
         <div
           className='mt-6 flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] text-white'
-          style={{ backgroundColor: user.color }}
+          style={{ backgroundColor: user.userColor }}
         >
-          {user.name[0]}
+          {user.userName[0]}
         </div>
       )}
 
       <div className={cn('flex max-w-[70%] flex-col gap-1', isMe ? 'items-end' : 'items-start')}>
         <div className='mb-1 flex items-center gap-2 px-1'>
-          {!isMe && <span className='text-on-surface font-google-sans text-[13px] font-medium'>{user.name}</span>}
+          {!isMe && <span className='text-on-surface font-google-sans text-[13px] font-medium'>{user.userName}</span>}
           <span className='text-on-surface font-google-sans text-xs opacity-70'>
             {formatTime(chat.messages[0].timestamp)}
           </span>

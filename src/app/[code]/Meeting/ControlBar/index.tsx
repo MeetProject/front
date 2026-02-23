@@ -8,9 +8,10 @@ import { DeviceKindType, TrackType } from '@/types/deviceType';
 interface ControlBarProps {
   onTrackChange: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void>;
   onTrackMute: (trackType: DeviceKindType, value?: boolean) => Promise<void>;
+  sendHandUp: (value: boolean) => void;
 }
 
-export default function ControlBar({ onTrackChange, onTrackMute }: ControlBarProps) {
+export default function ControlBar({ onTrackChange, onTrackMute, sendHandUp }: ControlBarProps) {
   return (
     <div
       className={cn(
@@ -20,7 +21,7 @@ export default function ControlBar({ onTrackChange, onTrackMute }: ControlBarPro
       )}
     >
       <MeetingInfo />
-      <CallControlls onTrackChange={onTrackChange} onTrackMute={onTrackMute} />
+      <CallControlls sendHandUp={sendHandUp} onTrackChange={onTrackChange} onTrackMute={onTrackMute} />
       <MeetingAuxControls />
     </div>
   );

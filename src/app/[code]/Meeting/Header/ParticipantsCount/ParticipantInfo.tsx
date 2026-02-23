@@ -24,7 +24,7 @@ export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
   const participants = useParticipantStore((state) => state.info);
 
   const { count, text } = getTruncatedWords(
-    [userName ?? '', ...participants.entries().map(([_, { name }]) => name)],
+    [userName ?? '', ...participants.entries().map(([_, { userName: name }]) => name)],
     ' 등',
     150,
   );
@@ -42,9 +42,11 @@ export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
         >
           <div className='size-full text-left'>
             <p className='text-on-surface-white text-sm'>{`${participants.size + 1}명 참석`}</p>
-            <div className='text-on-surface-dark font-google-sans w-full truncate overflow-hidden text-xs'>
-              {`${text} ${participants.size - count + 1}명`}
-            </div>
+            {participants.size - count + 1 > 0 && (
+              <div className='text-on-surface-dark font-google-sans w-full truncate overflow-hidden text-xs'>
+                {`${text} ${participants.size - count + 1}명`}
+              </div>
+            )}
             <div className='mt-3 flex items-center gap-2'>
               <Profile className='size-9 text-sm' isMe={true} />
               {[...participants.entries()].slice(0, 4).map(([id, _]) => (

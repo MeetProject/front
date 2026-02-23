@@ -12,7 +12,11 @@ import { cn } from '@/lib/cn';
 import { useDrawerStore } from '@/store/useDrawer';
 import { RightDrawerKeyType } from '@/types/drawerType';
 
-export default function RightDrawer() {
+interface RightDrawerProps {
+  sendChat: (message: string) => void;
+}
+
+export default function RightDrawer({ sendChat }: RightDrawerProps) {
   const { chat, info, participants } = useDrawerStore(
     useShallow((state) => ({
       chat: state.chat,
@@ -51,7 +55,7 @@ export default function RightDrawer() {
   };
 
   const content = {
-    chat: <ChatContent />,
+    chat: <ChatContent sendChat={sendChat} />,
     info: <InfoContent />,
     participants: <ParticipantContent />,
   };

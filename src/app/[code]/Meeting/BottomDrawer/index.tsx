@@ -5,8 +5,13 @@ import { useShallow } from 'zustand/shallow';
 import EmojiDrawer from './EmojiDrawer';
 
 import { useDrawerStore } from '@/store/useDrawer';
+import { EmojiType } from '@/types/emojiType';
 
-export default function BottomDrawer() {
+interface BottomDrawerProps {
+  sendEmoji: (emoji: EmojiType) => void;
+}
+
+export default function BottomDrawer({ sendEmoji }: BottomDrawerProps) {
   const { cc, emoji } = useDrawerStore(
     useShallow((state) => ({
       cc: state.cc,
@@ -27,7 +32,7 @@ export default function BottomDrawer() {
         className={`grid w-full transition-[grid-template-rows,opacity] duration-500 ease-in-out ${emoji ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
       >
         <div className='overflow-hidden'>
-          <EmojiDrawer />
+          <EmojiDrawer onEmojiClick={sendEmoji} />
         </div>
       </div>
     </aside>

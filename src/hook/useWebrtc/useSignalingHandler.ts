@@ -25,8 +25,8 @@ export const useSignalingHandler = () => {
 
   const handleToggleDevice = useCallback(async (data: ToggleDeviceEnalbeResponseType) => {
     const { toggleDevices } = useParticipantStore.getState();
-    const { deviceType, userId } = data;
-    toggleDevices(userId, deviceType);
+    const { mediaOption, userId } = data;
+    toggleDevices(userId, mediaOption);
   }, []);
 
   const handleToggleHandsUp = useCallback(async (data: ToggleHandsUpResponseType) => {
@@ -111,7 +111,7 @@ export const useSignalingHandler = () => {
       subscribe(`/topic/room/${roomId}/leave`, (data: LeaveResponseType) => handleLeave(data, removeConsumer));
 
       subscribe(`/topic/room/${roomId}/device`, handleToggleDevice);
-      subscribe(`/topic/room/${roomId}/handsUp`, handleToggleHandsUp);
+      subscribe(`/topic/room/${roomId}/handup`, handleToggleHandsUp);
       subscribe(`/topic/room/${roomId}/emoji`, handleEmoji);
       subscribe(`/topic/room/${roomId}/chat`, handleChat);
     },

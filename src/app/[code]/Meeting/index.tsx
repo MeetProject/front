@@ -26,7 +26,7 @@ export default function Meeting() {
     })),
   );
 
-  const { joinRoom, replaceTrack, toggleTrack } = useWebrtc();
+  const { joinRoom, replaceTrack, sendChat, sendEmoji, sendHandUp, toggleTrack } = useWebrtc();
   const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
@@ -37,7 +37,6 @@ export default function Meeting() {
     const init = async () => {
       await initStream();
       await joinRoom(roomId);
-      //peerConnection
       setIsPending(false);
     };
 
@@ -69,13 +68,13 @@ export default function Meeting() {
             <div className='flex size-full shrink overflow-hidden rounded-[20px]'>
               <Screen />
             </div>
-            <RightDrawer />
+            <RightDrawer sendChat={sendChat} />
           </div>
           <EmojiReaction />
         </div>
-        <BottomDrawer />
+        <BottomDrawer sendEmoji={sendEmoji} />
       </div>
-      <ControlBar onTrackChange={replaceTrack} onTrackMute={toggleTrack} />
+      <ControlBar sendHandUp={sendHandUp} onTrackChange={replaceTrack} onTrackMute={toggleTrack} />
     </div>
   );
 }

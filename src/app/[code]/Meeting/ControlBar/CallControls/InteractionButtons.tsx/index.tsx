@@ -11,7 +11,11 @@ import { useDrawerStore } from '@/store/useDrawer';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 
-export default function InteractionButtons() {
+interface InteractionButtonsProps {
+  sendHandUp: (value: boolean) => void;
+}
+
+export default function InteractionButtons({ sendHandUp }: InteractionButtonsProps) {
   const userId = useUserInfoStore((state) => state.userId);
   const { cc, emoji } = useDrawerStore(
     useShallow((state) => ({
@@ -20,7 +24,7 @@ export default function InteractionButtons() {
     })),
   );
 
-  const handsUp = useInteractionStore((state) => state.handsUp);
+  const handsUp = useInteractionStore((state) => state.handsUp.has(userId ?? ''));
 
   const [isOpenOption, setIsOpenOption] = useState<boolean>(false);
   const [active, setActive] = useState<Record<'screenShare', boolean>>({
@@ -53,14 +57,14 @@ export default function InteractionButtons() {
   }, [handleOptionClose]);
 
   const handleHandUpButtonClick = useCallback(() => {
-    const { toggleHandsUp } = useInteractionStore.getState();
+    const { handsUp: currentHandUp } = useInteractionStore.getState();
     if (!userId) {
       return;
     }
 
-    toggleHandsUp(userId);
+    sendHandUp(!currentHandUp.has(userId));
     handleOptionClose();
-  }, [handleOptionClose, userId]);
+  }, [handleOptionClose, userId, sendHandUp]);
 
   const BUTTON = [
     {
@@ -79,7 +83,7 @@ export default function InteractionButtons() {
     },
     {
       icon: Icon.Handup,
-      isActive: handsUp.has(userId ?? ''),
+      isActive: handsUp,
       name: handsUp ? '손 내리기' : '손들기',
       onClick: handleHandUpButtonClick,
       shortcutKey: ['Control', 'Meta', 'h'],

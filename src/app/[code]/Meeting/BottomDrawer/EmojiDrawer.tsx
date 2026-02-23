@@ -1,14 +1,15 @@
 import { useCallback } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
 import EmojiButton from './EmojiButton';
 
 import * as image from '@/asset/image';
 import * as wepb from '@/asset/webp';
-import { useInteractionStore } from '@/store/useInteractionStore';
-import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { EmojiType } from '@/types/emojiType';
+
+interface EmojiDrawerProps {
+  onEmojiClick: (emoji: EmojiType) => void;
+}
 
 const EMOJI_BUTTON = [
   { hoverSrc: wepb.heartEmoji, name: 'HEART', src: image.heartEmoji },
@@ -22,20 +23,19 @@ const EMOJI_BUTTON = [
   { hoverSrc: wepb.thumbDownEmoji, name: 'THUMBDOWN', src: image.thumbDownEmoji },
 ];
 
-export default function EmojiDrawer() {
-  const handleEmojiButtonClick = useCallback((emoji: EmojiType) => {
-    const { addEmoji } = useInteractionStore.getState();
-    const { addEmoji: setEmoji } = useParticipantStore.getState();
-    const { userId } = useUserInfoStore.getState();
+export default function EmojiDrawer({ onEmojiClick }: EmojiDrawerProps) {
+  const handleEmojiButtonClick = useCallback(
+    (emoji: EmojiType) => {
+      const { userId } = useUserInfoStore.getState();
 
-    if (!userId) {
-      return;
-    }
+      if (!userId) {
+        return;
+      }
 
-    const id = uuidv4();
-    addEmoji(id, { emoji, userId });
-    setEmoji(userId, emoji, true);
-  }, []);
+      onEmojiClick(emoji);
+    },
+    [onEmojiClick],
+  );
   return (
     <div className='mt-3 flex w-full items-center justify-center px-6'>
       <div className='bg-state-dim flex items-center rounded-[36px]'>

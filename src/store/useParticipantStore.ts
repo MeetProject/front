@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { GroupChatType } from '@/types/chatType';
-import { DeviceEnableType, DeviceKindType, TrackType } from '@/types/deviceType';
+import { DeviceEnableType, TrackType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
 import { ChatResponseType, ParticipantDataType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
@@ -37,7 +37,6 @@ interface ParticipantState {
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
-  userEmoji: EmojiType | null;
   timer: Map<string, NodeJS.Timeout | null>;
   chat: GroupChatType[];
 
@@ -48,9 +47,9 @@ interface ParticipantState {
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
   removeTrack: (userId: string, trackType: TrackType, track: MediaStreamTrack) => void;
-  toggleDevices: (id: string, key: DeviceKindType, value?: boolean) => void;
+  toggleDevices: (id: string, value: DeviceEnableType) => void;
   reset: () => void;
-  addEmoji: (id: string, value: EmojiType | null, isMe?: boolean) => void;
+  addEmoji: (id: string, value: EmojiType | null) => void;
 }
 
 interface ConsumerResult {
@@ -73,7 +72,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     });
   },
 
-  addEmoji: (id, value, isMe) => {
+  addEmoji: (id, value) => {
     const existingTimer = get().timer.get(id);
     if (existingTimer) {
       clearTimeout(existingTimer);
@@ -83,9 +82,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       set((state) => {
         state.timer.delete(id);
 
-        if (isMe) {
-          return { userEmoji: null };
-        }
         const nextEmoji = new Map(state.emoji);
         nextEmoji.delete(id);
 
@@ -95,9 +91,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
     set((state) => {
       state.timer.set(id, timerId);
-      if (isMe) {
-        return { userEmoji: value };
-      }
       const nextEmoji = new Map(state.emoji);
       nextEmoji.set(id, value);
 
@@ -236,7 +229,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
   timer: new Map(),
 
-  toggleDevices: (id, key, value) => {
+  toggleDevices: (id, value) => {
     if (!get().devices.has(id)) {
       return;
     }
@@ -247,7 +240,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       if (!prevData) {
         return {};
       }
-      newDevices.set(id, { ...prevData, [key]: value ?? !prevData[key] });
+      newDevices.set(id, value);
       return { devices: newDevices };
     });
   },

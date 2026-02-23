@@ -8,56 +8,21 @@ import ChatMessage from './ChatMessage';
 
 import * as image from '@/asset/image';
 import * as Icon from '@/asset/svg';
-import { GroupChatType } from '@/types/chatType';
+import { useParticipantStore } from '@/store/useParticipantStore';
 
-export default function ChatContent() {
-  const chatData: GroupChatType[] = [
-    {
-      messages: [
-        {
-          id: 'm1',
-          message: '안녕하세요! 오늘 프로젝트 업데이트 사항 공유드립니다.',
-          timestamp: '2026-01-22T10:00:00.000Z',
-        },
-        {
-          id: 'm2',
-          message: '우선 UI 디자인 시스템 가이드가 확정되었습니다.',
-          timestamp: '2026-01-22T10:00:05.000Z',
-        },
-        {
-          id: 'm3',
-          message: '첨부파일 확인 부탁드려요.',
-          timestamp: '2026-01-22T10:00:12.000Z',
-        },
-      ],
-      userId: 'user_01',
-    },
-    {
-      messages: [
-        {
-          id: 'm4',
-          message: '확인했습니다! 바로 검토해볼게요.',
-          timestamp: '2026-01-22T10:01:30.000Z',
-        },
-      ],
-      userId: 'user_02',
-    },
-    {
-      messages: [
-        {
-          id: 'm5',
-          message: '감사합니다. 혹시 추가로 필요한 데이터가 있으면 말씀해주세요.',
-          timestamp: '2026-01-22T10:02:45.000Z',
-        },
-      ],
-      userId: 'user_01',
-    },
-  ];
+interface ChatContentProps {
+  sendChat: (message: string) => void;
+}
 
-  const handleChatSubmit = useCallback((value: string) => {
-    /* eslint-disable-next-line no-console */
-    console.log(value);
-  }, []);
+export default function ChatContent({ sendChat }: ChatContentProps) {
+  const chatData = useParticipantStore((state) => state.chat);
+
+  const handleChatSubmit = useCallback(
+    (value: string) => {
+      sendChat(value);
+    },
+    [sendChat],
+  );
 
   return (
     <div className='flex size-full flex-col'>

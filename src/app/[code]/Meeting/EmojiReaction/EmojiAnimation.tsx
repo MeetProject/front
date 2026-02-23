@@ -46,7 +46,7 @@ function EmojiIcon({ emoji, emojiId }: EmojiAnimationProps) {
       <div
         className={`max-w-28 truncate rounded-full px-2 text-sm ${emoji.userId === userId ? 'bg-primary-light text-black' : 'bg-surface-base text-white'} `}
       >
-        {userId === emoji.userId ? '나' : participantsUserData.get(emoji.userId)?.name}
+        {userId === emoji.userId ? '나' : participantsUserData.get(emoji.userId)?.userName}
       </div>
     </div>
   );

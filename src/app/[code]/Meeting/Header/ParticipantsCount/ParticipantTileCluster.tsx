@@ -6,7 +6,7 @@ interface ParticipantTileClusterProps {
 }
 
 export default function ParticipantTileCluster({ participants }: ParticipantTileClusterProps) {
-  const count = participants.length;
+  const count = participants.length + 1;
   const style = [
     cn(
       count === 1 && 'size-full text-[8px]',
@@ -30,8 +30,9 @@ export default function ParticipantTileCluster({ participants }: ParticipantTile
         count === 2 ? 'flex-col justify-between p-1.25' : 'flex-wrap content-center gap-px',
       )}
     >
-      {participants.slice(0, 4).map((id, i) => (
-        <Profile className={style[i]} id={id} key={id} />
+      <Profile className={style[0]} isMe={true} />
+      {participants.slice(0, 3).map((id, i) => (
+        <Profile className={style[i + 1]} id={id} key={id} />
       ))}
     </div>
   );

@@ -1,7 +1,7 @@
 import { ConsumerOptions, RtpCapabilities, TransportOptions } from 'mediasoup-client/types';
 
-import { DeviceEnableType, DeviceKindType } from './deviceType';
-import { EmojiDataType } from './emojiType';
+import { DeviceEnableType } from './deviceType';
+import { EmojiDataType, EmojiType } from './emojiType';
 import { AppData } from './webRtc';
 
 export interface DtlsReponseType {
@@ -45,7 +45,7 @@ export interface ConsumerParamsResponseType {
 
 export interface ToggleDeviceEnalbeResponseType {
   userId: string;
-  deviceType: DeviceKindType;
+  mediaOption: DeviceEnableType;
 }
 
 export interface TrackResponseType {
@@ -70,4 +70,21 @@ export interface ChatResponseType {
 
 export interface LeaveResponseType {
   userId: string;
+}
+
+// interaction
+export interface ChatPayloadType {
+  message: string;
+}
+
+export interface DevicePayloadType {
+  mediaOption: DeviceEnableType;
+}
+
+export interface EmojiPayloadType {
+  emoji: EmojiType;
+}
+
+export interface HandUpPayloadType {
+  value: boolean;
 }

@@ -30,7 +30,7 @@ export default function UserDropDown({ keyword }: UserDropDownProps) {
   const isMatchKeyword = useMemo(() => isMatched(userName ?? ''), [isMatched, userName]);
   const filteredUser = useMemo(() => {
     const matcher = charMatcher(keyword.toLocaleLowerCase());
-    return [...info.entries()].filter(([_, { name }]) => matcher.test(name.toLocaleLowerCase()));
+    return [...info.entries()].filter(([_, { userName: name }]) => matcher.test(name.toLocaleLowerCase()));
   }, [info, keyword]);
 
   const size = filteredUser.length + (isMatchKeyword ? 1 : 0);
@@ -39,7 +39,7 @@ export default function UserDropDown({ keyword }: UserDropDownProps) {
     <ParticipantDropDown name='참여자' size={size}>
       <div className='px-4'>
         {isMatchKeyword && <UserCard />}
-        {filteredUser.map(([userId, { name }]) => (
+        {filteredUser.map(([userId, { userName: name }]) => (
           <ParticipantCard key={userId} name={name} option={{ audio: true }} userId={userId} />
         ))}
 

@@ -17,7 +17,7 @@ export default function UserTile() {
     })),
   );
 
-  const emoji = useParticipantStore((state) => state.userEmoji);
+  const emoji = useParticipantStore((state) => state.emoji.get(userId ?? '') ?? null);
   const { device, stream } = useDeviceStore(
     useShallow((state) => ({
       device: state.deviceEnable,

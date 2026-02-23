@@ -56,6 +56,7 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
 
   useEffect(() => {
     if (device.video) {
+      setTimeout(() => setIsReady(true), 200);
       return;
     }
 

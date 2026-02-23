@@ -37,7 +37,7 @@ export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
                 <Profile className='size-10' id={id} isMe={userId === id} />
                 <div className='flex flex-1 items-center'>
                   <p className='text-outline-light font-google-sans truncate align-middle'>
-                    {(id === userId ? userName : info.get(id)?.name) ?? '알 수 없는 사용자'}
+                    {(id === userId ? userName : info.get(id)?.userName) ?? '알 수 없는 사용자'}
                   </p>
                 </div>
               </div>

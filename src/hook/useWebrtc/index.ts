@@ -4,18 +4,20 @@ import { useCallback, useRef, useState } from 'react';
 
 import { useMediasoup } from './useMediasoup';
 import { useSignalingHandler } from './useSignalingHandler';
+import { useSignalSender } from './useSignalSender';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
-import { TrackType } from '@/types/deviceType';
+import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session';
 
 const useWebrtc = () => {
   const [isPending, setIsPending] = useState<boolean>(false);
   const { connect, initSignaling, publish, request, unsubscribeAll } = useSignalingHandler();
+  const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave } = useSignalSender(publish);
   const {
     consumeTrack,
     createTransport,
@@ -87,12 +89,12 @@ const useWebrtc = () => {
     if (!currentRoomId.current) {
       return;
     }
-    publish(`/app/room/${currentRoomId.current}/leave`);
+    sendLeave();
     const { reset } = useParticipantStore.getState();
     unsubscribeAll();
     disconnectTransport();
     reset();
-  }, [unsubscribeAll, disconnectTransport, publish]);
+  }, [unsubscribeAll, disconnectTransport, sendLeave]);
 
   const screenShare = useCallback(async () => {
     const { userId } = useUserInfoStore.getState();
@@ -130,6 +132,17 @@ const useWebrtc = () => {
     [removeProducer, publish],
   );
 
+  const toggleTrack = useCallback(
+    async (trackType: DeviceKindType, value?: boolean) => {
+      const { deviceEnable } = useDeviceStore.getState();
+
+      const updatedOption = { ...deviceEnable, [trackType]: value !== undefined ? value : !deviceEnable[trackType] };
+      sendDeviceEnable(updatedOption);
+      await toggleProducerTrack(trackType, value);
+    },
+    [sendDeviceEnable, toggleProducerTrack],
+  );
+
   return {
     isPending,
     joinRoom,
@@ -138,7 +151,10 @@ const useWebrtc = () => {
     replaceProducerTrack,
     replaceTrack: replaceProducerTrack,
     screenShare,
-    toggleTrack: toggleProducerTrack,
+    sendChat,
+    sendEmoji,
+    sendHandUp,
+    toggleTrack,
   };
 };
 

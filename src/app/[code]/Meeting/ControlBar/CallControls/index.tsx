@@ -13,9 +13,10 @@ import { DeviceKindType, TrackType } from '@/types/deviceType';
 interface CallControllsProps {
   onTrackChange: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void>;
   onTrackMute: (trackType: DeviceKindType, value?: boolean) => Promise<void> | void;
+  sendHandUp: (value: boolean) => void;
 }
 
-export default function CallControlls({ onTrackChange, onTrackMute }: CallControllsProps) {
+export default function CallControlls({ onTrackChange, onTrackMute, sendHandUp }: CallControllsProps) {
   const [isOpenFeedback, setIsOpenFeedback] = useState<boolean>(false);
   const [isOpenSetting, setIsOpenSetting] = useState<DeviceKindType | null>(null);
 
@@ -38,7 +39,7 @@ export default function CallControlls({ onTrackChange, onTrackMute }: CallContro
   return (
     <div className='relative flex shrink-0 items-center gap-2 px-1.5'>
       <DeviceButtons onSettingButtonClick={handleSettingOpen} onTrackChange={onTrackChange} onTrackMute={onTrackMute} />
-      <InteractionButtons />
+      <InteractionButtons sendHandUp={sendHandUp} />
       <OptionButton onClickFeedbackButton={handleFeedbackOpen} onClickSettingButton={handleSettingOpen} />
       <CallEndButton />
       <Setting category={isOpenSetting ?? 'audio'} isOpen={isOpenSetting !== null} onClose={handleSettingClose} />

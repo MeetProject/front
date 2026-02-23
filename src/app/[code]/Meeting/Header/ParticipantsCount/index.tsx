@@ -7,6 +7,7 @@ import ParticipantTileCluster from './ParticipantTileCluster';
 
 import { useDrawerStore } from '@/store/useDrawer';
 import { useParticipantStore } from '@/store/useParticipantStore';
+
 export default function ParticipantCount() {
   const [isHover, setIsHover] = useState<boolean>(false);
 
