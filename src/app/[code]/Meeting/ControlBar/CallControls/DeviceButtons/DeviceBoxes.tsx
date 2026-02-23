@@ -1,13 +1,14 @@
 import * as Icon from '@/asset/svg';
 import { DeviceSelectBox } from '@/components';
-import { DeviceKindType } from '@/types/deviceType';
+import { DeviceKindType, TrackType } from '@/types/deviceType';
 
 interface DeviceBoxesProps {
   type: DeviceKindType;
   onDisabledClick: () => void;
+  onTrackChange?: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void> | void;
 }
 
-export default function DeviceBoxes({ onDisabledClick, type }: DeviceBoxesProps) {
+export default function DeviceBoxes({ onDisabledClick, onTrackChange, type }: DeviceBoxesProps) {
   if (type === 'audio') {
     return (
       <>
@@ -19,6 +20,7 @@ export default function DeviceBoxes({ onDisabledClick, type }: DeviceBoxesProps)
             type='audioInput'
             volume={true}
             onDisabledClick={onDisabledClick}
+            onTrackChange={(t) => onTrackChange?.('audio', t)}
           />
         </div>
         <div className='h-7.5 w-62'>
@@ -44,6 +46,7 @@ export default function DeviceBoxes({ onDisabledClick, type }: DeviceBoxesProps)
           theme='dark'
           type='videoInput'
           onDisabledClick={onDisabledClick}
+          onTrackChange={(t) => onTrackChange?.('video', t)}
         />
       </div>
       <div className='itmes-center flex gap-2 max-[775px]:hidden'>

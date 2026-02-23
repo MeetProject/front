@@ -131,7 +131,7 @@ const useDevice = () => {
       try {
         const prevStream = stream ?? new MediaStream();
         const trackStream = await navigator.mediaDevices.getUserMedia(constraint);
-        const newTrack = trackStream.getTracks().find((t) => t.kind === type);
+        const newTrack = trackStream.getTracks().find((t) => t.kind === type) ?? null;
         const oldTrack = stream?.getTracks().find((t) => t.kind === type);
 
         if (newTrack) {
@@ -146,13 +146,13 @@ const useDevice = () => {
         const updateStream = new MediaStream(prevStream.getTracks());
         await setMediaStream(updateStream);
         updatePermission(type, 'granted');
-        return updateStream;
+        return newTrack;
       } catch (e) {
         const error = e as DOMException;
 
         if (error.name === 'NotAllowedError') {
           updatePermission(type, 'denied');
-          return;
+          return null;
         }
         if (isExact) return replaceNewTrack(type, deviceId, false);
         throw e;
@@ -167,17 +167,16 @@ const useDevice = () => {
         if (!type) {
           throw new Error('device가 null인 경우, type이 반드시 필요합니다.');
         }
-        await replaceNewTrack(type, null, false);
-        return;
+        return await replaceNewTrack(type, null, false);
       }
 
       if (device.kind === 'audiooutput') {
         const { changeDevice } = useDeviceStore.getState();
         changeDevice('audioOutput', device);
-        return;
+        return null;
       }
       const deviceType = device.kind === 'audioinput' ? 'audio' : 'video';
-      await replaceNewTrack(deviceType, device.deviceId, true);
+      return await replaceNewTrack(deviceType, device.deviceId, true);
     },
     [replaceNewTrack],
   );
@@ -206,7 +205,7 @@ const useDevice = () => {
       toggleDeviceEnalbe,
     } = useDeviceStore.getState();
     if (!stream) {
-      return;
+      return null;
     }
 
     const prevEnable = deviceEnable.video;
@@ -214,8 +213,7 @@ const useDevice = () => {
     toggleDeviceEnalbe('video');
 
     if (!prevEnable) {
-      await replaceNewTrack('video', videoInput?.deviceId ?? '', true);
-      return;
+      return await replaceNewTrack('video', videoInput?.deviceId ?? '', true);
     }
 
     stream.getVideoTracks().forEach((track) => {
@@ -223,7 +221,7 @@ const useDevice = () => {
       stream.removeTrack(track);
     });
 
-    return { ...deviceEnable, video: !prevEnable };
+    return null;
   }, [replaceNewTrack]);
 
   const initScreenStream = useCallback(async (audio: boolean) => {

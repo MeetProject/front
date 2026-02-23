@@ -3,10 +3,11 @@
 import { Consumer, Producer, Transport } from 'mediasoup-client/types';
 import { useCallback, useRef } from 'react';
 
+import { useDeviceStore } from '@/store/useDeviceStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
-import { TrackType } from '@/types/deviceType';
+import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { ConsumerParamsResponseType, DtlsReponseType } from '@/types/session';
 import { AppData, Direction } from '@/types/webRtc';
 
@@ -166,6 +167,31 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
     } catch {}
   }, []);
 
+  const toggleProducerTrack = useCallback(
+    async (trackType: DeviceKindType, value?: boolean) => {
+      const producer = producers.current.get(trackType);
+      if (!producer) {
+        return;
+      }
+
+      const { deviceEnable } = useDeviceStore.getState();
+
+      if (value !== undefined) {
+        const endPoint = value ? '/app/signal/producer/resume' : '/app/signal/producer/pause';
+        await request(endPoint, producer.id);
+        return;
+      }
+
+      if (deviceEnable[trackType]) {
+        await request('/app/signal/producer/pause', producer.id);
+        return;
+      }
+
+      await request('/app/signal/producer/resume', producer.id);
+    },
+    [request],
+  );
+
   const disconnectTransport = useCallback(() => {
     sendTransport.current?.close();
     recvTransport.current?.close();
@@ -186,5 +212,6 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
     removeConsumer,
     removeProducer,
     replaceProducerTrack,
+    toggleProducerTrack,
   };
 };

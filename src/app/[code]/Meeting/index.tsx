@@ -26,7 +26,7 @@ export default function Meeting() {
     })),
   );
 
-  const { joinRoom } = useWebrtc();
+  const { joinRoom, replaceTrack, toggleTrack } = useWebrtc();
   const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function Meeting() {
         </div>
         <BottomDrawer />
       </div>
-      <ControlBar />
+      <ControlBar onTrackChange={replaceTrack} onTrackMute={toggleTrack} />
     </div>
   );
 }

@@ -7,12 +7,15 @@ import DeviceButton from './DeviceButton';
 
 import * as Icon from '@/asset/svg';
 import { ButtonTag, MediaPermissionDeniedDialog } from '@/components';
-import { useOutsideClick } from '@/hook';
-import { DeviceKindType } from '@/types/deviceType';
+import { useDevice, useOutsideClick } from '@/hook';
+import { useDeviceStore } from '@/store/useDeviceStore';
+import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { isMac } from '@/util/env';
 
 interface DeviceButtonsProps {
   onSettingButtonClick: (category: DeviceKindType) => void;
+  onTrackChange?: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void> | void;
+  onTrackMute?: (trackType: DeviceKindType, value?: boolean) => Promise<void> | void;
 }
 
 interface ButtonType {
@@ -25,9 +28,11 @@ const DEVICE_BUTTONS: ButtonType[] = [
   { shortcutKey: isMac() ? ['Meta', 'e'] : ['Control', 'e'], type: 'video' },
 ];
 
-export default function DeviceButtons({ onSettingButtonClick }: DeviceButtonsProps) {
+export default function DeviceButtons({ onSettingButtonClick, onTrackChange, onTrackMute }: DeviceButtonsProps) {
   const [isOpenDeniedDialog, setIsOpenDeniedDialog] = useState<boolean>(false);
   const [deviceOption, setDeviceOption] = useState<DeviceKindType | null>(null);
+
+  const { toggleVideoTrack } = useDevice();
 
   const handleChevronClick = useCallback((type?: DeviceKindType) => {
     setDeviceOption((prev) => {
@@ -52,6 +57,31 @@ export default function DeviceButtons({ onSettingButtonClick }: DeviceButtonsPro
     setIsOpenDeniedDialog(true);
   }, []);
 
+  const handleTrackMuted = useCallback(
+    async (trackType: DeviceKindType) => {
+      if (!onTrackMute) {
+        return;
+      }
+
+      const { deviceEnable, toggleDeviceEnalbe } = useDeviceStore.getState();
+
+      if (trackType === 'video') {
+        const newVideoTrack = await toggleVideoTrack();
+
+        if (!deviceEnable[trackType]) {
+          await onTrackChange?.(trackType, newVideoTrack);
+        }
+
+        await onTrackMute('video', !deviceEnable[trackType]);
+        return;
+      }
+
+      await onTrackMute(trackType, !deviceEnable[trackType]);
+      toggleDeviceEnalbe(trackType);
+    },
+    [onTrackMute, onTrackChange, toggleVideoTrack],
+  );
+
   return (
     <>
       {deviceOption && (
@@ -59,7 +89,7 @@ export default function DeviceButtons({ onSettingButtonClick }: DeviceButtonsPro
           className='bg-state-dim absolute -top-2 left-0 z-10 flex w-full -translate-y-full items-center gap-2 rounded-[36px] p-2.5'
           ref={targetRef}
         >
-          <DeviceBoxes type={deviceOption} onDisabledClick={handleDeniedDialogOpen} />
+          <DeviceBoxes type={deviceOption} onDisabledClick={handleDeniedDialogOpen} onTrackChange={onTrackChange} />
           <ButtonTag name='설정'>
             <button
               className='flex size-9 items-center justify-center rounded-full transition duration-200 ease-in-out hover:bg-[rgba(256,256,256,0.2)]'
@@ -79,6 +109,7 @@ export default function DeviceButtons({ onSettingButtonClick }: DeviceButtonsPro
           type={button.type}
           onChevronClick={() => handleChevronClick(button.type)}
           onDisabledClick={handleDeniedDialogOpen}
+          onMute={handleTrackMuted}
         />
       ))}
       <MediaPermissionDeniedDialog isOpen={isOpenDeniedDialog} onClose={() => setIsOpenDeniedDialog(false)} />

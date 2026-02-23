@@ -5,10 +5,10 @@ import { useShallow } from 'zustand/shallow';
 
 import * as Icon from '@/asset/svg';
 import { ButtonTag, Visualizer } from '@/components';
-import { useDevice } from '@/hook';
 import useShortcutKey from '@/hook/useShortcutKey';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
+import { DeviceKindType } from '@/types/deviceType';
 import { formatShortcut } from '@/util/formatter';
 
 interface DeviceButtonProps {
@@ -17,6 +17,7 @@ interface DeviceButtonProps {
   onChevronClick: () => void;
   shortcutKey?: string[];
   onDisabledClick?: () => void;
+  onMute?: (trackType: DeviceKindType) => Promise<void> | void;
 }
 
 const BUTTON_PROPS = {
@@ -28,10 +29,10 @@ export default function DeviceButton({
   isOptionOpen,
   onChevronClick,
   onDisabledClick,
+  onMute,
   shortcutKey,
   type,
 }: DeviceButtonProps) {
-  const { toggleAudioTrack, toggleVideoTrack } = useDevice();
   const { deviceEnable, permission, stream } = useDeviceStore(
     useShallow((state) => ({
       deviceEnable: state.deviceEnable,
@@ -41,7 +42,7 @@ export default function DeviceButton({
   );
 
   const handleMuteButton = useCallback(
-    (e?: MouseEvent) => {
+    async (e?: MouseEvent) => {
       e?.stopPropagation();
 
       if (permission[type] !== 'granted') {
@@ -49,14 +50,9 @@ export default function DeviceButton({
         return;
       }
 
-      if (type === 'audio') {
-        toggleAudioTrack();
-        return;
-      }
-
-      toggleVideoTrack();
+      await onMute?.(type);
     },
-    [toggleAudioTrack, toggleVideoTrack, permission, type, onDisabledClick],
+    [permission, type, onDisabledClick, onMute],
   );
 
   useShortcutKey(shortcutKey ?? [], handleMuteButton);

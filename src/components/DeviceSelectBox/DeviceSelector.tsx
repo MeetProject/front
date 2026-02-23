@@ -22,12 +22,14 @@ interface DeviceSelectorProps {
   theme?: 'default' | 'dark';
   volume?: boolean;
   onPlay: (value: boolean) => void;
+  onTrackChange?: (device: MediaStreamTrack | null) => Promise<void> | void;
 }
 
 export default function DeviceSelector({
   currentValue,
   onClose,
   onPlay,
+  onTrackChange,
   overflow,
   positionX,
   positionY,
@@ -38,12 +40,13 @@ export default function DeviceSelector({
   const { replaceTrack } = useDevice();
   const { deviceList } = useDeviceStore(useShallow((state) => ({ deviceList: state.deviceList })));
 
-  const handleDeviceButtonClick = (e: MouseEvent<HTMLButtonElement>, device: MediaDeviceInfo) => {
+  const handleDeviceButtonClick = async (e: MouseEvent<HTMLButtonElement>, device: MediaDeviceInfo) => {
     e.stopPropagation();
     if (currentValue.deviceId === device.deviceId) {
       return;
     }
-    replaceTrack(device);
+    const newTrack = await replaceTrack(device);
+    await onTrackChange?.(newTrack);
     onClose();
   };
 

@@ -24,6 +24,7 @@ const useWebrtc = () => {
     removeConsumer,
     removeProducer,
     replaceProducerTrack,
+    toggleProducerTrack,
   } = useMediasoup(request);
   const currentRoomId = useRef<string | null>(null);
 
@@ -134,8 +135,10 @@ const useWebrtc = () => {
     joinRoom,
     leaveRoom,
     removeTrack,
+    replaceProducerTrack,
     replaceTrack: replaceProducerTrack,
     screenShare,
+    toggleTrack: toggleProducerTrack,
   };
 };
 

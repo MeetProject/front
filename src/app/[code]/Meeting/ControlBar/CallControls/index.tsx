@@ -8,9 +8,14 @@ import InteractionButtons from './InteractionButtons.tsx';
 import OptionButton from './OptionButton';
 
 import { Feedback, Setting } from '@/components';
-import { DeviceKindType } from '@/types/deviceType';
+import { DeviceKindType, TrackType } from '@/types/deviceType';
 
-export default function CallControlls() {
+interface CallControllsProps {
+  onTrackChange: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void>;
+  onTrackMute: (trackType: DeviceKindType, value?: boolean) => Promise<void> | void;
+}
+
+export default function CallControlls({ onTrackChange, onTrackMute }: CallControllsProps) {
   const [isOpenFeedback, setIsOpenFeedback] = useState<boolean>(false);
   const [isOpenSetting, setIsOpenSetting] = useState<DeviceKindType | null>(null);
 
@@ -32,7 +37,7 @@ export default function CallControlls() {
 
   return (
     <div className='relative flex shrink-0 items-center gap-2 px-1.5'>
-      <DeviceButtons onSettingButtonClick={handleSettingOpen} />
+      <DeviceButtons onSettingButtonClick={handleSettingOpen} onTrackChange={onTrackChange} onTrackMute={onTrackMute} />
       <InteractionButtons />
       <OptionButton onClickFeedbackButton={handleFeedbackOpen} onClickSettingButton={handleSettingOpen} />
       <CallEndButton />

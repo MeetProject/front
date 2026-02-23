@@ -3,8 +3,14 @@ import MeetingAuxControls from './MeetingAuxControls';
 import MeetingInfo from './MeetingInfo';
 
 import { cn } from '@/lib/cn';
+import { DeviceKindType, TrackType } from '@/types/deviceType';
 
-export default function ControlBar() {
+interface ControlBarProps {
+  onTrackChange: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void>;
+  onTrackMute: (trackType: DeviceKindType, value?: boolean) => Promise<void>;
+}
+
+export default function ControlBar({ onTrackChange, onTrackMute }: ControlBarProps) {
   return (
     <div
       className={cn(
@@ -14,7 +20,7 @@ export default function ControlBar() {
       )}
     >
       <MeetingInfo />
-      <CallControlls />
+      <CallControlls onTrackChange={onTrackChange} onTrackMute={onTrackMute} />
       <MeetingAuxControls />
     </div>
   );

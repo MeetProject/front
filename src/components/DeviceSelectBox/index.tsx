@@ -20,6 +20,7 @@ interface DeviceSelectBoxProps {
   overflow?: boolean;
   theme?: 'default' | 'dark';
   volume?: boolean;
+  onTrackChange?: (track: MediaStreamTrack | null) => Promise<void> | void;
 }
 
 const ICON_MAP = {
@@ -31,6 +32,7 @@ const ICON_MAP = {
 export default function DeviceSelectBox({
   className,
   onDisabledClick,
+  onTrackChange,
   overflow = false,
   selectorPositionX = 'right',
   selectorPositionY = 'bottom',
@@ -118,6 +120,7 @@ export default function DeviceSelectBox({
           volume={volume}
           onClose={handleSelectButtonClick}
           onPlay={handleTestAudioPlay}
+          onTrackChange={onTrackChange}
         />
       )}
     </div>
