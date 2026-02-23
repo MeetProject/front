@@ -92,9 +92,6 @@ const useWebrtc = () => {
   );
 
   const leaveRoom = useCallback(() => {
-    if (!currentRoomId.current) {
-      return;
-    }
     sendLeave();
     const { reset } = useParticipantStore.getState();
     unsubscribeAll();

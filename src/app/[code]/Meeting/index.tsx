@@ -16,6 +16,7 @@ import { useDevice } from '@/hook';
 import useWebrtc from '@/hook/useWebrtc';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
+import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 export default function Meeting() {
   const roomId = usePathname().slice(1);
@@ -55,6 +56,24 @@ export default function Meeting() {
     },
     [leaveRoom],
   );
+
+  useEffect(() => {
+    const handleForceLeave = () => {
+      const { userId } = useUserInfoStore.getState();
+      if (!userId) {
+        return;
+      }
+
+      const data = new Blob([JSON.stringify({ roomId, userId })], { type: 'application/json' });
+      navigator.sendBeacon('http://localhost:8080/api/rooms/leave', data);
+    };
+
+    window.addEventListener('beforeunload', handleForceLeave);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleForceLeave);
+    };
+  }, [leaveRoom, roomId]);
 
   if (isPending) {
     return <Loading isPending={isPending} />;
