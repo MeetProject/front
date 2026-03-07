@@ -2,6 +2,7 @@
 
 import OverflowTile from './OverflowTile';
 import ParticipantTile from './ParticipantTile';
+import ScreenTile from './ScreenTile';
 import UserTile from './UserTile';
 
 import { useResizeObserver, useStagedLayout } from '@/hook';
@@ -31,10 +32,12 @@ export default function StagedLayout() {
       <div className={cn('size-full', layout.mode === null && 'hidden')}>
         <div className='grid size-full gap-3 overflow-hidden' style={gridStyle}>
           <section
-            className='relative flex size-full items-center justify-center overflow-hidden border border-white shadow-xl'
+            className='relative flex size-full items-center justify-center overflow-hidden border shadow-xl'
             style={{ gridArea: 'main' }}
           >
-            <div className='flex size-full items-center justify-center border border-white text-white'>screen</div>
+            <div className='flex size-full items-center justify-center border'>
+              <ScreenTile />
+            </div>
           </section>
           {!isFull && (
             <div className='grid gap-3' style={sideGridStyle}>

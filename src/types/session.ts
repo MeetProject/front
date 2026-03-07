@@ -1,6 +1,6 @@
 import { ConsumerOptions, RtpCapabilities, TransportOptions } from 'mediasoup-client/types';
 
-import { DeviceEnableType } from './deviceType';
+import { DeviceEnableType, TrackType } from './deviceType';
 import { EmojiDataType, EmojiType } from './emojiType';
 import { AppData } from './webRtc';
 
@@ -58,6 +58,11 @@ export interface ProducerResponseType {
   producerId: string;
 }
 
+export interface ProducerRemoveResponseType {
+  userId: string;
+  trackType: TrackType;
+}
+
 export interface ToggleHandsUpResponseType {
   userId: string;
 }
@@ -71,6 +76,11 @@ export interface ChatResponseType {
   userId: string;
   message: string;
   timestamp: string;
+}
+
+export interface TrackEndResponseType {
+  userId: string;
+  consumerId: string;
 }
 
 export interface LeaveResponseType {
@@ -92,4 +102,9 @@ export interface EmojiPayloadType {
 
 export interface HandUpPayloadType {
   value: boolean;
+}
+
+export interface ProducerRemovePayloadType {
+  producerId: string;
+  trackType: TrackType;
 }

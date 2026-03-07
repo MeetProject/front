@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import BottomDrawer from './BottomDrawer';
@@ -20,15 +20,29 @@ import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 export default function Meeting() {
   const roomId = usePathname().slice(1);
-  const { initStream } = useDevice();
-  const { isInit } = useDeviceStore(
+  const { initScreenStream, initStream } = useDevice();
+  const { isInit, screenStreams } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
+      screenStreams: state.screenStream,
     })),
   );
 
-  const { joinRoom, leaveRoom, replaceTrack, sendChat, sendEmoji, sendHandUp, toggleTrack } = useWebrtc();
+  const { joinRoom, leaveRoom, removeTrack, replaceTrack, sendChat, sendEmoji, sendHandUp, shareScreen, toggleTrack } =
+    useWebrtc();
   const [isPending, setIsPending] = useState(true);
+
+  const handleScreenShare = useCallback(async () => {
+    const { screenStream, stopScreenStream } = useDeviceStore.getState();
+
+    if (screenStream) {
+      await Promise.all([removeTrack('screenAudio'), removeTrack('screenVideo')]);
+      stopScreenStream();
+      return;
+    }
+    await initScreenStream(true);
+    await shareScreen();
+  }, [initScreenStream, shareScreen, removeTrack]);
 
   useEffect(() => {
     if (!isInit) {
@@ -75,6 +89,17 @@ export default function Meeting() {
     };
   }, [leaveRoom, roomId]);
 
+  useEffect(() => {
+    if (!screenStreams) {
+      return;
+    }
+
+    screenStreams.getVideoTracks()[0].onended = () => {
+      /* remove screen providers */
+      /* event emit broadcast -> handle screenStatus update */
+    };
+  }, [screenStreams]);
+
   if (isPending) {
     return <Loading isPending={isPending} />;
   }
@@ -94,7 +119,12 @@ export default function Meeting() {
         </div>
         <BottomDrawer sendEmoji={sendEmoji} />
       </div>
-      <ControlBar sendHandUp={sendHandUp} onTrackChange={replaceTrack} onTrackMute={toggleTrack} />
+      <ControlBar
+        sendHandUp={sendHandUp}
+        onScreenShare={handleScreenShare}
+        onTrackChange={replaceTrack}
+        onTrackMute={toggleTrack}
+      />
     </div>
   );
 }

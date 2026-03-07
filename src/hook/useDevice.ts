@@ -231,9 +231,12 @@ const useDevice = () => {
       screenStream.getTracks().forEach((track) => track.stop());
       useDeviceStore.setState({ screenStream: null });
     }
-    const stream = await navigator.mediaDevices.getDisplayMedia({ audio });
-    useDeviceStore.setState({ screenStream: stream });
-    return stream;
+
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ audio });
+      useDeviceStore.setState({ screenStream: stream });
+      return stream;
+    } catch {}
   }, []);
 
   return {

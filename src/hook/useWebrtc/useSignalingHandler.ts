@@ -5,11 +5,13 @@ import { useCallback } from 'react';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
+import { TrackType } from '@/types/deviceType';
 import {
   ChatResponseType,
   EmojiResponseType,
   LeaveResponseType,
   ParticipantResponseType,
+  ProducerRemoveResponseType,
   ProducerResponseType,
   ToggleDeviceEnalbeResponseType,
   ToggleHandsUpResponseType,
@@ -26,7 +28,7 @@ export const useSignalingHandler = (
     appData: AppData;
     track: MediaStreamTrack;
   } | null>,
-  removeConsumer: (userId: string) => void,
+  removeConsumer: (userId: string, trackType?: TrackType) => void,
 ) => {
   const handleToggleDevice = useCallback(async (data: ToggleDeviceEnalbeResponseType) => {
     const { toggleDevices } = useParticipantStore.getState();
@@ -89,6 +91,18 @@ export const useSignalingHandler = (
     [consumeTrack],
   );
 
+  const handleRemoveProducer = useCallback(
+    (data: ProducerRemoveResponseType) => {
+      const { removeTrack } = useParticipantStore.getState();
+      const { trackType, userId } = data;
+
+      console.log(trackType);
+      removeTrack(userId, trackType);
+      removeConsumer(userId, trackType);
+    },
+    [removeConsumer],
+  );
+
   const handleConsumeTrack = useCallback(
     async (data: TrackResponseType) => {
       const { userId } = useUserInfoStore.getState();
@@ -123,6 +137,7 @@ export const useSignalingHandler = (
       subscribe(`/topic/room/${roomId}/participant`, (data: ParticipantResponseType) => handleParticipant(data));
       subscribe(`/topic/room/${roomId}/track`, (data: TrackResponseType) => handleConsumeTrack(data));
       subscribe(`/topic/room/${roomId}/rtls`, handleProducer);
+      subscribe(`/topic/room/${roomId}/producer/remove`, handleRemoveProducer);
       subscribe(`/topic/room/${roomId}/leave`, (data: LeaveResponseType) => handleLeave(data));
 
       subscribe(`/topic/room/${roomId}/device`, handleToggleDevice);
@@ -140,6 +155,7 @@ export const useSignalingHandler = (
       handleLeave,
       handleParticipant,
       handleProducer,
+      handleRemoveProducer,
     ],
   );
 

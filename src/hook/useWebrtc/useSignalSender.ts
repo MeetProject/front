@@ -1,8 +1,14 @@
 import { useCallback } from 'react';
 
-import { DeviceEnableType } from '@/types/deviceType';
+import { DeviceEnableType, TrackType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
-import { ChatPayloadType, DevicePayloadType, EmojiPayloadType, HandUpPayloadType } from '@/types/session';
+import {
+  ChatPayloadType,
+  DevicePayloadType,
+  EmojiPayloadType,
+  HandUpPayloadType,
+  ProducerRemovePayloadType,
+} from '@/types/session';
 
 export const useSignalSender = (publish: <T>(destination: string, payload?: T | undefined) => void) => {
   const sendChat = useCallback(
@@ -41,9 +47,19 @@ export const useSignalSender = (publish: <T>(destination: string, payload?: T | 
     [publish],
   );
 
+  const sendProducerRemove = useCallback(
+    (producerId: string, trackType: TrackType) => {
+      publish<ProducerRemovePayloadType>('/app/producer/remove', {
+        producerId,
+        trackType,
+      });
+    },
+    [publish],
+  );
+
   const sendLeave = useCallback(() => {
     publish('/app/leave');
   }, [publish]);
 
-  return { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave };
+  return { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave, sendProducerRemove };
 };

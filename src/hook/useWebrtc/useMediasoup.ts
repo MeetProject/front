@@ -16,7 +16,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
   const recvTransport = useRef<Transport | null>(null);
 
   const producers = useRef<Map<TrackType, Producer>>(new Map());
-  const consumers = useRef<Map<string, Set<Consumer>>>(new Map());
+  const consumers = useRef<Map<string, Map<TrackType, Consumer>>>(new Map());
 
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
@@ -42,21 +42,22 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
         const { appData, track } = consumer;
         const { trackType, userId } = appData as AppData;
         if (!consumers.current.has(userId)) {
-          consumers.current.set(userId, new Set());
+          consumers.current.set(userId, new Map());
         }
-        consumers.current.get(userId)!.add(consumer);
+        consumers.current.get(userId)!.set(trackType, consumer);
         consumer.on('@close', () => {
+          console.log('close consumer ' + producerId);
           const userSet = consumers.current.get(userId);
           if (!userSet) {
             return;
           }
 
-          userSet.delete(consumer);
+          userSet.delete(trackType);
           if (userSet.size === 0) {
             consumers.current.delete(userId);
           }
 
-          removeTrack(userId, trackType, track);
+          removeTrack(userId, trackType);
         });
 
         return {
@@ -103,7 +104,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
 
       transport.on('produce', async ({ appData, rtpParameters }, callback, errback) => {
         try {
-          const producerId = await request<string>('/app/signal/rtls', {
+          const { producerId } = await request<Record<'producerId', string>>('/app/signal/rtls', {
             appData,
             kind: appData.trackType === 'audio' || appData.trackType === 'screenAudio' ? 'audio' : 'video',
             rtpParameters,
@@ -141,18 +142,33 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
     }
 
     oldProducer.close();
+
     producers.current.delete(trackType);
     return oldProducer.id;
   }, []);
 
-  const removeConsumer = useCallback((userId: string) => {
-    const consumer = consumers.current.get(userId);
+  const removeConsumer = useCallback((userId: string, trackType?: TrackType) => {
+    if (!trackType) {
+      consumers.current.delete(userId);
+      return;
+    }
+
+    const userConsumer = consumers.current.get(userId);
+    if (!userConsumer) {
+      return;
+    }
+
+    const consumer = userConsumer.get(trackType);
     if (!consumer) {
       return;
     }
 
-    consumer.forEach((c) => c.close());
-    consumers.current.delete(userId);
+    consumer.close();
+    userConsumer.delete(trackType);
+
+    if (userConsumer.size === 0) {
+      consumers.current.delete(userId);
+    }
   }, []);
 
   const replaceProducerTrack = useCallback(async (trackType: TrackType, newTrack: MediaStreamTrack | null) => {

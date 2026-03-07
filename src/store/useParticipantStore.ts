@@ -30,10 +30,15 @@ import { AppData } from '@/types/webRtc';
   'Tango',
 ]; */
 
+interface StreamInfo {
+  userId: string | null;
+  stream: null | MediaStream;
+}
+
 interface ParticipantState {
   participants: string[];
   streams: Map<string, MediaStream>;
-  screenStream: Map<string, MediaStream>;
+  screenStream: StreamInfo;
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
@@ -46,7 +51,7 @@ interface ParticipantState {
   addTrack: (trackInfo: ConsumerResult) => void;
   removeParticipant: (id: string) => void;
   removeStream: (id: string) => void;
-  removeTrack: (userId: string, trackType: TrackType, track: MediaStreamTrack) => void;
+  removeTrack: (userId: string, trackType: TrackType) => void;
   toggleDevices: (id: string, value: DeviceEnableType) => void;
   reset: () => void;
   addEmoji: (id: string, value: EmojiType | null) => void;
@@ -122,11 +127,15 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     } = trackInfo;
     set((state) => {
       if (trackType.includes('screen')) {
-        const newScreenStreams = new Map(state.screenStream);
-        const existingScreenStream = newScreenStreams.get(userId) || new MediaStream();
-        existingScreenStream.addTrack(track);
-        newScreenStreams.set(userId, existingScreenStream);
-        return { screenStream: newScreenStreams };
+        if (state.screenStream.userId !== userId) {
+          state.screenStream.stream?.getTracks().forEach((t) => {
+            t.stop();
+            state.screenStream.stream?.removeTrack(t);
+          });
+        }
+        const newStream = new MediaStream(state.screenStream.stream?.getTracks() ?? []);
+        newStream.addTrack(track);
+        return { screenStream: { stream: newStream, userId } };
       }
 
       const newStreams = new Map(state.streams);
@@ -194,37 +203,54 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { streams: newStreams };
     }),
 
-  removeTrack: (userId, trackType, track) =>
+  removeTrack: (userId, trackType) =>
     set((state) => {
       const { screenStream, streams } = state;
-      const newStreams = new Map(trackType === 'audio' || trackType === 'video' ? streams : screenStream);
 
-      const currentStream = newStreams.get(userId);
+      if (trackType === 'audio' || trackType === 'video') {
+        const newMap = new Map(streams);
+        const currentStream = newMap.get(userId);
+        if (!currentStream) {
+          return {};
+        }
 
-      if (!currentStream) {
+        const track = trackType === 'audio' ? currentStream.getAudioTracks() : currentStream.getVideoTracks();
+
+        track.forEach((t) => currentStream.removeTrack(t));
+        if (currentStream.getTracks().length === 0) {
+          newMap.delete(userId);
+        }
+
+        return { streams: newMap };
+      }
+
+      if (!screenStream.stream) {
+        return { screenStream: { stream: null, userId: null } };
+      }
+
+      if (screenStream.userId !== userId) {
         return {};
       }
 
-      currentStream.removeTrack(track);
+      const track =
+        trackType === 'screenAudio' ? screenStream.stream.getAudioTracks() : screenStream.stream.getVideoTracks();
 
-      const remainingTracks = currentStream.getTracks();
-      if (remainingTracks.length === 0) {
-        newStreams.delete(userId);
-      } else {
-        newStreams.set(userId, new MediaStream(remainingTracks));
-      }
+      track.forEach((t) => screenStream.stream?.removeTrack(t));
 
-      if (trackType === 'audio' || trackType === 'video') {
-        return { streams: newStreams };
+      const tracks = screenStream.stream.getTracks();
+
+      if (tracks.length === 0) {
+        return { screenStream: { stream: null, userId: null } };
       }
-      return { screenStream: newStreams };
+      const stream = new MediaStream(tracks);
+      return { screenStream: { stream, userId: null } };
     }),
   reset: () => {
     get().timer.forEach((t) => t && clearTimeout(t));
     set(useParticipantStore.getInitialState());
   },
 
-  screenStream: new Map(),
+  screenStream: { stream: null, userId: null },
   streams: new Map(),
 
   timer: new Map(),

@@ -32,7 +32,7 @@ const useWebrtc = () => {
     toggleProducerTrack,
   } = useMediasoup(request);
   const { initSignaling } = useSignalingHandler(subscribe, consumeTrack, removeConsumer);
-  const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave } = useSignalSender(publish);
+  const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave, sendProducerRemove } = useSignalSender(publish);
 
   const currentRoomId = useRef<string | null>(null);
 
@@ -99,40 +99,32 @@ const useWebrtc = () => {
     reset();
   }, [unsubscribeAll, disconnectTransport, sendLeave]);
 
-  const screenShare = useCallback(async () => {
+  const shareScreen = useCallback(async () => {
     const { userId } = useUserInfoStore.getState();
     const { screenStream } = useDeviceStore.getState();
     if (!screenStream || !currentRoomId.current || !userId) {
       return;
     }
 
-    const producerId = await Promise.all(
+    await Promise.all(
       screenStream
         .getTracks()
         .map(async (track) => await produceTrack(track, track.kind === 'audio' ? 'screenAudio' : 'screenVideo')),
     );
 
-    useParticipantStore.setState({ screenStream: new Map([[userId, screenStream]]) });
-    publish(`/app/room/${currentRoomId.current}/addTrack`, {
-      producerId,
-    });
-  }, [produceTrack, publish]);
+    useParticipantStore.setState({ screenStream: { stream: screenStream, userId } });
+  }, [produceTrack]);
 
   const removeTrack = useCallback(
     (trackType: TrackType) => {
-      if (!currentRoomId.current) {
-        return;
-      }
       const produceId = removeProducer(trackType);
 
       if (!produceId) {
         return;
       }
-      publish(`/app/room/${currentRoomId.current}/removeTrack`, {
-        produceId,
-      });
+      sendProducerRemove(produceId, trackType);
     },
-    [removeProducer, publish],
+    [removeProducer, sendProducerRemove],
   );
 
   const toggleTrack = useCallback(
@@ -153,10 +145,10 @@ const useWebrtc = () => {
     removeTrack,
     replaceProducerTrack,
     replaceTrack: replaceProducerTrack,
-    screenShare,
     sendChat,
     sendEmoji,
     sendHandUp,
+    shareScreen,
     toggleTrack,
   };
 };

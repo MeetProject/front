@@ -13,9 +13,10 @@ import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 interface InteractionButtonsProps {
   sendHandUp: (value: boolean) => void;
+  shareScreen: () => Promise<void>;
 }
 
-export default function InteractionButtons({ sendHandUp }: InteractionButtonsProps) {
+export default function InteractionButtons({ sendHandUp, shareScreen }: InteractionButtonsProps) {
   const userId = useUserInfoStore((state) => state.userId);
   const { cc, emoji } = useDrawerStore(
     useShallow((state) => ({
@@ -39,10 +40,11 @@ export default function InteractionButtons({ sendHandUp }: InteractionButtonsPro
     setIsOpenOption(false);
   }, []);
 
-  const handleScreenShareButtonClick = useCallback(() => {
+  const handleScreenShareButtonClick = useCallback(async () => {
     setActive((prev) => ({ ...prev, screenShare: !prev.screenShare }));
+    await shareScreen();
     handleOptionClose();
-  }, [handleOptionClose]);
+  }, [handleOptionClose, shareScreen]);
 
   const handleEmojiButtonClick = useCallback(() => {
     const { toggleDrawer } = useDrawerStore.getState();
