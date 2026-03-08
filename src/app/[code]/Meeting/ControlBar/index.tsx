@@ -3,10 +3,10 @@ import MeetingAuxControls from './MeetingAuxControls';
 import MeetingInfo from './MeetingInfo';
 
 import { cn } from '@/lib/cn';
-import { DeviceKindType, TrackType } from '@/types/deviceType';
+import { DeviceKindType } from '@/types/deviceType';
 
 interface ControlBarProps {
-  onTrackChange: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void>;
+  onTrackChange: (trackType: DeviceKindType, track: MediaStreamTrack | null) => Promise<void>;
   onTrackMute: (trackType: DeviceKindType, value?: boolean) => Promise<void>;
   onScreenShare: () => Promise<void>;
   sendHandUp: (value: boolean) => void;

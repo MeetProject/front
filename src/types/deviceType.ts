@@ -5,4 +5,4 @@ export type DeviceEnableType = Record<DeviceKindType, boolean>;
 
 export type StatusType = null | 'failed' | 'success' | 'rejected' | 'pending';
 
-export type TrackType = DeviceKindType | 'screenAudio' | 'screenVideo';
+export type TrackType = DeviceKindType | 'screen';

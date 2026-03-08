@@ -15,14 +15,19 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
   const sendTransport = useRef<Transport | null>(null);
   const recvTransport = useRef<Transport | null>(null);
 
-  const producers = useRef<Map<TrackType, Producer>>(new Map());
+  const producers = useRef<Map<DeviceKindType, Producer>>(new Map());
+  const screenProducers = useRef<Map<string, Producer>>(new Map());
+
   const consumers = useRef<Map<string, Map<TrackType, Consumer>>>(new Map());
+  const screenConsumers = useRef<Map<string, Consumer>>(new Map());
+  const currentScreenSender = useRef<string | null>(null);
 
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
+      const { userId: id } = useUserInfoStore.getState();
       const { device } = useWebrtcStore.getState();
       const { removeTrack } = useParticipantStore.getState();
-      if (!recvTransport.current || !device) {
+      if (!recvTransport.current || !device || targetId === id) {
         return null;
       }
 
@@ -41,12 +46,18 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
 
         const { appData, track } = consumer;
         const { trackType, userId } = appData as AppData;
-        if (!consumers.current.has(userId)) {
-          consumers.current.set(userId, new Map());
+
+        if (trackType === 'screen') {
+          currentScreenSender.current = userId;
+          screenConsumers.current.set(consumer.id, consumer);
+        } else {
+          if (!consumers.current.has(userId)) {
+            consumers.current.set(userId, new Map());
+          }
+          consumers.current.get(userId)!.set(trackType, consumer);
         }
-        consumers.current.get(userId)!.set(trackType, consumer);
+
         consumer.on('@close', () => {
-          console.log('close consumer ' + producerId);
           const userSet = consumers.current.get(userId);
           if (!userSet) {
             return;
@@ -130,12 +141,23 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
       track,
     });
 
-    producers.current.set(trackType, producer);
+    if (trackType === 'screen') {
+      screenProducers.current.set(producer.id, producer);
+      return producer.id;
+    }
 
+    producers.current.set(trackType, producer);
     return producer.id;
   }, []);
 
   const removeProducer = useCallback((trackType: TrackType) => {
+    if (trackType === 'screen') {
+      const producerIds = Array.from(screenProducers.current.keys());
+      screenProducers.current.forEach((p) => p.close());
+      screenProducers.current.clear();
+      return producerIds;
+    }
+
     const oldProducer = producers.current.get(trackType);
     if (!oldProducer) {
       return;
@@ -144,34 +166,54 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
     oldProducer.close();
 
     producers.current.delete(trackType);
-    return oldProducer.id;
+
+    return [oldProducer.id];
   }, []);
 
-  const removeConsumer = useCallback((userId: string, trackType?: TrackType) => {
-    if (!trackType) {
-      consumers.current.delete(userId);
-      return;
-    }
-
-    const userConsumer = consumers.current.get(userId);
-    if (!userConsumer) {
-      return;
-    }
-
-    const consumer = userConsumer.get(trackType);
-    if (!consumer) {
-      return;
-    }
-
-    consumer.close();
-    userConsumer.delete(trackType);
-
-    if (userConsumer.size === 0) {
-      consumers.current.delete(userId);
-    }
+  const removeScreenConsumer = useCallback(() => {
+    screenConsumers.current.forEach((c) => c.close());
+    screenConsumers.current.clear();
+    currentScreenSender.current = null;
   }, []);
 
-  const replaceProducerTrack = useCallback(async (trackType: TrackType, newTrack: MediaStreamTrack | null) => {
+  const removeConsumer = useCallback(
+    (userId: string, trackType?: TrackType) => {
+      if (!trackType) {
+        consumers.current.get(userId)?.forEach((c) => c.close());
+        consumers.current.delete(userId);
+
+        if (currentScreenSender.current === userId) {
+          removeScreenConsumer();
+        }
+        return;
+      }
+
+      if (trackType === 'screen') {
+        removeScreenConsumer();
+        return;
+      }
+
+      const userConsumer = consumers.current.get(userId);
+      if (!userConsumer) {
+        return;
+      }
+
+      const consumer = userConsumer.get(trackType);
+      if (!consumer) {
+        return;
+      }
+
+      consumer.close();
+      userConsumer.delete(trackType);
+
+      if (userConsumer.size === 0) {
+        consumers.current.delete(userId);
+      }
+    },
+    [removeScreenConsumer],
+  );
+
+  const replaceProducerTrack = useCallback(async (trackType: DeviceKindType, newTrack: MediaStreamTrack | null) => {
     const producer = producers.current.get(trackType);
     if (!producer) {
       return;
@@ -194,7 +236,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
 
       if (value !== undefined) {
         const endPoint = value ? '/app/signal/producer/resume' : '/app/signal/producer/pause';
-        await request(endPoint, producer.id);
+        await request(endPoint, { producerId: producer.id });
         return;
       }
 

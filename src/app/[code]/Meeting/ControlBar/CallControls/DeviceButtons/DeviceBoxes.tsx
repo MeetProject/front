@@ -1,11 +1,11 @@
 import * as Icon from '@/asset/svg';
 import { DeviceSelectBox } from '@/components';
-import { DeviceKindType, TrackType } from '@/types/deviceType';
+import { DeviceKindType } from '@/types/deviceType';
 
 interface DeviceBoxesProps {
   type: DeviceKindType;
   onDisabledClick: () => void;
-  onTrackChange?: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void> | void;
+  onTrackChange?: (trackType: DeviceKindType, track: MediaStreamTrack | null) => Promise<void> | void;
 }
 
 export default function DeviceBoxes({ onDisabledClick, onTrackChange, type }: DeviceBoxesProps) {

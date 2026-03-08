@@ -228,22 +228,9 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
         return { screenStream: { stream: null, userId: null } };
       }
 
-      if (screenStream.userId !== userId) {
-        return {};
-      }
+      screenStream.stream.getTracks().forEach((t) => t.stop());
 
-      const track =
-        trackType === 'screenAudio' ? screenStream.stream.getAudioTracks() : screenStream.stream.getVideoTracks();
-
-      track.forEach((t) => screenStream.stream?.removeTrack(t));
-
-      const tracks = screenStream.stream.getTracks();
-
-      if (tracks.length === 0) {
-        return { screenStream: { stream: null, userId: null } };
-      }
-      const stream = new MediaStream(tracks);
-      return { screenStream: { stream, userId: null } };
+      return { screenStream: { stream: null, userId: null } };
     }),
   reset: () => {
     get().timer.forEach((t) => t && clearTimeout(t));

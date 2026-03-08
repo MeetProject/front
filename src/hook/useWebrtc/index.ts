@@ -106,23 +106,20 @@ const useWebrtc = () => {
       return;
     }
 
-    await Promise.all(
-      screenStream
-        .getTracks()
-        .map(async (track) => await produceTrack(track, track.kind === 'audio' ? 'screenAudio' : 'screenVideo')),
-    );
+    await Promise.all(screenStream.getTracks().map(async (track) => await produceTrack(track, 'screen')));
 
     useParticipantStore.setState({ screenStream: { stream: screenStream, userId } });
   }, [produceTrack]);
 
   const removeTrack = useCallback(
     (trackType: TrackType) => {
-      const produceId = removeProducer(trackType);
+      const produceIds = removeProducer(trackType);
 
-      if (!produceId) {
+      if (!produceIds) {
         return;
       }
-      sendProducerRemove(produceId, trackType);
+
+      produceIds.forEach((id) => sendProducerRemove(id, trackType));
     },
     [removeProducer, sendProducerRemove],
   );

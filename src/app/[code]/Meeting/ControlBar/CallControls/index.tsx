@@ -8,10 +8,10 @@ import InteractionButtons from './InteractionButtons.tsx';
 import OptionButton from './OptionButton';
 
 import { Feedback, Setting } from '@/components';
-import { DeviceKindType, TrackType } from '@/types/deviceType';
+import { DeviceKindType } from '@/types/deviceType';
 
 interface CallControllsProps {
-  onTrackChange: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void>;
+  onTrackChange: (trackType: DeviceKindType, track: MediaStreamTrack | null) => Promise<void>;
   onTrackMute: (trackType: DeviceKindType, value?: boolean) => Promise<void> | void;
   onScreenShare: () => Promise<void>;
   sendHandUp: (value: boolean) => void;

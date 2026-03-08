@@ -9,12 +9,12 @@ import * as Icon from '@/asset/svg';
 import { ButtonTag, MediaPermissionDeniedDialog } from '@/components';
 import { useDevice, useOutsideClick } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
-import { DeviceKindType, TrackType } from '@/types/deviceType';
+import { DeviceKindType } from '@/types/deviceType';
 import { isMac } from '@/util/env';
 
 interface DeviceButtonsProps {
   onSettingButtonClick: (category: DeviceKindType) => void;
-  onTrackChange?: (trackType: TrackType, track: MediaStreamTrack | null) => Promise<void> | void;
+  onTrackChange?: (trackType: DeviceKindType, track: MediaStreamTrack | null) => Promise<void> | void;
   onTrackMute?: (trackType: DeviceKindType, value?: boolean) => Promise<void> | void;
 }
 

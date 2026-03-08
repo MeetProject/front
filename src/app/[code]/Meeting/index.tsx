@@ -36,7 +36,7 @@ export default function Meeting() {
     const { screenStream, stopScreenStream } = useDeviceStore.getState();
 
     if (screenStream) {
-      await Promise.all([removeTrack('screenAudio'), removeTrack('screenVideo')]);
+      removeTrack('screen');
       stopScreenStream();
       return;
     }

@@ -79,8 +79,13 @@ export const useSignalingHandler = (
 
   const handleProducer = useCallback(
     async (data: ProducerResponseType) => {
+      const { userId: id } = useUserInfoStore.getState();
       const { addTrack } = useParticipantStore.getState();
       const { producerId, userId } = data;
+
+      if (userId === id) {
+        return;
+      }
 
       const trackInfo = await consumeTrack(userId, producerId);
       if (!trackInfo) {
@@ -96,7 +101,6 @@ export const useSignalingHandler = (
       const { removeTrack } = useParticipantStore.getState();
       const { trackType, userId } = data;
 
-      console.log(trackType);
       removeTrack(userId, trackType);
       removeConsumer(userId, trackType);
     },
