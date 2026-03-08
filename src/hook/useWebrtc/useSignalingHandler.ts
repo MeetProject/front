@@ -88,6 +88,7 @@ export const useSignalingHandler = (
       }
 
       const trackInfo = await consumeTrack(userId, producerId);
+
       if (!trackInfo) {
         return;
       }

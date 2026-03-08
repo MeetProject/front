@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Emoji from './Emoji';
 import NameTag from './NameTag';
@@ -25,34 +25,6 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
   const timerRef = useRef<NodeJS.Timeout>(null);
 
   const [isReady, setIsReady] = useState(false);
-  const [trackStatus, setTrackStatus] = useState({ isEnded: false, isMuted: !device.video });
-
-  useEffect(() => {
-    const videoTrack = stream?.getVideoTracks()[0];
-    if (!videoTrack) {
-      setTrackStatus({ isEnded: true, isMuted: true });
-      return;
-    }
-
-    const updateStatus = () => {
-      setTrackStatus({
-        isEnded: videoTrack.readyState === 'ended',
-        isMuted: !videoTrack.enabled || videoTrack.readyState !== 'live',
-      });
-    };
-
-    updateStatus();
-
-    videoTrack.addEventListener('mute', updateStatus);
-    videoTrack.addEventListener('unmute', updateStatus);
-    videoTrack.addEventListener('ended', updateStatus);
-
-    return () => {
-      videoTrack.removeEventListener('mute', updateStatus);
-      videoTrack.removeEventListener('unmute', updateStatus);
-      videoTrack.removeEventListener('ended', updateStatus);
-    };
-  }, [stream]);
 
   useEffect(() => {
     if (device.video) {
@@ -73,11 +45,6 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
     timerRef.current = setTimeout(() => setIsReady(true), 200);
   }, []);
 
-  const isVideoOff = useMemo(
-    () => !device.video || trackStatus.isMuted || trackStatus.isEnded,
-    [device.video, trackStatus],
-  );
-
   return (
     <div className='@container-[size] relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
       <div className='relative size-full max-h-[calc(100cqw*4/3)] max-w-[calc(100cqh*16/9)]'>
@@ -91,7 +58,7 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
           />
         </div>
 
-        {(isVideoOff || !isReady) && (
+        {(!device.video || !isReady) && (
           <div className='absolute inset-0 z-1'>
             <VideoOffOverlay color={color} name={name} />
           </div>
