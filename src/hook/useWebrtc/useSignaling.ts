@@ -124,15 +124,20 @@ export const useSignaling = (url: string) => {
   const request = useCallback(
     <T>(destination: string, payload?: any): Promise<T> =>
       new Promise((resolve, reject) => {
-        const { client, pendingRequest } = useSignalStore.getState();
+        const { client, pendingPath, pendingRequest } = useSignalStore.getState();
         if (!client || !client.active) {
           return reject(new Error('STOMP client is not connected'));
+        }
+
+        if (pendingPath.has(destination)) {
+          return reject();
         }
 
         const correlationId = crypto.randomUUID();
 
         const timeoutId = setTimeout(() => {
           pendingRequest.delete(correlationId);
+          pendingPath.delete(destination);
           reject(new Error(`STOMP Timeout: ${destination}`));
         }, STOMP_TIMEOUT);
 
@@ -141,6 +146,7 @@ export const useSignaling = (url: string) => {
           resolve,
           timeoutId,
         });
+        pendingPath.set(destination, correlationId);
 
         client.publish({
           body: JSON.stringify({ ...payload, correlationId }),
