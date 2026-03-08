@@ -16,8 +16,12 @@ export default function TiledLayout() {
 
   const { containerRef } = useResizeObserver<HTMLDivElement>(handleResize);
 
+  const lastRowItemCount = gridData?.lastRowItemCount || 1;
+
   const lastRowWrapperStyle = {
-    width: `calc((100% + 12px) / ${cols} * ${gridData?.lastRowItemCount})`,
+    display: 'grid',
+    gridTemplateColumns: `repeat(${lastRowItemCount}, 1fr)`,
+    width: `calc((100% + 12px) / ${cols} * ${lastRowItemCount} - 12px)`,
   };
 
   return (
@@ -34,20 +38,28 @@ export default function TiledLayout() {
           <ParticipantTile id={id} key={id} />
         ))}
 
-        <div
-          className={cn(
-            'col-span-full flex h-full items-center justify-center gap-3',
-            gridData?.isOverflow && size === 1 && 'flex-col',
-          )}
-        >
-          <div className='flex h-full items-center justify-center gap-3' style={lastRowWrapperStyle}>
-            {gridData?.lastRowParticipants.map((id) => (
-              <ParticipantTile id={id} key={id} />
-            ))}
+        {gridData?.hasOverflowInMainGrid && (
+          <OverflowTile count={gridData?.overflowCount} user={gridData?.overflowUsers} />
+        )}
 
-            {gridData?.isOverflow && <OverflowTile count={gridData?.overflowCount} user={gridData?.overflowUsers} />}
+        {gridData?.lastRowItemCount > 0 && (
+          <div
+            className={cn(
+              'col-span-full flex h-full w-full items-center justify-center gap-3',
+              gridData?.isOverflow && size === 1 && 'flex-col',
+            )}
+          >
+            <div className='h-full gap-3' style={lastRowWrapperStyle}>
+              {gridData?.lastRowParticipants.map((id) => (
+                <ParticipantTile id={id} key={id} />
+              ))}
+
+              {gridData?.isOverflow && !gridData.hasOverflowInMainGrid && (
+                <OverflowTile count={gridData?.overflowCount} user={gridData?.overflowUsers} />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

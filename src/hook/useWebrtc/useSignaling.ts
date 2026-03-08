@@ -129,10 +129,6 @@ export const useSignaling = (url: string) => {
           return reject(new Error('STOMP client is not connected'));
         }
 
-        if (pendingPath.has(destination)) {
-          return reject();
-        }
-
         const correlationId = crypto.randomUUID();
 
         const timeoutId = setTimeout(() => {

@@ -29,27 +29,34 @@ const useTiledLayout = () => {
 
   const gridData = useMemo(() => {
     const { cols, size } = layout;
-    if (size === 0) {
-      return null;
-    }
 
     const totalCount = participants.length + 1;
     const isOverflow = totalCount > size;
-    const lastRowStartIndex = Math.max(0, size - (size % cols || cols));
-    const standardParticipants = participants.slice(0, Math.max(0, lastRowStartIndex - 1));
 
-    const lastRowEndIndex = isOverflow ? size - 1 : size;
-    const lastRowParticipants = participants.slice(
-      Math.max(0, lastRowStartIndex - 1),
-      Math.max(0, lastRowEndIndex - 1),
-    );
+    const displayedCells = isOverflow ? size : totalCount;
 
-    const overflowCount = participants.length - size;
-    const overflowUsers = participants.slice(size - 2, size);
+    const lastRowItemCount = displayedCells % cols;
+
+    const standardCellsCount = displayedCells - lastRowItemCount;
+
+    const hasOverflowInMainGrid = isOverflow && lastRowItemCount === 0;
+
+    const standardRemoteCount = Math.max(0, standardCellsCount - 1 - (hasOverflowInMainGrid ? 1 : 0));
+    const standardParticipants = participants.slice(0, standardRemoteCount);
+
+    const hasOverflowInLastRow = isOverflow && lastRowItemCount > 0;
+
+    const lastRowRemoteCount = Math.max(0, lastRowItemCount - (hasOverflowInLastRow ? 1 : 0));
+    const lastRowParticipants = participants.slice(standardRemoteCount, standardRemoteCount + lastRowRemoteCount);
+
+    const renderedParticipantsCount = standardParticipants.length + lastRowParticipants.length;
+    const overflowCount = participants.length - renderedParticipantsCount;
+    const overflowUsers = participants.slice(renderedParticipantsCount, renderedParticipantsCount + 2);
 
     return {
+      hasOverflowInMainGrid,
       isOverflow,
-      lastRowItemCount: lastRowParticipants.length + (isOverflow ? 1 : 0),
+      lastRowItemCount,
       lastRowParticipants,
       overflowCount,
       overflowUsers,
