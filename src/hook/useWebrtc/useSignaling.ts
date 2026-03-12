@@ -56,11 +56,22 @@ export const useSignaling = (url: string) => {
             config?.onStompError?.(frame);
             reject(new Error('STOMP protocol error'));
           },
-          onWebSocketClose: <T>(evt: T) => {
+          onWebSocketClose: (evt: CloseEvent) => {
             config?.onWebSocketClose?.(evt);
+
+            if (evt?.code === 1000) {
+              newClient.deactivate();
+              resolve(newClient);
+              return;
+            }
+
             reject(new Error('WebSocket connection closed'));
           },
-          webSocketFactory: () => new SockJS(`${url}?userId=${userId}`),
+          webSocketFactory: () =>
+            new SockJS(`${url}?userId=${userId}`, null, {
+              timeout: 5000,
+              transports: ['websocket'],
+            }),
         });
         newClient.activate();
       }),
@@ -106,25 +117,33 @@ export const useSignaling = (url: string) => {
 
   const unsubscribeAll = useCallback(() => {
     const { subscription } = useSignalStore.getState();
-    subscription.values().forEach((sub) => sub.unsubscribe());
-    subscription.clear();
+    subscription.keys().forEach((path) => {
+      if (path === 'replies') {
+        return;
+      }
+
+      subscription.get(path)?.unsubscribe();
+      subscription.delete(path);
+    });
   }, []);
 
   const disconnect = useCallback(() => {
-    const { client } = useSignalStore.getState();
+    const { client, subscription } = useSignalStore.getState();
     if (!client) {
       return;
     }
 
-    unsubscribeAll();
+    subscription.values().forEach((sub) => sub.unsubscribe());
+    subscription.clear();
+
     client.deactivate();
     useSignalStore.setState({ client: null });
-  }, [unsubscribeAll]);
+  }, []);
 
   const request = useCallback(
     <T>(destination: string, payload?: any): Promise<T> =>
       new Promise((resolve, reject) => {
-        const { client, pendingPath, pendingRequest } = useSignalStore.getState();
+        const { client, pendingRequest } = useSignalStore.getState();
         if (!client || !client.active) {
           return reject(new Error('STOMP client is not connected'));
         }
@@ -133,7 +152,6 @@ export const useSignaling = (url: string) => {
 
         const timeoutId = setTimeout(() => {
           pendingRequest.delete(correlationId);
-          pendingPath.delete(destination);
           reject(new Error(`STOMP Timeout: ${destination}`));
         }, STOMP_TIMEOUT);
 
@@ -142,7 +160,6 @@ export const useSignaling = (url: string) => {
           resolve,
           timeoutId,
         });
-        pendingPath.set(destination, correlationId);
 
         client.publish({
           body: JSON.stringify({ ...payload, correlationId }),

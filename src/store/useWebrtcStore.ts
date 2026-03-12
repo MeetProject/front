@@ -5,10 +5,14 @@ import { create } from 'zustand';
 interface WebrtcState {
   device: Device | null;
   initDevice: (capabilities: RtpCapabilities) => Promise<Device | null>;
+  clearDevice: () => void;
   isLoaded: boolean;
 }
 
 export const useWebrtcStore = create<WebrtcState>((set, get) => ({
+  clearDevice: () => {
+    set({ device: null, isLoaded: false });
+  },
   device: null,
   initDevice: async (capabilities) => {
     const { device, isLoaded } = get();

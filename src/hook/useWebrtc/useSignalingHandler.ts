@@ -137,7 +137,7 @@ export const useSignalingHandler = (
     [removeConsumer],
   );
 
-  const initSignaling = useCallback(
+  const initSubscribe = useCallback(
     async (roomId: string) => {
       subscribe(`/topic/room/${roomId}/participant`, (data: ParticipantResponseType) => handleParticipant(data));
       subscribe(`/topic/room/${roomId}/track`, (data: TrackResponseType) => handleConsumeTrack(data));
@@ -164,5 +164,5 @@ export const useSignalingHandler = (
     ],
   );
 
-  return { initSignaling };
+  return { initSubscribe };
 };

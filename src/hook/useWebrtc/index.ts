@@ -10,6 +10,7 @@ import { useSignalSender } from './useSignalSender';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
@@ -31,17 +32,13 @@ const useWebrtc = () => {
     replaceProducerTrack,
     toggleProducerTrack,
   } = useMediasoup(request);
-  const { initSignaling } = useSignalingHandler(subscribe, consumeTrack, removeConsumer);
+  const { initSubscribe } = useSignalingHandler(subscribe, consumeTrack, removeConsumer);
   const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave, sendProducerRemove } = useSignalSender(publish);
 
   const currentRoomId = useRef<string | null>(null);
 
   const initWebrtc = useCallback(async () => {
-    const { device, initDevice, isLoaded } = useWebrtcStore.getState();
-
-    if (isLoaded || device) {
-      return;
-    }
+    const { initDevice } = useWebrtcStore.getState();
 
     const { capabilities } = await request<CapabilitiesResponseType>('/app/signal/capabilities');
     await initDevice(capabilities);
@@ -56,10 +53,16 @@ const useWebrtc = () => {
     async (roomId: string) => {
       const { addParticipant, addTrack } = useParticipantStore.getState();
       const { deviceEnable } = useDeviceStore.getState();
+      const { client } = useSignalStore.getState();
       setIsPending(true);
 
       try {
-        await connect({ onConnect: () => initSignaling(roomId) });
+        if (!client?.active) {
+          await connect();
+        }
+
+        initSubscribe(roomId);
+
         const { participants } = await request<JoinRoomResponseType>('/app/signal/join', {
           mediaOption: deviceEnable,
           roomId,
@@ -74,7 +77,6 @@ const useWebrtc = () => {
             producerIds.map((id) => consumeTrack(userId, id)),
           ),
         );
-
         const tracksInfo = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
         tracksInfo.forEach((t) => t && addTrack(t));
 
@@ -88,14 +90,16 @@ const useWebrtc = () => {
         setIsPending(false);
       }
     },
-    [consumeTrack, initSignaling, request, connect, initWebrtc],
+    [consumeTrack, initSubscribe, request, connect, initWebrtc],
   );
 
   const leaveRoom = useCallback(() => {
     sendLeave();
     const { reset } = useParticipantStore.getState();
+    const { clearDevice } = useWebrtcStore.getState();
     unsubscribeAll();
     disconnectTransport();
+    clearDevice();
     reset();
   }, [unsubscribeAll, disconnectTransport, sendLeave]);
 
