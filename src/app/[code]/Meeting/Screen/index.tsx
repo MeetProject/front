@@ -6,8 +6,13 @@ import StagedLayout from './StagedLayout';
 import TiledLayout from './TiledLayout';
 
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { TrackType } from '@/types/deviceType';
 
-export default function Screen() {
+interface ScreenProps {
+  updateTrackStatus: (userId: string, trackType: TrackType, shouldTrack: boolean) => Promise<void>;
+}
+
+export default function Screen({ updateTrackStatus }: ScreenProps) {
   const { screenStream } = useParticipantStore(
     useShallow((state) => ({
       info: state.info,
@@ -16,7 +21,7 @@ export default function Screen() {
   );
 
   if (screenStream && screenStream.stream) {
-    return <StagedLayout />;
+    return <StagedLayout updateTrackStatus={updateTrackStatus} />;
   }
-  return <TiledLayout />;
+  return <TiledLayout updateTrackStatus={updateTrackStatus} />;
 }

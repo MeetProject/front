@@ -58,7 +58,7 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
           />
         </div>
 
-        {(!device.video || !isReady) && (
+        {(!device.video || !isReady || stream?.getVideoTracks().length === 0) && (
           <div className='absolute inset-0 z-1'>
             <VideoOffOverlay color={color} name={name} />
           </div>

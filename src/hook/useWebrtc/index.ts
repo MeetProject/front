@@ -26,12 +26,14 @@ const useWebrtc = () => {
     consumeTrack,
     createTransport,
     disconnectTransport,
+    pauseConsumer,
     produceTrack,
     removeConsumer,
     removeProducer,
     replaceProducerTrack,
+    resumeConsumer,
     toggleProducerTrack,
-  } = useMediasoup(request);
+  } = useMediasoup(publish, request);
   const { initSubscribe } = useSignalingHandler(subscribe, consumeTrack, removeConsumer);
   const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave, sendProducerRemove } = useSignalSender(publish);
 
@@ -143,9 +145,11 @@ const useWebrtc = () => {
     isPending,
     joinRoom,
     leaveRoom,
+    pauseTrack: pauseConsumer,
     removeTrack,
     replaceProducerTrack,
     replaceTrack: replaceProducerTrack,
+    resumeTrack: resumeConsumer,
     sendChat,
     sendEmoji,
     sendHandUp,

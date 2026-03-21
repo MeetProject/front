@@ -4,10 +4,12 @@ import { useRouter } from 'next/navigation';
 
 import * as Icon from '@/asset/svg';
 import { ButtonTag } from '@/components';
+import { useWebrtcStore } from '@/store/useWebrtcStore';
 
 export default function CallEndButton() {
   const router = useRouter();
   const handleButtonClick = () => {
+    useWebrtcStore.setState({ isExistRoom: true });
     router.push('/');
   };
   return (

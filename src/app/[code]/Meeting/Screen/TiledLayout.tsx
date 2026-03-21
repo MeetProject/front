@@ -6,8 +6,13 @@ import UserTile from './UserTile';
 
 import { useResizeObserver, useTiledLayout } from '@/hook';
 import { cn } from '@/lib/cn';
+import { DeviceKindType } from '@/types/deviceType';
 
-export default function TiledLayout() {
+interface TiledLayoutProps {
+  updateTrackStatus: (userId: string, trackType: DeviceKindType, shouldTrack: boolean) => Promise<void>;
+}
+
+export default function TiledLayout({ updateTrackStatus }: TiledLayoutProps) {
   const {
     gridData,
     handleResize,
@@ -35,7 +40,7 @@ export default function TiledLayout() {
       >
         <UserTile />
         {gridData?.standardParticipants.map((id) => (
-          <ParticipantTile id={id} key={id} />
+          <ParticipantTile id={id} key={id} updateTrackStatus={updateTrackStatus} />
         ))}
 
         {gridData?.hasOverflowInMainGrid && (
@@ -51,7 +56,7 @@ export default function TiledLayout() {
           >
             <div className='h-full gap-3' style={lastRowWrapperStyle}>
               {gridData?.lastRowParticipants.map((id) => (
-                <ParticipantTile id={id} key={id} />
+                <ParticipantTile id={id} key={id} updateTrackStatus={updateTrackStatus} />
               ))}
 
               {gridData?.isOverflow && !gridData.hasOverflowInMainGrid && (

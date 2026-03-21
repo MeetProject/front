@@ -17,6 +17,7 @@ import useWebrtc from '@/hook/useWebrtc';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
+import { TrackType } from '@/types/deviceType';
 
 export default function Meeting() {
   const roomId = usePathname().slice(1);
@@ -28,8 +29,19 @@ export default function Meeting() {
     })),
   );
 
-  const { joinRoom, leaveRoom, removeTrack, replaceTrack, sendChat, sendEmoji, sendHandUp, shareScreen, toggleTrack } =
-    useWebrtc();
+  const {
+    joinRoom,
+    leaveRoom,
+    pauseTrack,
+    removeTrack,
+    replaceTrack,
+    resumeTrack,
+    sendChat,
+    sendEmoji,
+    sendHandUp,
+    shareScreen,
+    toggleTrack,
+  } = useWebrtc();
   const [isPending, setIsPending] = useState(true);
 
   const handleScreenShare = useCallback(async () => {
@@ -43,6 +55,18 @@ export default function Meeting() {
     await initScreenStream(true);
     await shareScreen();
   }, [initScreenStream, shareScreen, removeTrack]);
+
+  const handleToggleTrack = useCallback(
+    async (userId: string, trackType: TrackType, shouldTrack: boolean) => {
+      if (shouldTrack) {
+        await resumeTrack(userId, trackType);
+        return;
+      }
+
+      await pauseTrack(userId, trackType);
+    },
+    [resumeTrack, pauseTrack],
+  );
 
   useEffect(() => {
     if (!isInit) {
@@ -111,7 +135,7 @@ export default function Meeting() {
         <div className='relative flex flex-1 flex-col'>
           <div className='relative flex flex-1 shrink overflow-hidden px-4'>
             <div className='flex size-full shrink overflow-hidden rounded-[20px]'>
-              <Screen />
+              <Screen updateTrackStatus={handleToggleTrack} />
             </div>
             <RightDrawer sendChat={sendChat} />
           </div>

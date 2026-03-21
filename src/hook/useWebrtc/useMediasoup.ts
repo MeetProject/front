@@ -11,7 +11,10 @@ import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { ConsumerParamsResponseType, DtlsReponseType } from '@/types/session';
 import { AppData, Direction } from '@/types/webRtc';
 
-export const useMediasoup = (request: <T>(destination: string, payload: any) => Promise<T>) => {
+export const useMediasoup = (
+  publish: <T>(destination: string, payload?: T | undefined) => void,
+  request: <T>(destination: string, payload: any) => Promise<T>,
+) => {
   const sendTransport = useRef<Transport | null>(null);
   const recvTransport = useRef<Transport | null>(null);
 
@@ -21,6 +24,8 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
   const consumers = useRef<Map<string, Map<TrackType, Consumer>>>(new Map());
   const screenConsumers = useRef<Map<string, Consumer>>(new Map());
   const currentScreenSender = useRef<string | null>(null);
+
+  const resumedConsumer = useRef<Map<string, boolean>>(new Map());
 
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
@@ -40,9 +45,6 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
         });
 
         const consumer = await recvTransport.current.consume(consumerParams);
-        await request('/app/signal/resume', {
-          consumerId: consumer.id,
-        });
 
         const { appData, track } = consumer;
         const { trackType, userId } = appData as AppData;
@@ -50,6 +52,9 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
         if (trackType === 'screen') {
           currentScreenSender.current = userId;
           screenConsumers.current.set(consumer.id, consumer);
+          await publish('/app/consumer/resume', {
+            consumerId: consumer.id,
+          });
         } else {
           if (!consumers.current.has(userId)) {
             consumers.current.set(userId, new Map());
@@ -69,6 +74,7 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
           }
 
           removeTrack(userId, trackType);
+          resumedConsumer.current.delete(consumer.id);
         });
 
         return {
@@ -79,7 +85,52 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
         return null;
       }
     },
-    [request],
+    [request, publish],
+  );
+
+  const resumeConsumer = useCallback(
+    async (userId: string, trackType: TrackType) => {
+      const { isExistRoom } = useWebrtcStore.getState();
+
+      if (isExistRoom) {
+        return;
+      }
+
+      const consumerId = consumers.current.get(userId)?.get(trackType)?.id;
+
+      if (!consumerId || resumedConsumer.current.get(consumerId)) {
+        return;
+      }
+
+      await publish('/app/consumer/resume', {
+        consumerId,
+      });
+      resumedConsumer.current.set(consumerId, true);
+    },
+    [publish],
+  );
+
+  const pauseConsumer = useCallback(
+    async (userId: string, trackType: TrackType) => {
+      const { isExistRoom } = useWebrtcStore.getState();
+
+      if (isExistRoom) {
+        return;
+      }
+
+      const consumerId = consumers.current.get(userId)?.get(trackType)?.id;
+
+      if (!consumerId || !resumedConsumer.current.get(consumerId)) {
+        return;
+      }
+
+      await publish('/app/consumer/pause', {
+        consumerId,
+      });
+
+      resumedConsumer.current.delete(consumerId);
+    },
+    [publish],
   );
 
   const createTransport = useCallback(
@@ -266,10 +317,12 @@ export const useMediasoup = (request: <T>(destination: string, payload: any) => 
     createTransport,
     disconnectMediasoup,
     disconnectTransport,
+    pauseConsumer,
     produceTrack,
     removeConsumer,
     removeProducer,
     replaceProducerTrack,
+    resumeConsumer,
     toggleProducerTrack,
   };
 };

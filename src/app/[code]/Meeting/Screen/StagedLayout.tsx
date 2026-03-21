@@ -7,8 +7,13 @@ import UserTile from './UserTile';
 
 import { useResizeObserver, useStagedLayout } from '@/hook';
 import { cn } from '@/lib/cn';
+import { TrackType } from '@/types/deviceType';
 
-export default function StagedLayout() {
+interface StagedLayoutProps {
+  updateTrackStatus: (userId: string, trackType: TrackType, shouldTrack: boolean) => Promise<void>;
+}
+
+export default function StagedLayout({ updateTrackStatus }: StagedLayoutProps) {
   const { handleResize, layout, participantData } = useStagedLayout();
   const { containerRef } = useResizeObserver<HTMLDivElement>(handleResize);
 
@@ -43,7 +48,7 @@ export default function StagedLayout() {
             <div className='grid gap-3' style={sideGridStyle}>
               <UserTile />
               {participantData?.visible.map((id) => (
-                <ParticipantTile id={id} key={id} />
+                <ParticipantTile id={id} key={id} updateTrackStatus={updateTrackStatus} />
               ))}
 
               {participantData?.hasOverflow && (

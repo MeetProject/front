@@ -139,7 +139,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       }
 
       const newStreams = new Map(state.streams);
-      const existingStream = newStreams.get(userId) || new MediaStream();
+      const existingStream = new MediaStream(newStreams.get(userId)?.getTracks() ?? []);
       existingStream.addTrack(track);
       newStreams.set(userId, existingStream);
       return { streams: newStreams };
