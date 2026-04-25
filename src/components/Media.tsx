@@ -63,26 +63,31 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
   }, [audioOutput, tag]);
 
   useEffect(() => {
-    if (tag === 'audio' || !videoRef.current || !stream) {
+    if (!stream) {
+      return;
+    }
+
+    const el = tag === 'audio' ? audioRef.current : videoRef.current;
+    if (!el) {
       return;
     }
 
     const updateStreamSrc = () => {
-      if (!videoRef.current || videoRef.current.srcObject === stream) {
+      if (el.srcObject === stream) {
         return;
       }
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(() => {});
+      el.srcObject = stream;
+      el.play().catch(() => {});
     };
 
     updateStreamSrc();
 
-    stream?.getTracks().forEach((track) => {
+    stream.getTracks().forEach((track) => {
       track.addEventListener('ended', updateStreamSrc);
     });
 
     return () => {
-      stream?.getTracks().forEach((track) => {
+      stream.getTracks().forEach((track) => {
         track.removeEventListener('ended', updateStreamSrc);
       });
     };
