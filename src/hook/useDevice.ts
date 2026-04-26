@@ -8,7 +8,12 @@ import { DeviceKindType } from '@/types/deviceType';
 
 const useDevice = () => {
   const setMediaStream = useCallback(async (stream: MediaStream | null) => {
-    const deviceInfo = await getCurrentDeviceInfo(stream);
+    const deviceInfo = stream
+      ? await getCurrentDeviceInfo(stream)
+      : {
+          device: { audioInput: null, audioOutput: null, videoInput: null },
+          deviceList: { audioInput: [], audioOutput: [], videoInput: [] },
+        };
 
     useDeviceStore.setState({
       device: deviceInfo.device,
@@ -50,6 +55,22 @@ const useDevice = () => {
 
         if (isSyncEnable) {
           syncEnable(stream, constraint);
+        }
+
+        const audioTracks = stream.getAudioTracks();
+        const videoTracks = stream.getVideoTracks();
+
+        if (audioTracks.length > 1) {
+          audioTracks.slice(1).forEach((track) => {
+            track.stop();
+            stream.removeTrack(track);
+          });
+        }
+        if (videoTracks.length > 1) {
+          videoTracks.slice(1).forEach((track) => {
+            track.stop();
+            stream.removeTrack(track);
+          });
         }
 
         useDeviceStore.setState({
@@ -97,8 +118,12 @@ const useDevice = () => {
       }
 
       useDeviceStore.setState({ status: 'pending' });
+
       if (prevStream) {
-        prevStream.getTracks().forEach((track) => track.stop());
+        prevStream.getTracks().forEach((track) => {
+          track.stop();
+          prevStream.removeTrack(track);
+        });
       }
 
       const attempts = [
@@ -132,19 +157,21 @@ const useDevice = () => {
         const prevStream = stream ?? new MediaStream();
         const trackStream = await navigator.mediaDevices.getUserMedia(constraint);
         const newTrack = trackStream.getTracks().find((t) => t.kind === type) ?? null;
-        const oldTrack = stream?.getTracks().find((t) => t.kind === type);
+
+        const oldTracks = prevStream.getTracks().filter((t) => t.kind === type);
+        oldTracks.forEach((track) => {
+          track.stop();
+          prevStream.removeTrack(track);
+        });
 
         if (newTrack) {
           prevStream.addTrack(newTrack);
         }
 
-        if (oldTrack) {
-          oldTrack.stop();
-          prevStream.removeTrack(oldTrack);
-        }
+        const extraTracks = trackStream.getTracks().filter((t) => t.kind !== type);
+        extraTracks.forEach((track) => track.stop());
 
-        const updateStream = new MediaStream(prevStream.getTracks());
-        await setMediaStream(updateStream);
+        await setMediaStream(prevStream);
         updatePermission(type, 'granted');
         return newTrack;
       } catch (e) {
@@ -190,7 +217,8 @@ const useDevice = () => {
     const prevEnable = deviceEnable.audio;
     toggleDeviceEnalbe('audio');
 
-    stream.getAudioTracks().forEach((track) => {
+    const audioTracks = stream.getAudioTracks();
+    audioTracks.forEach((track) => {
       track.enabled = !prevEnable;
     });
 
@@ -209,13 +237,14 @@ const useDevice = () => {
     }
 
     const prevEnable = deviceEnable.video;
-
     toggleDeviceEnalbe('video');
 
     if (!prevEnable) {
+      // 비디오 활성화: 새 트랙 추가
       return await replaceNewTrack('video', videoInput?.deviceId ?? '', true);
     }
 
+    // 👉 FIX: 비디오 비활성화 - 모든 비디오 트랙 제거
     stream.getVideoTracks().forEach((track) => {
       track.stop();
       stream.removeTrack(track);
