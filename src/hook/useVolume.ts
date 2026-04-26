@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 
-const useVolume = (stream: MediaStream | null | undefined) => {
+const useVolume = (analyser: AnalyserNode | null) => {
   const rafRef = useRef<number | null>(null);
   const prevVolumeRef = useRef(0);
 
@@ -10,18 +10,13 @@ const useVolume = (stream: MediaStream | null | undefined) => {
   const [isExpand, setIsExpand] = useState(false);
 
   useEffect(() => {
-    if (!stream || stream.getAudioTracks().length === 0) {
+    if (!analyser) {
       setVolume(0);
       setIsExpand(false);
       return;
     }
 
-    const audioContext = new AudioContext();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaStreamSource(stream);
     analyser.fftSize = 256;
-
-    source.connect(analyser);
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
@@ -42,23 +37,8 @@ const useVolume = (stream: MediaStream | null | undefined) => {
       rafRef.current = requestAnimationFrame(updateVolume);
     };
 
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
-    }
-
     updateVolume();
-
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-      source.disconnect();
-      analyser.disconnect();
-      if (audioContext.state !== 'closed') {
-        audioContext.close();
-      }
-    };
-  }, [stream]);
+  }, [analyser]);
 
   return { isExpand, volume };
 };

@@ -1,17 +1,13 @@
-import { useVolume } from '@/hook';
-
-interface VisualizerProperties {
-  stream: MediaStream | null;
+interface VisualizerContentProps {
+  volume: number;
   className?: string;
   color?: string;
 }
 
-export default function Visualizer({ className, color, stream }: VisualizerProperties) {
-  const { volume } = useVolume(stream);
-
+export default function VisualizerContent({ className, color, volume }: VisualizerContentProps) {
   const getMappedHeight = (val: number) => {
     const THRESHOLD = 3;
-    if (val <= 3) {
+    if (val <= THRESHOLD) {
       return 0;
     }
 

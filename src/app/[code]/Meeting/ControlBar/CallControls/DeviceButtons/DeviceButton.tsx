@@ -82,7 +82,7 @@ export default function DeviceButton({
           >
             <div className='flex size-12 items-center justify-center'>
               {type === 'audio' && enableMute && deviceEnable.audio && (
-                <Visualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' stream={stream} />
+                <Visualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' source={stream} />
               )}
               <Icon.Chevron
                 className={cn(

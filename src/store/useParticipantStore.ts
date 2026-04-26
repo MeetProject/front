@@ -7,51 +7,36 @@ import { ChatResponseType, ParticipantDataType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
 import { AppData } from '@/types/webRtc';
 
-/* const TEST_PARTICIPANTS = [
-  'Alpha',
-  'Bravo',
-  'Charlie',
-  'Delta',
-  'Echo',
-  'Foxtrot',
-  'Golf',
-  'Hotel',
-  'India',
-  'Juliet',
-  'Kilo',
-  'Lima',
-  'Mike',
-  'November',
-  'Oscar',
-  'Papa',
-  'Quebec',
-  'Romeo',
-  'Sierra',
-  'Tango',
-]; */
-
 interface StreamInfo {
   userId: string | null;
   stream: null | MediaStream;
 }
 
+interface AudioContextState {
+  analyser: AnalyserNode;
+  gainNode: GainNode;
+}
+
 interface ParticipantState {
+  audioTrack: MediaStream | null;
+  audioContext: AudioContext | null;
   participants: string[];
-  streams: Map<string, MediaStream>;
+  auidoStreams: Map<string, AudioContextState>;
+  videoStreams: Map<string, MediaStream>;
   screenStream: StreamInfo;
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
   timer: Map<string, NodeJS.Timeout | null>;
   chat: GroupChatType[];
+  partiicpantAudioStream: MediaStream | null;
 
   addChat: (value: ChatResponseType) => void;
 
   addParticipant: (userData: ParticipantDataType) => void;
   addTrack: (trackInfo: ConsumerResult) => void;
   removeParticipant: (id: string) => void;
-  removeStream: (id: string) => void;
-  removeTrack: (userId: string, trackType: TrackType) => void;
+  removeTrack: (id: string, trackType: TrackType) => void;
   toggleDevices: (id: string, value: DeviceEnableType) => void;
   reset: () => void;
   addEmoji: (id: string, value: EmojiType | null) => void;
@@ -76,7 +61,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { chat: newChat };
     });
   },
-
   addEmoji: (id, value) => {
     const existingTimer = get().timer.get(id);
     if (existingTimer) {
@@ -102,7 +86,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { emoji: nextEmoji };
     });
   },
-
   addParticipant: (participant) => {
     set((state) => {
       const {
@@ -125,6 +108,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       appData: { trackType, userId },
       track,
     } = trackInfo;
+
     set((state) => {
       if (trackType.includes('screen')) {
         if (state.screenStream.userId !== userId) {
@@ -138,45 +122,34 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
         return { screenStream: { stream: newStream, userId } };
       }
 
-      const newStreams = new Map(state.streams);
-      const existingStream = new MediaStream(newStreams.get(userId)?.getTracks() ?? []);
-      existingStream.addTrack(track);
-      newStreams.set(userId, existingStream);
-      return { streams: newStreams };
+      const prev = get().videoStreams.get(userId);
+      if (prev) {
+        prev.getTracks().forEach((t) => t.stop());
+      }
+
+      const newStreams = new Map(state.videoStreams);
+      newStreams.set(userId, new MediaStream([track]));
+      console.log(newStreams);
+      return { videoStreams: newStreams };
     });
   },
-  chat: [],
 
-  devices: new Map(/* TEST_PARTICIPANTS.map((id) => [id, { audio: true, video: true }]) */),
+  audioContext: null,
+
+  audioTrack: null,
+  auidoStreams: new Map(),
+  chat: [],
+  devices: new Map(),
+
   emoji: new Map(),
-  info: new Map(/* [
-    ['Alpha', { color: '#FF6B6B', name: 'Alpha' }],
-    ['Bravo', { color: '#4D96FF', name: 'Bravo' }],
-    ['Charlie', { color: '#6BCB77', name: 'Charlie' }],
-    ['Delta', { color: '#FFD93D', name: 'Delta' }],
-    ['Echo', { color: '#845EC2', name: 'Echo' }],
-    ['Foxtrot', { color: '#FF9671', name: 'Foxtrot' }],
-    ['Golf', { color: '#00C9A7', name: 'Golf' }],
-    ['Hotel', { color: '#C34A36', name: 'Hotel' }],
-    ['India', { color: '#2C73D2', name: 'India' }],
-    ['Juliet', { color: '#F9A826', name: 'Juliet' }],
-    ['Kilo', { color: '#3D5AFE', name: 'Kilo' }],
-    ['Lima', { color: '#FF7043', name: 'Lima' }],
-    ['Mike', { color: '#26A69A', name: 'Mike' }],
-    ['November', { color: '#AB47BC', name: 'November' }],
-    ['Oscar', { color: '#EC407A', name: 'Oscar' }],
-    ['Papa', { color: '#7CB342', name: 'Papa' }],
-    ['Quebec', { color: '#29B6F6', name: 'Quebec' }],
-    ['Romeo', { color: '#FFA726', name: 'Romeo' }],
-    ['Sierra', { color: '#8D6E63', name: 'Sierra' }],
-    ['Tango', { color: '#78909C', name: 'Tango' }],
-  ] */),
-  participants: /* TEST_PARTICIPANTS */ [],
+  info: new Map(),
+  participants: [],
+  partiicpantAudioStream: null,
   removeParticipant: (id: string) =>
     set((prev) => {
       const newIds = prev.participants.filter((i) => i !== id);
 
-      const newStreams = new Map(prev.streams);
+      const newStreams = new Map(prev.videoStreams);
       newStreams.delete(id);
 
       const newDevices = new Map(prev.devices);
@@ -195,42 +168,32 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
       return { devices: newDevices, emoji: newEmoji, info: newInfo, participants: newIds, streams: newStreams };
     }),
-  removeStream: (id: string) =>
+  removeTrack: (id: string, trackType: TrackType) =>
     set((prev) => {
-      const newStreams = new Map(prev.streams);
-      newStreams.delete(id);
-
-      return { streams: newStreams };
-    }),
-
-  removeTrack: (userId, trackType) =>
-    set((state) => {
-      const { screenStream, streams } = state;
-
-      if (trackType === 'audio' || trackType === 'video') {
-        const newMap = new Map(streams);
-        const currentStream = newMap.get(userId);
-        if (!currentStream) {
-          return {};
-        }
-
-        const track = trackType === 'audio' ? currentStream.getAudioTracks() : currentStream.getVideoTracks();
-
-        track.forEach((t) => currentStream.removeTrack(t));
-        if (currentStream.getTracks().length === 0) {
-          newMap.delete(userId);
-        }
-
-        return { streams: newMap };
-      }
-
-      if (!screenStream.stream) {
+      if (trackType === 'screen') {
+        prev.screenStream.stream?.getTracks().forEach((t) => t.stop());
         return { screenStream: { stream: null, userId: null } };
       }
 
-      screenStream.stream.getTracks().forEach((t) => t.stop());
+      if (trackType === 'audio') {
+        const audioMap = new Map(prev.auidoStreams);
+        const audio = audioMap.get(id);
+        audio?.analyser.disconnect();
+        audio?.gainNode.disconnect();
 
-      return { screenStream: { stream: null, userId: null } };
+        audioMap.delete(id);
+
+        return { auidoStreams: audioMap };
+      }
+
+      const prevStreams = new Map(prev.videoStreams);
+      prevStreams
+        .get(id)
+        ?.getTracks()
+        .forEach((t) => t.stop());
+      prevStreams.delete(id);
+
+      return { videoStreams: prevStreams };
     }),
   reset: () => {
     get().timer.forEach((t) => t && clearTimeout(t));
@@ -238,8 +201,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
   },
 
   screenStream: { stream: null, userId: null },
-  streams: new Map(),
-
   timer: new Map(),
 
   toggleDevices: (id, value) => {
@@ -257,5 +218,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { devices: newDevices };
     });
   },
+
   userEmoji: null,
+  videoStreams: new Map(),
 }));

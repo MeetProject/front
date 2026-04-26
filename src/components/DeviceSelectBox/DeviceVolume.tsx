@@ -1,7 +1,7 @@
 'use client';
 
 import * as Icon from '@/asset/svg';
-import { useVolume } from '@/hook';
+import useStreamVolume from '@/hook/useStreamVolume';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 interface DeviceVolumeProps {
@@ -10,7 +10,7 @@ interface DeviceVolumeProps {
 
 export default function DeviceVolume({ color }: DeviceVolumeProps) {
   const stream = useDeviceStore((state) => state.stream);
-  const { volume } = useVolume(stream);
+  const { volume } = useStreamVolume(stream);
   return (
     <div
       className={`${color === 'white' ? 'border-outline-dark' : 'border-surface-variant'} flex w-full items-center gap-2 border-t px-2.5 py-1`}

@@ -3,6 +3,7 @@
 import { Consumer, Producer, Transport } from 'mediasoup-client/types';
 import { useCallback, useRef } from 'react';
 
+import { useAudioStore } from '@/store/useAudioStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
@@ -32,6 +33,8 @@ export const useMediasoup = (
       const { userId: id } = useUserInfoStore.getState();
       const { device } = useWebrtcStore.getState();
       const { removeTrack } = useParticipantStore.getState();
+      const { removeAudioTrack } = useAudioStore.getState();
+
       if (!recvTransport.current || !device || targetId === id) {
         return null;
       }
@@ -49,12 +52,15 @@ export const useMediasoup = (
         const { appData, track } = consumer;
         const { trackType, userId } = appData as AppData;
 
-        if (trackType === 'screen') {
-          currentScreenSender.current = userId;
-          screenConsumers.current.set(consumer.id, consumer);
+        if (trackType !== 'video') {
           await publish('/app/consumer/resume', {
             consumerId: consumer.id,
           });
+        }
+
+        if (trackType === 'screen') {
+          currentScreenSender.current = userId;
+          screenConsumers.current.set(consumer.id, consumer);
         } else {
           if (!consumers.current.has(userId)) {
             consumers.current.set(userId, new Map());
@@ -73,7 +79,12 @@ export const useMediasoup = (
             consumers.current.delete(userId);
           }
 
-          removeTrack(userId, trackType);
+          if (trackType === 'audio') {
+            removeAudioTrack(userId);
+          } else {
+            removeTrack(userId, trackType);
+          }
+
           resumedConsumer.current.delete(consumer.id);
         });
 

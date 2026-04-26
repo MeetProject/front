@@ -1,11 +1,6 @@
-'use client';
+import ScreenAudio from './ScreenAudio';
+import ScreenWrapper from './ScreenWrapper';
 
-import { useShallow } from 'zustand/shallow';
-
-import StagedLayout from './StagedLayout';
-import TiledLayout from './TiledLayout';
-
-import { useParticipantStore } from '@/store/useParticipantStore';
 import { TrackType } from '@/types/deviceType';
 
 interface ScreenProps {
@@ -13,15 +8,10 @@ interface ScreenProps {
 }
 
 export default function Screen({ updateTrackStatus }: ScreenProps) {
-  const { screenStream } = useParticipantStore(
-    useShallow((state) => ({
-      info: state.info,
-      screenStream: state.screenStream,
-    })),
+  return (
+    <>
+      <ScreenWrapper updateTrackStatus={updateTrackStatus} />
+      <ScreenAudio />
+    </>
   );
-
-  if (screenStream && screenStream.stream) {
-    return <StagedLayout updateTrackStatus={updateTrackStatus} />;
-  }
-  return <TiledLayout updateTrackStatus={updateTrackStatus} />;
 }

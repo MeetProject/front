@@ -17,19 +17,22 @@ export default function ParticipantTile({ id, updateTrackStatus }: ParticipantTi
       device: state.devices.get(id),
       emoji: state.emoji.get(id),
       info: state.info.get(id),
-      stream: state.streams.get(id),
+      stream: state.videoStreams.get(id),
     })),
   );
+
+  console.log(id, stream);
 
   useEffect(() => {
     const handleTrackEnable = async (value: boolean) => {
       if (!stream) {
         return;
       }
-      await Promise.all([updateTrackStatus(id, 'audio', value), updateTrackStatus(id, 'video', value)]);
+      await updateTrackStatus(id, 'video', value);
     };
 
     handleTrackEnable(true);
+    console.log('enable Track');
     return () => {
       handleTrackEnable(false);
     };

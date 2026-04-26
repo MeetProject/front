@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 
+import { useAudioStore } from '@/store/useAudioStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
@@ -81,6 +82,7 @@ export const useSignalingHandler = (
     async (data: ProducerResponseType) => {
       const { userId: id } = useUserInfoStore.getState();
       const { addTrack } = useParticipantStore.getState();
+      const { addAudioTrack } = useAudioStore.getState();
       const { producerId, userId } = data;
 
       if (userId === id) {
@@ -90,6 +92,11 @@ export const useSignalingHandler = (
       const trackInfo = await consumeTrack(userId, producerId);
 
       if (!trackInfo) {
+        return;
+      }
+
+      if (trackInfo.appData.trackType === 'audio') {
+        addAudioTrack(trackInfo);
         return;
       }
       addTrack(trackInfo);

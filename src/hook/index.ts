@@ -5,5 +5,4 @@ export { default as useResizeObserver } from './useResizeObserver';
 export { default as useShortcutKey } from './useShortcutKey';
 export { default as useStagedLayout } from './useStagedLayout';
 export { default as useTiledLayout } from './useTiledLayout';
-export { default as useVolume } from './useVolume';
 export { default as useMediasoup } from './useWebrtc';
