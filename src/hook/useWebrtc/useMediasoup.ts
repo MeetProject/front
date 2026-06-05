@@ -295,19 +295,10 @@ export const useMediasoup = (
       }
 
       const { deviceEnable } = useDeviceStore.getState();
+      const shouldResume = value !== undefined ? value : !deviceEnable[trackType];
+      const endPoint = shouldResume ? '/app/signal/producer/resume' : '/app/signal/producer/pause';
 
-      if (value !== undefined) {
-        const endPoint = value ? '/app/signal/producer/resume' : '/app/signal/producer/pause';
-        await request(endPoint, { producerId: producer.id });
-        return;
-      }
-
-      if (deviceEnable[trackType]) {
-        await request('/app/signal/producer/pause', producer.id);
-        return;
-      }
-
-      await request('/app/signal/producer/resume', producer.id);
+      await request(endPoint, { producerId: producer.id });
     },
     [request],
   );
