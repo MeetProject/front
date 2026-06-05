@@ -32,12 +32,14 @@ export const useSignaling = (url: string) => {
         const { client, subscription } = useSignalStore.getState();
         if (client?.active) {
           resolve(client);
+          return;
         }
 
         const { userId } = useUserInfoStore.getState();
 
         if (!userId) {
           reject('userId');
+          return;
         }
 
         const newClient = new Client({
