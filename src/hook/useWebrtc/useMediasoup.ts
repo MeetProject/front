@@ -69,6 +69,14 @@ export const useMediasoup = (
         }
 
         consumer.on('@close', () => {
+          if (trackType === 'screen') {
+            screenConsumers.current.delete(consumer.id);
+            if (currentScreenSender.current === userId && screenConsumers.current.size === 0) {
+              currentScreenSender.current = null;
+            }
+            return;
+          }
+
           const userSet = consumers.current.get(userId);
           if (!userSet) {
             return;
