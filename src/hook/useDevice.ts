@@ -31,7 +31,10 @@ const useDevice = () => {
     }
 
     if (constranint.video && !deviceEnable.video) {
-      stream.getVideoTracks().forEach((track) => track.stop());
+      stream.getVideoTracks().forEach((track) => {
+        track.stop();
+        stream.removeTrack(track);
+      });
     }
   }, []);
 
