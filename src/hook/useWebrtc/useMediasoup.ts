@@ -109,9 +109,9 @@ export const useMediasoup = (
 
   const resumeConsumer = useCallback(
     async (userId: string, trackType: TrackType) => {
-      const { isExistRoom } = useWebrtcStore.getState();
+      const { isExitingRoom } = useWebrtcStore.getState();
 
-      if (isExistRoom) {
+      if (isExitingRoom) {
         return;
       }
 
@@ -131,9 +131,9 @@ export const useMediasoup = (
 
   const pauseConsumer = useCallback(
     async (userId: string, trackType: TrackType) => {
-      const { isExistRoom } = useWebrtcStore.getState();
+      const { isExitingRoom } = useWebrtcStore.getState();
 
-      if (isExistRoom) {
+      if (isExitingRoom) {
         return;
       }
 
