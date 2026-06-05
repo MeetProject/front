@@ -9,7 +9,7 @@ import { useWebrtcStore } from '@/store/useWebrtcStore';
 export default function CallEndButton() {
   const router = useRouter();
   const handleButtonClick = () => {
-    useWebrtcStore.setState({ isExistRoom: true });
+    useWebrtcStore.setState({ isExitingRoom: true });
     router.push('/');
   };
   return (

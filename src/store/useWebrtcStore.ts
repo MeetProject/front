@@ -7,7 +7,7 @@ interface WebrtcState {
   initDevice: (capabilities: RtpCapabilities) => Promise<Device | null>;
   clearDevice: () => void;
   isLoaded: boolean;
-  isExistRoom: boolean;
+  isExitingRoom: boolean;
 }
 
 export const useWebrtcStore = create<WebrtcState>((set, get) => ({
@@ -31,6 +31,6 @@ export const useWebrtcStore = create<WebrtcState>((set, get) => ({
       return null;
     }
   },
-  isExistRoom: false,
+  isExitingRoom: false,
   isLoaded: false,
 }));

@@ -12,7 +12,7 @@ export default function Page() {
   const userId = useUserInfoStore((state) => state.userId);
 
   useEffect(() => {
-    useWebrtcStore.setState({ isExistRoom: false });
+    useWebrtcStore.setState({ isExitingRoom: false });
   }, []);
   return <>{userId ? <Meeting /> : <PreJoin />}</>;
 }
