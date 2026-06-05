@@ -118,11 +118,21 @@ export default function Meeting() {
       return;
     }
 
-    screenStreams.getVideoTracks()[0].onended = () => {
-      /* remove screen providers */
-      /* event emit broadcast -> handle screenStatus update */
+    const videoTrack = screenStreams.getVideoTracks()[0];
+    if (!videoTrack) {
+      return;
+    }
+
+    videoTrack.onended = () => {
+      const { stopScreenStream } = useDeviceStore.getState();
+      removeTrack('screen');
+      stopScreenStream();
     };
-  }, [screenStreams]);
+
+    return () => {
+      videoTrack.onended = null;
+    };
+  }, [screenStreams, removeTrack]);
 
   if (isPending) {
     return <Loading isPending={isPending} />;
