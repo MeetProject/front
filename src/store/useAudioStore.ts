@@ -18,6 +18,7 @@ interface AudioState {
   audioContext: AudioContext | null;
   addAudioTrack: (trackInfo: ConsumerResult) => Promise<void>;
   removeAudioTrack: (id: string) => void;
+  resumeAudioContext: () => Promise<void>;
   audioDestination: MediaStreamAudioDestinationNode | null;
   audioStream: MediaStream | null;
 }
@@ -35,8 +36,10 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       return;
     }
 
+    // Safari 등에서 user gesture 밖의 resume()은 reject될 수 있으므로 그래프 구성을 막지 않도록 비동기로 처리한다.
+    // 실제 재생 복구는 사용자 제스처 시점의 resumeAudioContext()가 담당한다.
     if (audioContext.state === 'suspended') {
-      await audioContext.resume();
+      audioContext.resume().catch(() => {});
     }
 
     const destination = get().audioDestination ?? audioContext.createMediaStreamDestination();
@@ -91,5 +94,16 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     newAudioMap.delete(id);
 
     set({ audio: newAudioMap });
+  },
+
+  resumeAudioContext: async () => {
+    const audioContext = get().audioContext;
+    if (!audioContext || audioContext.state !== 'suspended') {
+      return;
+    }
+
+    try {
+      await audioContext.resume();
+    } catch {}
   },
 }));
