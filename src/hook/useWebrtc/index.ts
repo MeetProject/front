@@ -88,11 +88,19 @@ const useWebrtc = () => {
         currentRoomId.current = roomId;
       } catch (e) {
         console.error(e);
+
+        const { reset } = useParticipantStore.getState();
+        const { clearDevice } = useWebrtcStore.getState();
+        unsubscribeAll();
+        disconnectTransport();
+        clearDevice();
+        reset();
+        currentRoomId.current = null;
       } finally {
         setIsPending(false);
       }
     },
-    [consumeTrack, initSubscribe, request, connect, initWebrtc],
+    [consumeTrack, initSubscribe, request, connect, initWebrtc, unsubscribeAll, disconnectTransport],
   );
 
   const leaveRoom = useCallback(() => {
