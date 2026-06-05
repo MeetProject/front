@@ -157,24 +157,20 @@ const useDevice = () => {
         : { [type]: true };
 
       try {
-        const prevStream = stream ?? new MediaStream();
         const trackStream = await navigator.mediaDevices.getUserMedia(constraint);
         const newTrack = trackStream.getTracks().find((t) => t.kind === type) ?? null;
 
-        const oldTracks = prevStream.getTracks().filter((t) => t.kind === type);
-        oldTracks.forEach((track) => {
-          track.stop();
-          prevStream.removeTrack(track);
-        });
-
-        if (newTrack) {
-          prevStream.addTrack(newTrack);
-        }
+        const baseTracks = stream?.getTracks().filter((t) => t.kind !== type) ?? [];
+        stream
+          ?.getTracks()
+          .filter((t) => t.kind === type)
+          .forEach((track) => track.stop());
 
         const extraTracks = trackStream.getTracks().filter((t) => t.kind !== type);
         extraTracks.forEach((track) => track.stop());
 
-        await setMediaStream(prevStream);
+        const nextStream = new MediaStream([...baseTracks, ...(newTrack ? [newTrack] : [])]);
+        await setMediaStream(nextStream);
         updatePermission(type, 'granted');
         return newTrack;
       } catch (e) {
