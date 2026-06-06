@@ -119,6 +119,7 @@ export const useSignalingHandler = (
     async (data: TrackResponseType) => {
       const { userId } = useUserInfoStore.getState();
       const { addTrack } = useParticipantStore.getState();
+      const { addAudioTrack } = useAudioStore.getState();
 
       const { produceId, userId: target } = data;
       if (userId === target) {
@@ -130,7 +131,16 @@ export const useSignalingHandler = (
         .filter((result) => result.status === 'fulfilled')
         .map((result) => result.value);
 
-      successResult.forEach((r) => r && addTrack(r));
+      successResult.forEach((r) => {
+        if (!r) {
+          return;
+        }
+        if (r.appData.trackType === 'audio') {
+          addAudioTrack(r);
+          return;
+        }
+        addTrack(r);
+      });
     },
     [consumeTrack],
   );

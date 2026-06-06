@@ -7,6 +7,7 @@ import { useSignaling } from './useSignaling';
 import { useSignalingHandler } from './useSignalingHandler';
 import { useSignalSender } from './useSignalSender';
 
+import { useAudioStore } from '@/store/useAudioStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
@@ -79,8 +80,18 @@ const useWebrtc = () => {
             producerIds.map((id) => consumeTrack(userId, id)),
           ),
         );
+        const { addAudioTrack } = useAudioStore.getState();
         const tracksInfo = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
-        tracksInfo.forEach((t) => t && addTrack(t));
+        tracksInfo.forEach((t) => {
+          if (!t) {
+            return;
+          }
+          if (t.appData.trackType === 'audio') {
+            addAudioTrack(t);
+            return;
+          }
+          addTrack(t);
+        });
 
         useInteractionStore.setState({
           handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
