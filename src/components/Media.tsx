@@ -8,9 +8,11 @@ import { useDeviceStore } from '@/store/useDeviceStore';
 interface MediaProps extends MediaHTMLAttributes<HTMLMediaElement> {
   tag: 'video' | 'audio';
   stream?: MediaStream;
+  // Web Audio(MediaStreamDestination) 스트림 재생 시 setSinkId가 이중 출력을 유발할 수 있어 끌 수 있도록 한다.
+  disableSinkId?: boolean;
 }
 
-const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props }, ref) => {
+const Media = forwardRef<HTMLMediaElement, MediaProps>(({ disableSinkId = false, stream, tag, ...props }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -34,7 +36,12 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
     }
 
     const applyDevice = async () => {
-      if (!audioOutput || !('setSinkId' in HTMLMediaElement.prototype) || el.sinkId === audioOutput.deviceId) {
+      if (
+        disableSinkId ||
+        !audioOutput ||
+        !('setSinkId' in HTMLMediaElement.prototype) ||
+        el.sinkId === audioOutput.deviceId
+      ) {
         return;
       }
 
@@ -60,7 +67,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
     };
 
     applyDevice();
-  }, [audioOutput, tag]);
+  }, [audioOutput, tag, disableSinkId]);
 
   useEffect(() => {
     if (!stream) {
