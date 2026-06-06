@@ -1,21 +1,31 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
-import { Media } from '@/components';
 import { useAudioStore } from '@/store/useAudioStore';
+import { useDeviceStore } from '@/store/useDeviceStore';
 
+// 참가자 오디오는 AudioContext.destination으로 출력되므로 별도 <audio> 엘리먼트는 두지 않는다.
+// 이 컴포넌트는 (1) 선택된 스피커를 AudioContext.setSinkId로 동기화하고
+// (2) Safari 등 자동재생 정책으로 suspended 된 컨텍스트를 사용자 제스처에 resume 하는 역할만 한다.
 export default function ScreenAudio() {
-  const masterStream = useAudioStore((state) => state.audioStream);
-  const audioRef = useRef<HTMLMediaElement>(null);
+  const audioOutput = useDeviceStore((state) => state.device.audioOutput);
 
-  // Safari 등 자동재생 정책으로 join 시점(user gesture 밖)에 suspended/blocked 된 오디오를
-  // 사용자 첫 상호작용 시점에 resume + 재생하여 복구한다.
+  useEffect(() => {
+    if (!audioOutput?.deviceId) {
+      return;
+    }
+    useAudioStore.getState().setOutputDevice(audioOutput.deviceId);
+  }, [audioOutput]);
+
   useEffect(() => {
     const unlock = () => {
-      const { resumeAudioContext } = useAudioStore.getState();
+      const { audioOutput: output } = useDeviceStore.getState().device;
+      const { resumeAudioContext, setOutputDevice } = useAudioStore.getState();
       resumeAudioContext();
-      audioRef.current?.play().catch(() => {});
+      if (output?.deviceId) {
+        setOutputDevice(output.deviceId);
+      }
     };
 
     window.addEventListener('pointerdown', unlock);
@@ -29,5 +39,5 @@ export default function ScreenAudio() {
     };
   }, []);
 
-  return <Media autoPlay={true} ref={audioRef} stream={masterStream ?? undefined} tag='audio' />;
+  return null;
 }
