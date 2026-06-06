@@ -6,7 +6,6 @@ import { useCallback, useState } from 'react';
 import CurrentDate from './CurrentDate';
 import HelpMenu from './HelpMenu';
 import IconButton from './IconButton';
-//import InfoMenu from './InfoMenu';
 
 import * as Icon from '@/asset/svg';
 import { Feedback, MediaPermissionDialog, Setting } from '@/components';

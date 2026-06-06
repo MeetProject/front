@@ -21,7 +21,6 @@ export const canUseSetSinkId = (): boolean => {
 
   const userAgent = window.navigator.userAgent;
 
-  // 모바일 환경 제외
   const isMobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ||
     (navigator.maxTouchPoints > 0 && /Mac/.test(userAgent));
@@ -30,7 +29,6 @@ export const canUseSetSinkId = (): boolean => {
     return false;
   }
 
-  // Firefox 제외
   const isFirefox = userAgent.toLowerCase().includes('firefox');
   if (isFirefox) {
     return false;

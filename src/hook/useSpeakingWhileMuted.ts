@@ -71,7 +71,6 @@ const useSpeakingWhileMuted = (stream: MediaStream | null, active: boolean, opti
       if (avg > threshold) {
         speakingMsRef.current += dt;
       } else {
-        // 단어 사이의 짧은 공백은 허용하되 천천히 감쇠시켜 잡음/순간음에 의한 오탐을 방지
         speakingMsRef.current = Math.max(0, speakingMsRef.current - dt * 0.5);
       }
 

@@ -97,9 +97,7 @@ const useWebrtc = () => {
           handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
         });
         currentRoomId.current = roomId;
-      } catch (e) {
-        console.error(e);
-
+      } catch {
         const { reset } = useParticipantStore.getState();
         const { clearDevice } = useWebrtcStore.getState();
         unsubscribeAll();

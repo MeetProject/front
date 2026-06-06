@@ -239,11 +239,9 @@ const useDevice = () => {
     toggleDeviceEnalbe('video');
 
     if (!prevEnable) {
-      // 비디오 활성화: 새 트랙 추가
       return await replaceNewTrack('video', videoInput?.deviceId ?? '', true);
     }
 
-    // 👉 FIX: 비디오 비활성화 - 모든 비디오 트랙 제거
     stream.getVideoTracks().forEach((track) => {
       track.stop();
       stream.removeTrack(track);
