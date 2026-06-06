@@ -129,7 +129,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
       const newStreams = new Map(state.videoStreams);
       newStreams.set(userId, new MediaStream([track]));
-      console.log(newStreams);
       return { videoStreams: newStreams };
     });
   },

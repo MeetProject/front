@@ -39,15 +39,12 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       return;
     }
 
-    // Safari 등에서 user gesture 밖의 resume()은 reject될 수 있으므로 그래프 구성을 막지 않도록 비동기로 처리한다.
-    // 실제 재생 복구는 사용자 제스처 시점의 resumeAudioContext()가 담당한다.
     if (audioContext.state === 'suspended') {
       audioContext.resume().catch(() => {});
     }
 
     const mediaStream = new MediaStream([track]);
 
-    // WebRTC 버그 우회를 위한 더미 오디오(원격 트랙을 Web Audio 그래프로 끌어오기 위한 sink)
     const dumy = new window.Audio();
     dumy.srcObject = mediaStream;
     dumy.muted = true;
@@ -62,9 +59,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     source.connect(analyser);
     analyser.connect(gainNode);
 
-    // 가청 출력은 AudioContext.destination으로 일원화한다.
-    // (MediaStreamDestination + <audio> 경로는 Web Audio 스트림에 대해 HTMLMediaElement.setSinkId가
-    //  동작하지 않아 스피커 변경이 불가능했음 -> AudioContext.setSinkId로 전환)
     gainNode.connect(audioContext.destination);
 
     const newAudioMap = new Map(get().audio);
@@ -72,7 +66,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
 
     set({ audio: newAudioMap, audioContext });
 
-    // 컨텍스트 최초 생성 시 현재 선택된 출력 장치를 적용한다.
     if (isNewContext) {
       const { audioOutput } = useDeviceStore.getState().device;
       if (audioOutput?.deviceId) {

@@ -87,7 +87,6 @@ export interface LeaveResponseType {
   userId: string;
 }
 
-// interaction
 export interface ChatPayloadType {
   message: string;
 }

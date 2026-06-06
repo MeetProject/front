@@ -21,8 +21,6 @@ export default function ParticipantTile({ id, updateTrackStatus }: ParticipantTi
     })),
   );
 
-  console.log(id, stream);
-
   useEffect(() => {
     const handleTrackEnable = async (value: boolean) => {
       if (!stream) {
@@ -32,7 +30,6 @@ export default function ParticipantTile({ id, updateTrackStatus }: ParticipantTi
     };
 
     handleTrackEnable(true);
-    console.log('enable Track');
     return () => {
       handleTrackEnable(false);
     };
