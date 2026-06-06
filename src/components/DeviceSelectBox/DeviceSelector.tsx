@@ -30,7 +30,6 @@ export default function DeviceSelector({
   onClose,
   onPlay,
   onTrackChange,
-  overflow,
   positionX,
   positionY,
   theme = 'default',
@@ -53,8 +52,7 @@ export default function DeviceSelector({
   const isDark = theme === 'dark';
 
   const wrapperCn = cn(
-    'animate-slide-in-bottom absolute z-10 max-h-94 origin-top overflow-hidden rounded rounded-2xl py-1.5 py-2 transition-all',
-    !overflow && 'w-full',
+    'animate-slide-in-bottom absolute z-10 max-h-94 w-80 min-w-full origin-top overflow-hidden rounded-2xl py-2 transition-all',
     positionY === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
     positionX === 'center' ? 'left-1/2 -translate-x-1/2' : positionX === 'left' ? 'left-0' : 'right-0',
     isDark ? 'bg-surface-base shadow-none' : 'bg-white shadow-xl',
@@ -65,7 +63,7 @@ export default function DeviceSelector({
       {deviceList[type].map((device) => (
         <button
           className={cn(
-            'group relative flex h-11 w-full items-center px-4 pl-14 transition-colors',
+            'group relative flex h-11 w-80 items-center px-4 pl-14 transition-colors',
             isDark
               ? device.deviceId === currentValue.deviceId
                 ? 'hover:bg-state-hover bg-state-active'

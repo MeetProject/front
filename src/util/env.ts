@@ -37,6 +37,23 @@ export const canUseSetSinkId = (): boolean => {
   return true;
 };
 
+export const isSafari = (): boolean => {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+
+  const userAgent = navigator.userAgent.toLowerCase();
+  return (
+    userAgent.includes('safari') &&
+    !userAgent.includes('chrome') &&
+    !userAgent.includes('chromium') &&
+    !userAgent.includes('crios') &&
+    !userAgent.includes('fxios') &&
+    !userAgent.includes('edg')
+  );
+};
+export const canSelectOutputDevice = (): boolean => canUseSetSinkId() && !isSafari() && !isMac();
+
 export const isScreenShareSupported = () =>
   typeof navigator !== 'undefined' &&
   !!navigator.mediaDevices &&
