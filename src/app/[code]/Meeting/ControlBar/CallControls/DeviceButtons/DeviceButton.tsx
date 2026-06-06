@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/shallow';
 import * as Icon from '@/asset/svg';
 import { ButtonTag, Visualizer } from '@/components';
 import useShortcutKey from '@/hook/useShortcutKey';
+import useSpeakingWhileMuted from '@/hook/useSpeakingWhileMuted';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
@@ -59,6 +60,12 @@ export default function DeviceButton({
 
   const enableMute = permission[type] === 'granted';
 
+  const isSpeakingDetectActive = type === 'audio' && enableMute && !deviceEnable.audio;
+  const { dismiss: dismissSpeakingAlert, showAlert: showSpeakingAlert } = useSpeakingWhileMuted(
+    stream,
+    isSpeakingDetectActive,
+  );
+
   const ICON = {
     audio: {
       off: <Icon.MicOff {...BUTTON_PROPS} className='group-hover:fill-error-dark' fill='#5A1410' />,
@@ -104,6 +111,22 @@ export default function DeviceButton({
           'max-[450px]:relative max-[450px]:top-0 max-[450px]:translate-0',
         )}
       >
+        {showSpeakingAlert && (
+          <div className='animate-slide-in-bottom bg-state-dim absolute right-0 bottom-full z-20 mb-3 flex items-center gap-1.5 rounded-lg px-3 py-2 whitespace-nowrap shadow-lg'>
+            <span className='text-sm font-medium text-white'>혹시 말하고 계시나요?</span>
+            <button
+              aria-label='안내 닫기'
+              className='flex size-4 shrink-0 items-center justify-center rounded-full hover:bg-[rgba(255,255,255,0.2)]'
+              type='button'
+              onClick={(e) => {
+                e.stopPropagation();
+                dismissSpeakingAlert();
+              }}
+            >
+              <Icon.Delete className='fill-white' height={12} width={12} />
+            </button>
+          </div>
+        )}
         <ButtonTag
           align='center'
           className={enableMute ? '-translate-x-14' : ''}
