@@ -24,7 +24,9 @@ const useTiledLayout = () => {
   }, []);
 
   useEffect(() => {
-    if (dims.width === 0 || dims.height === 0) return;
+    if (dims.width === 0 || dims.height === 0) {
+      return;
+    }
 
     const totalNeeded = Math.min(participants.length + 1, MAX_STREAM_SIZE);
     const grid = calculateGridLayout(totalNeeded, dims.width, dims.height, { gap: 12 });
@@ -54,7 +56,6 @@ const useTiledLayout = () => {
 
     const renderedRemoteCount = standardRemoteCount + lastRowRemoteCount;
 
-    // 활성 화자를 가시 영역(renderedRemoteCount) 안으로 끌어온 표시 순서
     const ordered = buildDisplayOrder(participants, promoted, renderedRemoteCount);
 
     const standardParticipants = ordered.slice(0, standardRemoteCount);

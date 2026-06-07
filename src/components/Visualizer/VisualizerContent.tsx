@@ -2,7 +2,7 @@
 
 import { CSSProperties, useRef } from 'react';
 
-import useVolumeMeter from '@/hook/useVolumeMeter';
+import { useVolumeMeter } from '@/hook';
 import { mapBarHeight } from '@/util/volume';
 
 interface VisualizerContentProps {

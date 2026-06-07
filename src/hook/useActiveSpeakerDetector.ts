@@ -6,23 +6,17 @@ import { useActiveSpeakerStore } from '@/store/useActiveSpeakerStore';
 import { useAudioStore } from '@/store/useAudioStore';
 import { resolveActiveSpeakers, SpeakerDetectionConfig, SpeakerDetectionState } from '@/util/activeSpeaker';
 
-const INTERVAL_MS = 200; // 발화 감지 주기(rAF 불필요, 5회/초)
+const INTERVAL_MS = 200;
 
 const CONFIG: SpeakerDetectionConfig = {
-  cooldownMs: 6000, // 마지막 발화 후 승격 유지 시간(flapping 방지)
+  cooldownMs: 6000,
   intervalMs: INTERVAL_MS,
-  sustainMs: 400, // 이 시간 이상 지속 발화해야 인정(블립 무시)
-  threshold: 12, // 평균 주파수 에너지 임계값(환경에 맞게 튜닝 가능)
+  sustainMs: 400,
+  threshold: 12,
 };
 
 const EMPTY: string[] = [];
 
-/**
- * 모든 참가자의 오디오 analyser를 단일 루프로 감시해 활성 화자를 산정한다.
- * - 판정 정책은 resolveActiveSpeakers(순수 함수)에 위임한다.
- * - setState 없이 ref만 갱신하다가, 승격 집합이 "실제로 바뀔 때만" store에 커밋한다.
- * - enabled=false(오버플로우 없음)이면 루프를 돌리지 않는다.
- */
 const useActiveSpeakerDetector = (enabled: boolean, maxSpeakers: number) => {
   const stateRef = useRef<SpeakerDetectionState>({ lastActive: new Map(), sustain: new Map() });
   const prevKey = useRef<string>('');
@@ -59,11 +53,8 @@ const useActiveSpeakerDetector = (enabled: boolean, maxSpeakers: number) => {
         const bins = Math.min(analyser.frequencyBinCount, buf.length);
         analyser.getByteFrequencyData(buf);
 
-        let sum = 0;
-        for (let i = 0; i < bins; i++) {
-          sum += buf[i];
-        }
-        volumes.set(userId, sum / bins);
+        const avg = buf.subarray(0, bins).reduce((sum, value) => sum + value, 0) / bins;
+        volumes.set(userId, avg);
       });
 
       const promoted = resolveActiveSpeakers(volumes, state, performance.now(), maxSpeakers, CONFIG);

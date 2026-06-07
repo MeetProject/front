@@ -1,6 +1,6 @@
 import VisualizerContent from './VisualizerContent';
 
-import useStreamAnalyser from '@/hook/useStreamAnalyser';
+import { useStreamAnalyser } from '@/hook';
 
 interface StreamVisualizerProps {
   stream: MediaStream | null;

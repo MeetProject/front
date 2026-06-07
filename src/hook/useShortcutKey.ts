@@ -6,7 +6,9 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
   const keyPressed = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (combination.length === 0) return;
+    if (combination.length === 0) {
+      return;
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       keyPressed.current['meta'] = e.metaKey;
@@ -18,8 +20,8 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
       keyPressed.current[lowerKey] = true;
 
       const isTriggerCombi = combination.every((k) => {
-        let targetKey = k.toLowerCase();
-        if (targetKey === 'command' || targetKey === 'cmd') targetKey = 'meta';
+        const lowerCombi = k.toLowerCase();
+        const targetKey = lowerCombi === 'command' || lowerCombi === 'cmd' ? 'meta' : lowerCombi;
 
         return keyPressed.current[targetKey] === true;
       });

@@ -1,6 +1,6 @@
 import VisualizerContent from './VisualizerContent';
 
-import useParticipantAnalyser from '@/hook/useParticipantAnalyser';
+import { useParticipantAnalyser } from '@/hook';
 
 interface ParticipantVisualizerProps {
   source: string;

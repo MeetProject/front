@@ -180,7 +180,9 @@ const useDevice = () => {
           updatePermission(type, 'denied');
           return null;
         }
-        if (isExact) return replaceNewTrack(type, deviceId, false);
+        if (isExact) {
+          return replaceNewTrack(type, deviceId, false);
+        }
         throw e;
       }
     },

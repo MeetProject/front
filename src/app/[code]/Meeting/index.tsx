@@ -12,8 +12,7 @@ import RightDrawer from './RightDrawer';
 import Screen from './Screen';
 
 import { Loading } from '@/components';
-import { useDevice } from '@/hook';
-import useWebrtc from '@/hook/useWebrtc';
+import { useDevice, useWebrtc } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
@@ -91,7 +90,6 @@ export default function Meeting() {
       stopScreenStream();
       reset();
       leaveRoom();
-      /* peerConnection clear */
     },
     [leaveRoom],
   );

@@ -1,8 +1,13 @@
+export { default as useActiveSpeakerDetector } from './useActiveSpeakerDetector';
 export { default as useCurrentDate } from './useCurrentDate';
 export { default as useDevice } from './useDevice';
 export { default as useOutsideClick } from './useOutsideClick';
+export { default as useParticipantAnalyser } from './useParticipantAnalyser';
 export { default as useResizeObserver } from './useResizeObserver';
 export { default as useShortcutKey } from './useShortcutKey';
+export { default as useSpeakingWhileMuted } from './useSpeakingWhileMuted';
 export { default as useStagedLayout } from './useStagedLayout';
+export { default as useStreamAnalyser } from './useStreamAnalyser';
 export { default as useTiledLayout } from './useTiledLayout';
-export { default as useMediasoup } from './useWebrtc';
+export { default as useVolumeMeter } from './useVolumeMeter';
+export { default as useWebrtc } from './useWebrtc';

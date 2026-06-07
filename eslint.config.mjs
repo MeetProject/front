@@ -73,6 +73,7 @@ export default [
       "ts/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true }],
       "no-shadow": "error",
       "prefer-const": "error",
+      curly: ["error", "all"],
       "arrow-body-style": ["error", "as-needed"],
       "no-param-reassign": "error",
       eqeqeq: ["error", "always"],

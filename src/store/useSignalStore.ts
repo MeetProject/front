@@ -11,7 +11,7 @@ interface SignalState {
   client: null | Client;
   subscription: Map<string, StompSubscription>;
   pendingRequest: Map<string, PendingRequest>;
-  pendingPath: Map<string, string>; //destination, correlationId
+  pendingPath: Map<string, string>;
 }
 
 export const useSignalStore = create<SignalState>(() => ({

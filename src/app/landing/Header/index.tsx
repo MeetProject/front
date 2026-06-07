@@ -22,12 +22,6 @@ const ICON_PROPS = {
 type Menu = 'feedback' | 'setting' | 'permission';
 
 export default function Header() {
-  /* const { client } = useClientStore(
-    useShallow((state) => ({
-      client: state.client,
-    })),
-  ); */
-
   const [menuStatus, setMenuStatus] = useState<Menu | null>(null);
   const { initStream } = useDevice();
 
@@ -105,7 +99,6 @@ export default function Header() {
             {button.icon}
           </IconButton>
         ))}
-        {/* {client && <InfoMenu />} */}
       </div>
       <Feedback isOpen={menuStatus === 'feedback'} onClose={handleFeedbackClose} />
       <MediaPermissionDialog isOpen={menuStatus === 'permission'} onClose={handlePermissionClose} />

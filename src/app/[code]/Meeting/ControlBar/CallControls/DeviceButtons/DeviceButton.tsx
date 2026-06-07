@@ -5,8 +5,7 @@ import { useShallow } from 'zustand/shallow';
 
 import * as Icon from '@/asset/svg';
 import { ButtonTag, Visualizer } from '@/components';
-import useShortcutKey from '@/hook/useShortcutKey';
-import useSpeakingWhileMuted from '@/hook/useSpeakingWhileMuted';
+import { useShortcutKey, useSpeakingWhileMuted } from '@/hook';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
