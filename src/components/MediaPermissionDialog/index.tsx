@@ -51,6 +51,19 @@ export default function MediaPermissionDialog({ isOpen, onClose }: MediaPermissi
 
   const status = getStatus(permission);
 
+  const handleContinueWithout = () => {
+    const { updatePermission } = useDeviceStore.getState();
+
+    if (status === 'both') {
+      updatePermission('audio', 'denied');
+      updatePermission('video', 'denied');
+    } else {
+      updatePermission(status, 'denied');
+    }
+
+    onClose();
+  };
+
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -93,6 +106,7 @@ export default function MediaPermissionDialog({ isOpen, onClose }: MediaPermissi
           <button
             className='font-google-sans my-1 h-12 rounded-4xl px-3 text-[14px] font-medium text-blue-700 hover:bg-[rgba(11,87,208,0.1)] max-[600px]:text-xs'
             type='button'
+            onClick={handleContinueWithout}
           >
             {CONTENT[status].deny}
           </button>
