@@ -38,6 +38,13 @@ const useVolume = (analyser: AnalyserNode | null) => {
     };
 
     updateVolume();
+
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
   }, [analyser]);
 
   return { isExpand, volume };
