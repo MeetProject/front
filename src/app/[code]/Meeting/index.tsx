@@ -18,6 +18,7 @@ import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
+import { API_URL } from '@/util/api';
 
 export default function Meeting() {
   const roomId = usePathname().slice(1);
@@ -103,7 +104,7 @@ export default function Meeting() {
       }
 
       const data = new Blob([JSON.stringify({ roomId, userId })], { type: 'application/json' });
-      navigator.sendBeacon('http://localhost:8080/api/rooms/leave', data);
+      navigator.sendBeacon(`${API_URL}/api/rooms/leave`, data);
     };
 
     window.addEventListener('beforeunload', handleForceLeave);
