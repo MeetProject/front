@@ -19,8 +19,8 @@ export default [
       "**/build/**",
       "**/dist/**",
       "**/public/**",
-      "*.mjs",
-      "*.json"
+      "**/*.mjs",
+      "**/*.json"
     ],
     languageOptions: {
       parser: tsParser,

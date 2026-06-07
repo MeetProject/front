@@ -1,0 +1,31 @@
+import { create } from 'zustand';
+
+import { DrawerKeyType, RIGHT_DRAWER_KEYS } from '@/types/drawerType';
+
+const RIGHT_DRAWER_STATE = Object.fromEntries(RIGHT_DRAWER_KEYS.map((key) => [key, false]));
+
+interface DrawerState {
+  cc: boolean;
+  emoji: boolean;
+  info: boolean;
+  chat: boolean;
+  participants: boolean;
+  toggleDrawer: (type: DrawerKeyType, value?: boolean) => void;
+  reset: () => void;
+}
+
+export const useDrawerStore = create<DrawerState>((set) => ({
+  cc: false,
+  chat: false,
+  emoji: false,
+  info: false,
+  participants: false,
+  reset: () => set(useDrawerStore.getInitialState()),
+  toggleDrawer: (type, value) =>
+    set((state) => {
+      if (Object.hasOwn(RIGHT_DRAWER_STATE, type)) {
+        return { ...RIGHT_DRAWER_STATE, [type]: value === undefined ? !state[type] : value };
+      }
+      return { [type]: value === undefined ? !state[type] : value };
+    }),
+}));

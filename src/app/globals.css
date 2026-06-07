@@ -1,0 +1,346 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@keyframes move-up {
+  0% {
+    opacity: 0.7;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes move-bottom-up {
+  0% {
+    opacity: 1;
+    transform: translateY(100%);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-355%);
+  }
+  80% {
+    opacity: 0.8;
+    transform: translateY(-420%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-520%);
+  }
+}
+
+@keyframes slide-in-bottom {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes slide-in-left {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes slide-out-left {
+  0% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes custom-spinner {
+  0% {
+    transform: rotate(0deg);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  95% {
+    transform: rotate(360deg);
+    animation-timing-function: ease-out;
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes expand-pill {
+  0% {
+    transform: scaleY(0);
+    max-width: 24px;
+    opacity: 0;
+    padding-left:4px;
+    padding-right: 4px;
+  }
+  10% {
+    transform: scaleY(1);
+    max-width: 24px;
+    opacity: 1;
+    padding-left:4px;
+    padding-right: 4px;
+  }
+
+  70% {
+    transform: scaleY(1);
+    max-width: 24px;
+    padding-left:4px;
+    padding-right: 4px;
+  }
+  
+  100% {
+    transform: scaleY(1);
+    max-width: 400px;
+    padding-left: 8px;
+    padding-right: 12px;
+  }
+}
+
+@keyframes wave-hand {
+  0%, 10% {
+    transform: translateY(20%) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(-40%);
+    opacity: 1;
+  }
+  25% {
+    transform: translateY(0);
+  }
+
+
+  60% { 
+    transform: translateY(0) rotate(0deg);
+  }
+
+  70% { 
+    transform: translateY(0) rotate(-20deg) translateX(-1px);
+  }
+  80% { 
+    transform: translateY(0) rotate(20deg) translateX(1px);
+  }
+  90% { 
+    transform: translateY(0) rotate(-20deg) translateX(-1px);
+  }
+  100% { 
+    transform: translateY(0) rotate(0deg) translateX(0px);
+  }
+}
+
+@keyframes expand-handup-count {
+  0% {
+    max-width: 36px;
+    opacity: 0;
+    padding-right: 2px;
+    background-color: transparent;
+  }
+
+  15% {
+    max-width: 36px;
+    opacity: 1;
+    padding-right: 2px;
+    background-color: transparent;
+  }
+
+  30% {
+    max-width: 36px;
+    padding-right: 12px;
+    
+  }
+
+  100% {
+    max-width: 500px;
+    padding-right: 12px;
+  }
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-sans: var(--font-google-sans), ui-sans-serif, system-ui;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular;
+  --font-google-sans: var(--font-google-sans), ui-sans-serif, system-ui;
+
+  --breakpoint-sm: 480px;
+  --breakpoint-sm-md: 600px;
+  --breakpoint-md: 800px;
+  --breakpoint-lg: 1023px;
+  --breakpoint-xl: 1279px;
+  --breakpoint-2xl: 1535px;
+
+  --shadow-button-hover: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+
+  --color-overlay-light: rgba(0, 0, 0, 0.75);
+  --color-overlay-dark: rgba(0, 0, 0, 0.87);
+
+  /* 배경색 계층 */
+  --color-surface-deep: rgb(19, 19, 20);           /* 최하단 배경 */
+  --color-surface-base: rgb(30, 31, 32);           /* 메인 캔머스 및 툴바 */
+  --color-surface-elevated: rgb(60, 64, 67);       /* 팝업, 카드, 활성화된 버튼 배경 */
+
+  --color-surface-bright: rgb(248, 248, 248);      /* 메인 배경 */
+  --color-surface-variant: rgb(241, 243, 244);     /* 보조 영역 및 옅은 구분선 */
+  --color-surface-info: rgb(246, 250, 254);        /* 정보 알림용 극소색 */
+
+  /* 상태별 색상 (States) */
+  --color-state-hover: rgb(82, 83, 83);            /* 일반 요소 호버 */
+  --color-state-active: rgb(43, 45, 44);           /* 일반 요소 선택 */
+  --color-state-pressed: rgb(68, 69, 69);          /* 클릭 시 입력 상태 */
+  --color-state-dim: rgb(44, 44, 44);              /* 비활성화/보조 영역 상태 */
+  --color-state-dim-hover: rgb(51, 51, 51);        /* 비활성화 영역 hover 상태 */
+  --color-state-disabled: rgb(105, 105, 106);      /* 비활성화 버튼/아이콘 */
+  --color-state-hover-light: rgb(232, 233, 232);   /* 라이트: 요소 호버 */
+  
+  --color-state-layer: rgb(51, 53, 55);            /* 중간 레이어 상태 */
+  --color-state-layer-light: rgb(60, 62, 64);
+
+  /* 경계선 (Outline) */
+  --color-outline-dark: rgb(68, 71, 70);           /* 다크: 구역 구분선 */
+  --color-outline-light: rgb(218, 220, 224);       /* 라이트: 구역 구분선 */
+  --color-outline-strong: rgb(181, 182, 183);      /* 고대비 강조 경계선 */
+
+  /* 텍스트 및 아이콘 (On-Surface) */
+  --color-on-surface: rgb(196, 199, 197);          /* 디크: 기본 텍스트 */
+  --color-on-surface-bright: rgb(227, 227, 227);   /* 다크: 제목 및 강조 텍스트 */
+  --color-on-surface-dark: rgb(146, 146, 146);
+
+  --color-on-surface-light: rgb(32, 33, 36);       /* 라이트: 기본 텍스트 */
+  --color-on-surface-varient: rgb(65, 71, 75);     /* 라이트: 보조 본문 및 아이콘 */
+  --color-on-surface-muted: rgb(95, 99, 104);      /* 라이트: 보조/설명 텍스트 */
+
+  --color-on-surface-white: rgb(255, 255, 255);    /* 다크: 순백색 텍스트 */
+  --color-on-surface-disabled: rgb(171, 171, 171); /* 비활성 텍스트 */
+  
+
+  /* 인터랙션 및 버튼 (Action) */
+  --color-action-hover: rgba(256, 256, 256, 0.1);           /* 일반 아이콘 버튼 호버 */
+  --color-action-active: rgb(88, 90, 92);          /* 버튼 액티브 상태 */
+  --color-danger-base: rgb(234, 67, 53);           /* 경고 버튼 */
+  --color-on-surface-red-strong: rgb(179, 38, 30); /* 삭제 버튼 아이콘 */
+
+  /* 브랜드 및 액션(Primary) */
+  --color-primary-main: rgb(26, 115, 232);         /* 표준 블루 */
+  --color-primary-main-hover: rgb(26,109,222);     /* 블루 버튼 호버 */
+  --color-primary-dark: rgb(25, 103, 210);         /* 고대비/텍스트용 블루 */
+  --color-primary-ghost: rgba(138, 180, 248, 0.1);       /* 옅은 블루 버튼 */
+  --color-primary-light: rgb(138, 180, 248);       /* 다크: 강조 블루 */
+  --color-primary-selection: rgb(31, 10, 212);     /* 다크: 선택된 요소 배경 */
+  --color-primary-vivid: rgb(11, 87, 213);         /* 고대비 블루 */
+  --color-primary-container: rgb(168, 199, 250);   /* 다크: 선택된 요소 배경 */
+  
+  /* 컨테이너 및 선택 효과 (Container) */
+  --color-primary-container-bold: rgb(213, 226, 247);    /* 강조 블루 배경 */
+  --color-on-primary-container: rgb(6, 46, 111);         /* 컨테이너 위 텍스트 */
+  --color-info-subtle: rgb(240, 245, 254);               /* 선택된 리스트 배경 */
+  --color-info-base: rgb(225, 234, 249);           
+
+  /* 경고 및 오류 (Feedback) */
+  --color-error-base: rgb(220, 54, 46);            /* 에러 상태, 종료 버튼 */
+  --color-error-hover: rgb(224, 73, 64);           /* 종료 버튼 호버 */
+  --color-error-deep: rgb(65, 14, 11);             /* 종료 버튼 선택 */
+  --color-error-container: rgb(245, 229, 228);     /* 에러 배경  */
+  --color-error-dark: rgb(96, 20, 16);             /* 다크: 에러 배경 */
+  --color-error-subtle-light: rgb(252, 247, 246);  /* 라이트: 에러 배경 */
+  
+  --color-success-main: rgb(26, 115, 40);          /* 성공 그린 */
+  --color-success-subtle: rgb(109, 213, 140);      /* 연한 그린 */
+  --color-success-light: rgb(128, 218, 136);
+  --color-success-deep: rgb(0, 56, 31);           /* 진한 그린 */
+
+  --color-warning-main: rgb(251, 188, 4);          /* 경고 옐로우 (#FBBC04) */
+
+  --text-1.5xl: 22px;
+  --text-1.5xl--line-height: 30px;
+  --text-4.5xl: 44px;
+  --text-4.5xl--line-height: 1;
+
+  --width-device-select-box-sm: calc(100vw - 160px);
+  --width-device-select-box-sm-md: calc(100vw - 320px);
+
+  --animate-move-bottom-up: move-bottom-up 3s linear forwards;
+  --animate-slide-in-bottom: slide-in-bottom 0.3s ease forwards;
+  --animate-slide-in-left: slide-in-left 0.3s ease forwards;
+  --animate-slide-out-left: slide-out-left 0.3s ease forwards;
+  --animate-spinner: custom-spinner 1s linear infinite;
+  --animate-slide-in-bottom: slide-in-bottom 0.2s ease-out forwards;
+
+  --animate-expand-pill: expand-pill 2s ease-out forwards;
+  --animate-wave-hands: wave-hand 2s ease-out forwards;
+  --animate-move-up: move-up 0.3s ease-out forwards;
+  --animate-expand-handup-count: expand-handup-count 4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    interpolate-size: allow-keywords;
+    @apply font-sans antialiased;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: 10px;
+      scrollbar-color: rgb(227, 227, 227) transparent;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+    border-radius: 100px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(227, 227, 227);
+    border-radius: 10px;
+    cursor: default;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(200, 200, 200);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background-color: rgb(160, 160, 160);
+  }
+}
+
+@utility animate-pill-width {
+  transition-property: max-width, background-color, padding;
+  transition-duration: 400ms;
+  transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}

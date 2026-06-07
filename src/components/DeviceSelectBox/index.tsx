@@ -1,0 +1,128 @@
+'use client';
+
+import React, { useCallback, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
+
+import DeviceSelector from './DeviceSelector';
+
+import * as Icon from '@/asset/svg';
+import { useOutsideClick } from '@/hook';
+import { cn } from '@/lib/cn';
+import { useDeviceStore } from '@/store/useDeviceStore';
+import { DeviceType } from '@/types/deviceType';
+
+interface DeviceSelectBoxProps {
+  type: DeviceType;
+  onDisabledClick?: () => void;
+  className?: string;
+  selectorPositionY?: 'top' | 'bottom';
+  selectorPositionX?: 'center' | 'left' | 'right';
+  overflow?: boolean;
+  theme?: 'default' | 'dark';
+  volume?: boolean;
+  onTrackChange?: (track: MediaStreamTrack | null) => Promise<void> | void;
+}
+
+const ICON_MAP = {
+  audioInput: Icon.Mic,
+  audioOutput: Icon.Sound,
+  videoInput: Icon.VideoOn,
+};
+
+export default function DeviceSelectBox({
+  className,
+  onDisabledClick,
+  onTrackChange,
+  overflow = false,
+  selectorPositionX = 'right',
+  selectorPositionY = 'bottom',
+  theme = 'default',
+  type,
+  volume = false,
+}: DeviceSelectBoxProps) {
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isClicked, setIsClicked] = useState(false);
+
+  const { targetRef } = useOutsideClick<HTMLDivElement>(() => {
+    setIsClicked(false);
+  });
+
+  const { device, permission } = useDeviceStore(
+    useShallow((state) => ({
+      device: state.device,
+      permission: state.permission,
+    })),
+  );
+
+  const handleTestAudioPlay = useCallback((value: boolean) => {
+    setIsPlaying(value);
+  }, []);
+
+  const handleSelectButtonClick = () => {
+    if (disabled) {
+      onDisabledClick?.();
+    }
+    setIsClicked((prev) => !prev);
+  };
+
+  const getDisabled = () => {
+    if (!device[type]) {
+      return true;
+    }
+
+    if (type !== 'audioOutput' && permission[type === 'audioInput' ? 'audio' : 'video'] === 'denied') {
+      return true;
+    }
+
+    return false;
+  };
+
+  const disabled = getDisabled();
+
+  const CurrentIcon = ICON_MAP[type];
+
+  const CN = {
+    dark: `${disabled ? 'fill-outline-dark' : 'fill-on-surface'}`,
+    default: `${disabled ? 'fill-outline-strong' : 'fill-surface-elevated'}`,
+  };
+
+  const wrapperCn = cn(
+    'flex h-14 max-h-full w-full min-w-16 items-center gap-2 truncate rounded border border-solid pr-6.25 pl-2.5',
+    theme === 'dark' && 'border-outline-dark',
+    !disabled && (theme === 'default' ? 'hover:$bg-surface-info' : 'hover:bg-outline-dark'),
+    className,
+  );
+
+  return (
+    <div className='@container relative flex size-full' ref={targetRef}>
+      <button className={wrapperCn} type='button' onClick={handleSelectButtonClick}>
+        <CurrentIcon className={CN[theme]} height={16} width={16} />
+        <p
+          className={cn('w-full truncate text-left text-sm', theme === 'dark' && 'text-on-surface-white')}
+          style={{ color: CN[theme] }}
+        >
+          {disabled ? '권한 필요' : isPlaying ? '재생 중' : (device[type]?.label ?? '시스템 장치')}
+        </p>
+        <Icon.ChevronFill
+          className={cn('absolute top-1/2 right-3 -translate-y-1/2', CN[theme])}
+          height={18}
+          width={18}
+        />
+      </button>
+      {isClicked && device[type] && (
+        <DeviceSelector
+          currentValue={device[type]}
+          overflow={overflow}
+          positionX={selectorPositionX}
+          positionY={selectorPositionY}
+          theme={theme}
+          type={type}
+          volume={volume}
+          onClose={handleSelectButtonClick}
+          onPlay={handleTestAudioPlay}
+          onTrackChange={onTrackChange}
+        />
+      )}
+    </div>
+  );
+}
