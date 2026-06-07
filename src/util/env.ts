@@ -52,7 +52,7 @@ export const isSafari = (): boolean => {
     !userAgent.includes('edg')
   );
 };
-export const canSelectOutputDevice = (): boolean => canUseSetSinkId() && !isSafari() && !isMac();
+export const canSelectOutputDevice = (): boolean => canUseSetSinkId() && !isSafari();
 
 export const isScreenShareSupported = () =>
   typeof navigator !== 'undefined' &&
