@@ -1,7 +1,6 @@
 'use client';
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, MediaHTMLAttributes } from 'react';
-import { useShallow } from 'zustand/shallow';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
 
@@ -15,13 +14,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ disableSinkId = false,
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const {
-    device: { audioOutput },
-  } = useDeviceStore(
-    useShallow((state) => ({
-      device: state.device,
-    })),
-  );
+  const audioOutput = useDeviceStore((state) => state.device.audioOutput);
 
   useImperativeHandle(ref, () => {
     const el = tag === 'audio' ? audioRef.current : videoRef.current;

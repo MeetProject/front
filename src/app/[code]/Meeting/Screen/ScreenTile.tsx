@@ -14,14 +14,14 @@ export default function ScreenTile() {
       userName: state.userName,
     })),
   );
-  const { info, screenStream } = useParticipantStore(
+  const { ownerName, screenStream } = useParticipantStore(
     useShallow((state) => ({
-      info: state.info,
+      ownerName: state.info.get(state.screenStream.userId ?? '')?.userName,
       screenStream: state.screenStream,
     })),
   );
 
-  const name = screenStream.userId === userId ? userName : info.get(screenStream.userId ?? '')?.userName;
+  const name = screenStream.userId === userId ? userName : ownerName;
 
   return (
     <div className='@container-[size] relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
