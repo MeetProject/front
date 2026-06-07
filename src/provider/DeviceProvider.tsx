@@ -87,21 +87,34 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
       toggleDeviceEnalbe(type);
     };
 
+    // add/remove에 동일 참조를 쓰도록 명명 함수로 등록한다(인라인 화살표는 제거되지 않음).
+    const handleAudioMute = () => handleTrackMuted('audio');
+    const handleVideoMute = () => handleTrackMuted('video');
+
     stream.getTracks().forEach((track) => track.addEventListener('ended', handleTrackEnded, { once: true }));
 
-    stream.getAudioTracks().forEach((track) => track.addEventListener('mute', () => handleTrackMuted('audio')));
-    stream.getAudioTracks().forEach((track) => track.addEventListener('unmute', () => handleTrackMuted('audio')));
+    stream.getAudioTracks().forEach((track) => {
+      track.addEventListener('mute', handleAudioMute);
+      track.addEventListener('unmute', handleAudioMute);
+    });
 
-    stream.getVideoTracks().forEach((track) => track.addEventListener('mute', () => handleTrackMuted('video')));
-    stream.getVideoTracks().forEach((track) => track.addEventListener('unmute', () => handleTrackMuted('video')));
+    stream.getVideoTracks().forEach((track) => {
+      track.addEventListener('mute', handleVideoMute);
+      track.addEventListener('unmute', handleVideoMute);
+    });
 
     return () => {
       stream.getTracks().forEach((track) => track.removeEventListener('ended', handleTrackEnded));
-      stream.getAudioTracks().forEach((track) => track.removeEventListener('mute', () => handleTrackMuted('audio')));
-      stream.getAudioTracks().forEach((track) => track.removeEventListener('unmute', () => handleTrackMuted('audio')));
 
-      stream.getVideoTracks().forEach((track) => track.removeEventListener('mute', () => handleTrackMuted('video')));
-      stream.getVideoTracks().forEach((track) => track.removeEventListener('unmute', () => handleTrackMuted('video')));
+      stream.getAudioTracks().forEach((track) => {
+        track.removeEventListener('mute', handleAudioMute);
+        track.removeEventListener('unmute', handleAudioMute);
+      });
+
+      stream.getVideoTracks().forEach((track) => {
+        track.removeEventListener('mute', handleVideoMute);
+        track.removeEventListener('unmute', handleVideoMute);
+      });
     };
   }, [stream, initStream]);
 
