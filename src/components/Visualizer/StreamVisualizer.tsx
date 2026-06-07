@@ -1,6 +1,6 @@
 import VisualizerContent from './VisualizerContent';
 
-import useStreamVolume from '@/hook/useStreamVolume';
+import useStreamAnalyser from '@/hook/useStreamAnalyser';
 
 interface StreamVisualizerProps {
   stream: MediaStream | null;
@@ -9,6 +9,6 @@ interface StreamVisualizerProps {
 }
 
 export default function StreamVisualizer({ className, color, stream }: StreamVisualizerProps) {
-  const { volume } = useStreamVolume(stream);
-  return <VisualizerContent className={className} color={color} volume={volume} />;
+  const analyser = useStreamAnalyser(stream);
+  return <VisualizerContent analyser={analyser} className={className} color={color} />;
 }

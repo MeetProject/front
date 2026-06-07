@@ -1,6 +1,6 @@
 import VisualizerContent from './VisualizerContent';
 
-import useParticipantVolume from '@/hook/useParticipantVolume';
+import useParticipantAnalyser from '@/hook/useParticipantAnalyser';
 
 interface ParticipantVisualizerProps {
   source: string;
@@ -9,7 +9,7 @@ interface ParticipantVisualizerProps {
 }
 
 export default function ParticipantVisualizer({ className, color, source }: ParticipantVisualizerProps) {
-  const { volume } = useParticipantVolume(source);
+  const analyser = useParticipantAnalyser(source);
 
-  return <VisualizerContent className={className} color={color} volume={volume} />;
+  return <VisualizerContent analyser={analyser} className={className} color={color} />;
 }
