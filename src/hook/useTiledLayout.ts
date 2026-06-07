@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { useShallow } from 'zustand/shallow';
 
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { calculateGridLayout } from '@/util/layout';
@@ -12,7 +11,7 @@ const useTiledLayout = () => {
   const [layout, setLayout] = useState({ cols: 1, rows: 1, size: 0 });
   const [dims, setDims] = useState({ height: 0, width: 0 });
 
-  const { participants } = useParticipantStore(useShallow((state) => ({ participants: state.participants })));
+  const participants = useParticipantStore((state) => state.participants);
 
   const handleResize = useCallback((width: number, height: number) => {
     setDims({ height, width });
