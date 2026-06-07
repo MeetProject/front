@@ -9,7 +9,7 @@ import { useShortcutKey, useSpeakingWhileMuted } from '@/hook';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
-import { formatShortcut } from '@/util/formatter';
+import { formatShortcut } from '@/util/text';
 
 interface DeviceButtonProps {
   type: 'audio' | 'video';

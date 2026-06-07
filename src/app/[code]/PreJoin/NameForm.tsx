@@ -8,7 +8,7 @@ import { register } from '@/service/user';
 import { useAlertStore } from '@/store/useAlertStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { UserRegisterPayloadType } from '@/types/userType';
-import { getRandomHexColor } from '@/util/random';
+import { getRandomHexColor } from '@/util/color';
 
 const MAX_SIZE = 60;
 

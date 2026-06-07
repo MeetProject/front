@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
-import { AppData } from '@/types/webRTC';
+import { AppData } from '@/types/session';
 import { createAudioContext } from '@/util/audio';
 import { canSelectOutputDevice } from '@/util/env';
 

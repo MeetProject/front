@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 
 import { useActiveSpeakerStore } from '@/store/useActiveSpeakerStore';
 import { useAudioStore } from '@/store/useAudioStore';
-import { resolveActiveSpeakers, SpeakerDetectionConfig, SpeakerDetectionState } from '@/util/activeSpeaker';
+import { resolveActiveSpeakers, SpeakerDetectionConfig, SpeakerDetectionState } from '@/util/audio';
 
 const INTERVAL_MS = 200;
 

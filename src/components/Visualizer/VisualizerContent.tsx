@@ -3,7 +3,7 @@
 import { CSSProperties, useRef } from 'react';
 
 import { useVolumeMeter } from '@/hook';
-import { mapBarHeight } from '@/util/volume';
+import { mapBarHeight } from '@/util/audio';
 
 interface VisualizerContentProps {
   analyser: AnalyserNode | null;

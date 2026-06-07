@@ -8,6 +8,7 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
 import {
+  AppData,
   ChatResponseType,
   EmojiResponseType,
   LeaveResponseType,
@@ -18,7 +19,6 @@ import {
   ToggleHandsUpResponseType,
   TrackResponseType,
 } from '@/types/session';
-import { AppData } from '@/types/webRTC';
 
 export const useSignalingHandler = (
   subscribe: <T>(destination: string, callback: (response: T) => void | Promise<void>) => void,

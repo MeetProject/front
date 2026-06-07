@@ -9,8 +9,7 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
-import { ConsumerParamsResponseType, DtlsReponseType } from '@/types/session';
-import { AppData, Direction } from '@/types/webRTC';
+import { AppData, ConsumerParamsResponseType, Direction, DtlsReponseType } from '@/types/session';
 
 export const useMediasoup = (
   publish: <T>(destination: string, payload?: T | undefined) => void,

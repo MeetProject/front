@@ -5,7 +5,7 @@ import { useRef } from 'react';
 import * as Icon from '@/asset/svg';
 import { useStreamAnalyser, useVolumeMeter } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
-import { mapBarWidth } from '@/util/volume';
+import { mapBarWidth } from '@/util/audio';
 
 interface DeviceVolumeProps {
   color: 'black' | 'white';
