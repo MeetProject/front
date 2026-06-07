@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { createStreamAnalyser } from '@/util/audio';
+
 interface Options {
   threshold?: number;
   sustainMs?: number;
@@ -43,20 +45,11 @@ const useSpeakingWhileMuted = (stream: MediaStream | null, active: boolean, opti
       return;
     }
 
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) {
+    const created = createStreamAnalyser(stream);
+    if (!created) {
       return;
     }
-
-    const audioContext: AudioContext = new AudioContextClass();
-    if (audioContext.state === 'suspended') {
-      audioContext.resume().catch(() => {});
-    }
-
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    const source = audioContext.createMediaStreamSource(stream);
-    source.connect(analyser);
+    const { analyser, audioContext, source } = created;
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
     lastTsRef.current = performance.now();

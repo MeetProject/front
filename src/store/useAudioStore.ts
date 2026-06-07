@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { AppData } from '@/types/webRtc';
+import { createAudioContext } from '@/util/audio';
 import { canSelectOutputDevice } from '@/util/env';
 
 interface ConsumerResult {
@@ -43,7 +44,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       track,
     } = trackInfo;
 
-    const audioContext = get().audioContext ?? new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioContext = get().audioContext ?? createAudioContext();
     if (!audioContext) {
       return;
     }
