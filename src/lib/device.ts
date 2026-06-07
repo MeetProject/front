@@ -1,37 +1,63 @@
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { canSelectOutputDevice } from '@/util/env';
 
-// "시스템 오디오"(시스템 기본 출력) 가상 장치. setSinkId('default')는 시스템 기본 장치를 따라간다.
-const SYSTEM_AUDIO_OUTPUT = {
-  deviceId: 'default',
-  groupId: 'system',
-  kind: 'audiooutput' as const,
-  label: '시스템 오디오',
-  toJSON() {
-    return { deviceId: this.deviceId, groupId: this.groupId, kind: this.kind, label: this.label };
-  },
-} as MediaDeviceInfo;
+const getDefaultOutputLabel = (deviceInfo: MediaDeviceInfo[]): string => {
+  const defaultEntry = deviceInfo.find((device) => device.kind === 'audiooutput' && device.deviceId === 'default');
+  if (!defaultEntry) {
+    return '시스템 기본값';
+  }
+
+  const realDevice = deviceInfo.find(
+    (device) =>
+      device.kind === 'audiooutput' &&
+      device.deviceId !== 'default' &&
+      device.deviceId !== 'communications' &&
+      device.groupId === defaultEntry.groupId,
+  );
+
+  const label = realDevice?.label || defaultEntry.label.replace(/^(default|기본값)\s*[-–—]\s*/i, '');
+  return label || '시스템 기본값';
+};
+
+export const createSystemAudioOutput = (deviceInfo: MediaDeviceInfo[]): MediaDeviceInfo =>
+  ({
+    deviceId: 'default',
+    groupId: 'system',
+    kind: 'audiooutput',
+    label: getDefaultOutputLabel(deviceInfo),
+    toJSON() {
+      return { deviceId: this.deviceId, groupId: this.groupId, kind: this.kind, label: this.label };
+    },
+  }) as MediaDeviceInfo;
 
 const getAudioOutput = (deviceInfo: MediaDeviceInfo[]) => {
   const {
     device: { audioOutput: currentAudioOutput },
   } = useDeviceStore.getState();
 
-  // 개별 출력 선택이 불가한 환경(Safari 등): 시스템 오디오만 사용
+  const systemDefault = createSystemAudioOutput(deviceInfo);
+
   if (!canSelectOutputDevice()) {
-    return { audioOutput: SYSTEM_AUDIO_OUTPUT, audioOutputList: [SYSTEM_AUDIO_OUTPUT] };
+    return { audioOutput: systemDefault, audioOutputList: [systemDefault] };
   }
 
-  // Google Meet 방식: "시스템 오디오"(기본) + 개별 장치 목록
-  const devices = deviceInfo.filter(
-    (device) => device.kind === 'audiooutput' && device.deviceId !== 'default' && device.deviceId !== 'communications',
+  const defaultEntry = deviceInfo.find((device) => device.kind === 'audiooutput' && device.deviceId === 'default');
+  const otherDevices = deviceInfo.filter(
+    (device) =>
+      device.kind === 'audiooutput' &&
+      device.deviceId !== 'default' &&
+      device.deviceId !== 'communications' &&
+      device.groupId !== defaultEntry?.groupId,
   );
-  const audioOutputList = [SYSTEM_AUDIO_OUTPUT, ...devices];
+  const audioOutputList = [systemDefault, ...otherDevices];
 
-  const audioOutput =
-    currentAudioOutput && audioOutputList.find((d) => d.deviceId === currentAudioOutput.deviceId)
-      ? currentAudioOutput
-      : SYSTEM_AUDIO_OUTPUT;
+  let audioOutput = systemDefault;
+  if (currentAudioOutput && currentAudioOutput.deviceId !== 'default') {
+    const matched = otherDevices.find((d) => d.deviceId === currentAudioOutput.deviceId);
+    if (matched) {
+      audioOutput = matched;
+    }
+  }
 
   return { audioOutput, audioOutputList };
 };
