@@ -5,23 +5,15 @@ import { DeviceEnableType, TrackType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
 import { ChatResponseType, ParticipantDataType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
-import { AppData } from '@/types/webRtc';
+import { AppData } from '@/types/webRTC';
 
 interface StreamInfo {
   userId: string | null;
   stream: null | MediaStream;
 }
 
-interface AudioContextState {
-  analyser: AnalyserNode;
-  gainNode: GainNode;
-}
-
 interface ParticipantState {
-  audioTrack: MediaStream | null;
-  audioContext: AudioContext | null;
   participants: string[];
-  auidoStreams: Map<string, AudioContextState>;
   videoStreams: Map<string, MediaStream>;
   screenStream: StreamInfo;
   devices: Map<string, DeviceEnableType>;
@@ -29,7 +21,6 @@ interface ParticipantState {
   emoji: Map<string, EmojiType | null>;
   timer: Map<string, NodeJS.Timeout | null>;
   chat: GroupChatType[];
-  partiicpantAudioStream: MediaStream | null;
 
   addChat: (value: ChatResponseType) => void;
 
@@ -133,17 +124,12 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     });
   },
 
-  audioContext: null,
-
-  audioTrack: null,
-  auidoStreams: new Map(),
   chat: [],
   devices: new Map(),
 
   emoji: new Map(),
   info: new Map(),
   participants: [],
-  partiicpantAudioStream: null,
   removeParticipant: (id: string) =>
     set((prev) => {
       const newIds = prev.participants.filter((i) => i !== id);
@@ -165,7 +151,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
         prev.timer.delete(id);
       }
 
-      return { devices: newDevices, emoji: newEmoji, info: newInfo, participants: newIds, streams: newStreams };
+      return { devices: newDevices, emoji: newEmoji, info: newInfo, participants: newIds, videoStreams: newStreams };
     }),
   removeTrack: (id: string, trackType: TrackType) =>
     set((prev) => {
@@ -175,14 +161,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       }
 
       if (trackType === 'audio') {
-        const audioMap = new Map(prev.auidoStreams);
-        const audio = audioMap.get(id);
-        audio?.analyser.disconnect();
-        audio?.gainNode.disconnect();
-
-        audioMap.delete(id);
-
-        return { auidoStreams: audioMap };
+        return {};
       }
 
       const prevStreams = new Map(prev.videoStreams);
@@ -218,6 +197,5 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     });
   },
 
-  userEmoji: null,
   videoStreams: new Map(),
 }));
