@@ -18,7 +18,7 @@ import {
   ToggleHandsUpResponseType,
   TrackResponseType,
 } from '@/types/session';
-import { AppData } from '@/types/webRtc';
+import { AppData } from '@/types/webRTC';
 
 export const useSignalingHandler = (
   subscribe: <T>(destination: string, callback: (response: T) => void | Promise<void>) => void,
