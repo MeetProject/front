@@ -9,12 +9,14 @@ import { DeviceKindType } from '@/types/deviceType';
 
 export default function DeviceProvider({ children }: PropsWithChildren) {
   const timerRef = useRef<NodeJS.Timeout>(null);
-  const [isSuppertedPermission, setIsSupportedPermission] = useState<boolean>(true);
+  const [isSupportedPermission, setIsSupportedPermission] = useState<boolean>(true);
 
   const { initStream } = useDevice();
   const stream = useDeviceStore((state) => state.stream);
 
   useEffect(() => {
+    const statuses: PermissionStatus[] = [];
+
     const initPermission = async () => {
       try {
         const audio = await navigator.permissions.query({ name: 'microphone' });
@@ -33,12 +35,13 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
           permission: { audio: audio.state, video: video.state },
         });
 
-        if (!Boolean('onchange' in audio) || !Boolean('onchange' in video)) {
+        if (!('onchange' in audio) || !('onchange' in video)) {
           throw new Error('permission API 미지원');
         }
 
         audio.onchange = syncDevice;
         video.onchange = syncDevice;
+        statuses.push(audio, video);
       } catch {
         setIsSupportedPermission(false);
       } finally {
@@ -49,7 +52,13 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
     };
 
     initPermission();
-  }, [initStream]);
+
+    return () => {
+      statuses.forEach((status) => {
+        status.onchange = null;
+      });
+    };
+  }, []);
 
   useEffect(() => {
     const handleDeviceChange = async () => {
@@ -66,7 +75,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
     return () => {
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
     };
-  }, [initStream, stream]);
+  }, [stream]);
 
   useEffect(() => {
     if (!stream) {
@@ -82,24 +91,27 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
       initStream();
     };
 
-    const handleTrackMuted = (type: DeviceKindType) => {
-      const { toggleDeviceEnalbe } = useDeviceStore.getState();
-      toggleDeviceEnalbe(type);
+    const setDeviceEnable = (type: DeviceKindType, value: boolean) => {
+      useDeviceStore.setState((state) => ({
+        deviceEnable: { ...state.deviceEnable, [type]: value },
+      }));
     };
 
-    const handleAudioMute = () => handleTrackMuted('audio');
-    const handleVideoMute = () => handleTrackMuted('video');
+    const handleAudioMute = () => setDeviceEnable('audio', false);
+    const handleAudioUnmute = () => setDeviceEnable('audio', true);
+    const handleVideoMute = () => setDeviceEnable('video', false);
+    const handleVideoUnmute = () => setDeviceEnable('video', true);
 
     stream.getTracks().forEach((track) => track.addEventListener('ended', handleTrackEnded, { once: true }));
 
     stream.getAudioTracks().forEach((track) => {
       track.addEventListener('mute', handleAudioMute);
-      track.addEventListener('unmute', handleAudioMute);
+      track.addEventListener('unmute', handleAudioUnmute);
     });
 
     stream.getVideoTracks().forEach((track) => {
       track.addEventListener('mute', handleVideoMute);
-      track.addEventListener('unmute', handleVideoMute);
+      track.addEventListener('unmute', handleVideoUnmute);
     });
 
     return () => {
@@ -107,22 +119,22 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
 
       stream.getAudioTracks().forEach((track) => {
         track.removeEventListener('mute', handleAudioMute);
-        track.removeEventListener('unmute', handleAudioMute);
+        track.removeEventListener('unmute', handleAudioUnmute);
       });
 
       stream.getVideoTracks().forEach((track) => {
         track.removeEventListener('mute', handleVideoMute);
-        track.removeEventListener('unmute', handleVideoMute);
+        track.removeEventListener('unmute', handleVideoUnmute);
       });
     };
   }, [stream, initStream]);
 
   useEffect(() => {
-    if (isSuppertedPermission || !stream) {
+    if (isSupportedPermission || !stream) {
       return;
     }
 
-    const checkDevicePermssion = async () => {
+    const checkDevicePermission = () => {
       timerRef.current = setInterval(async () => {
         const { status, stopStream } = useDeviceStore.getState();
         if (status === 'pending' && timerRef.current) {
@@ -144,7 +156,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
       }, 2000);
     };
 
-    checkDevicePermssion();
+    checkDevicePermission();
 
     return () => {
       if (timerRef.current) {
@@ -152,7 +164,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
         timerRef.current = null;
       }
     };
-  }, [isSuppertedPermission, stream, initStream]);
+  }, [isSupportedPermission, stream, initStream]);
 
   return children;
 }
