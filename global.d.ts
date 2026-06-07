@@ -18,6 +18,10 @@ declare global {
     readonly userAgentData?: NavigatorUAData;
   }
 
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+
   interface NavigatorUAData {
     readonly brands: { brand: string; version: string }[];
     readonly mobile: boolean;
