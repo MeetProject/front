@@ -2,7 +2,7 @@ import { ConsumerOptions, RtpCapabilities, TransportOptions } from 'mediasoup-cl
 
 import { DeviceEnableType, TrackType } from './deviceType';
 import { EmojiDataType, EmojiType } from './emojiType';
-import { AppData } from './webRtc';
+import { AppData } from './webRTC';
 
 export interface DtlsReponseType {
   options: TransportOptions<AppData>;
