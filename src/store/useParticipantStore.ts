@@ -103,7 +103,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     });
   },
 
-  addTrack: async (trackInfo) => {
+  addTrack: (trackInfo) => {
     const {
       appData: { trackType, userId },
       track,
