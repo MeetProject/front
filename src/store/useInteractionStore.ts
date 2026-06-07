@@ -33,10 +33,10 @@ export const useInteractionStore = create<InteractionState>((set) => ({
 
       if (newSet.has(id)) {
         newSet.delete(id);
-      } else {
-        newSet.add(id);
+        return { handsUp: newSet };
       }
 
+      newSet.add(id);
       return { handsUp: newSet };
     }),
 }));

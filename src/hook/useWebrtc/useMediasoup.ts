@@ -28,12 +28,42 @@ export const useMediasoup = (
 
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
 
+  const handleConsumerClose = useCallback((consumer: Consumer, trackType: TrackType, userId: string) => {
+    const { removeTrack } = useParticipantStore.getState();
+    const { removeAudioTrack } = useAudioStore.getState();
+
+    if (trackType === 'screen') {
+      screenConsumers.current.delete(consumer.id);
+      if (currentScreenSender.current === userId && screenConsumers.current.size === 0) {
+        currentScreenSender.current = null;
+      }
+      return;
+    }
+
+    const userSet = consumers.current.get(userId);
+    if (!userSet) {
+      return;
+    }
+
+    userSet.delete(trackType);
+    if (userSet.size === 0) {
+      consumers.current.delete(userId);
+    }
+
+    if (trackType === 'audio') {
+      removeAudioTrack(userId);
+    }
+    if (trackType !== 'audio') {
+      removeTrack(userId, trackType);
+    }
+
+    resumedConsumer.current.delete(consumer.id);
+  }, []);
+
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
       const { userId: id } = useUserInfoStore.getState();
       const { device } = useWebrtcStore.getState();
-      const { removeTrack } = useParticipantStore.getState();
-      const { removeAudioTrack } = useAudioStore.getState();
 
       if (!recvTransport.current || !device || targetId === id) {
         return null;
@@ -61,40 +91,15 @@ export const useMediasoup = (
         if (trackType === 'screen') {
           currentScreenSender.current = userId;
           screenConsumers.current.set(consumer.id, consumer);
-        } else {
-          if (!consumers.current.has(userId)) {
-            consumers.current.set(userId, new Map());
-          }
-          consumers.current.get(userId)!.set(trackType, consumer);
         }
 
-        consumer.on('@close', () => {
-          if (trackType === 'screen') {
-            screenConsumers.current.delete(consumer.id);
-            if (currentScreenSender.current === userId && screenConsumers.current.size === 0) {
-              currentScreenSender.current = null;
-            }
-            return;
-          }
+        if (trackType !== 'screen') {
+          const userConsumers = consumers.current.get(userId) ?? new Map<TrackType, Consumer>();
+          userConsumers.set(trackType, consumer);
+          consumers.current.set(userId, userConsumers);
+        }
 
-          const userSet = consumers.current.get(userId);
-          if (!userSet) {
-            return;
-          }
-
-          userSet.delete(trackType);
-          if (userSet.size === 0) {
-            consumers.current.delete(userId);
-          }
-
-          if (trackType === 'audio') {
-            removeAudioTrack(userId);
-          } else {
-            removeTrack(userId, trackType);
-          }
-
-          resumedConsumer.current.delete(consumer.id);
-        });
+        consumer.on('@close', () => handleConsumerClose(consumer, trackType, userId));
 
         return {
           appData,
@@ -104,7 +109,7 @@ export const useMediasoup = (
         return null;
       }
     },
-    [request, publish],
+    [request, publish, handleConsumerClose],
   );
 
   const resumeConsumer = useCallback(
