@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import Media from '../Media';
 
@@ -16,6 +16,8 @@ interface SpeakerTestButtonProps {
 export default function SpeakerTestButton({ color, onPlay }: SpeakerTestButtonProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const audioOutputId = useDeviceStore((state) => state.device.audioOutput?.deviceId);
+  const isFirstRef = useRef(true);
 
   const handleAudioButtonClick = async () => {
     if (!audioRef.current || isPlaying) {
@@ -25,7 +27,6 @@ export default function SpeakerTestButton({ color, onPlay }: SpeakerTestButtonPr
     const el = audioRef.current;
     const { audioOutput } = useDeviceStore.getState().device;
 
-    // 재생 직전에 선택된 출력 장치를 명시적으로 적용(타이밍/리마운트로 인한 sinkId 누락 방지)
     if (audioOutput?.deviceId && 'setSinkId' in el) {
       try {
         await el.setSinkId(audioOutput.deviceId);
@@ -42,6 +43,17 @@ export default function SpeakerTestButton({ color, onPlay }: SpeakerTestButtonPr
     onPlay(false);
     setIsPlaying(false);
   }, [onPlay]);
+
+  useEffect(() => {
+    if (isFirstRef.current) {
+      isFirstRef.current = false;
+      return;
+    }
+
+    audioRef.current?.pause();
+    setIsPlaying(false);
+    onPlay(false);
+  }, [audioOutputId, onPlay]);
 
   return (
     <button

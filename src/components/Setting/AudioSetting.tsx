@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import { DeviceSelectBox, Media, Visualizer } from '@/components';
@@ -11,10 +11,12 @@ interface AudioSettingProps {
 export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
   const audioReference = useRef<HTMLAudioElement>(null);
   const timerReference = useRef<NodeJS.Timeout | null>(null);
+  const isFirstReference = useRef(true);
   const [isPlay, setIsPlay] = useState(false);
 
-  const { permission, stream } = useDeviceStore(
+  const { audioOutputId, permission, stream } = useDeviceStore(
     useShallow((state) => ({
+      audioOutputId: state.device.audioOutput?.deviceId,
       permission: state.permission,
       stream: state.stream,
     })),
@@ -35,6 +37,20 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
       timerReference.current = null;
     }, 4000);
   };
+
+  useEffect(() => {
+    if (isFirstReference.current) {
+      isFirstReference.current = false;
+      return;
+    }
+
+    if (timerReference.current) {
+      clearTimeout(timerReference.current);
+      timerReference.current = null;
+    }
+    audioReference.current?.pause();
+    setIsPlay(false);
+  }, [audioOutputId]);
 
   return (
     <div className='flex flex-1 flex-col gap-6'>
