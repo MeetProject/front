@@ -87,7 +87,6 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
       toggleDeviceEnalbe(type);
     };
 
-    // add/remove에 동일 참조를 쓰도록 명명 함수로 등록한다(인라인 화살표는 제거되지 않음).
     const handleAudioMute = () => handleTrackMuted('audio');
     const handleVideoMute = () => handleTrackMuted('video');
 

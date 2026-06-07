@@ -52,7 +52,6 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       audioContext.resume().catch(() => {});
     }
 
-    // 같은 userId의 기존 오디오가 남아 있으면 정리 후 교체한다(중복 재생/노드 누수 방지).
     const previous = get().audio.get(userId);
     if (previous) {
       previous.source.disconnect();
