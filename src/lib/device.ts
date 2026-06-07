@@ -42,12 +42,14 @@ const getAudioOutput = (deviceInfo: MediaDeviceInfo[]) => {
   }
 
   const defaultEntry = deviceInfo.find((device) => device.kind === 'audiooutput' && device.deviceId === 'default');
+  // 기본 장치는 "시스템 기본값" 항목으로 이미 표시하므로 중복 제외하되,
+  // groupId가 비어 있는 환경에서는 groupId로 구분할 수 없으므로 제외하지 않는다(목록이 비는 것 방지).
   const otherDevices = deviceInfo.filter(
     (device) =>
       device.kind === 'audiooutput' &&
       device.deviceId !== 'default' &&
       device.deviceId !== 'communications' &&
-      device.groupId !== defaultEntry?.groupId,
+      !(defaultEntry?.groupId && device.groupId === defaultEntry.groupId),
   );
   const audioOutputList = [systemDefault, ...otherDevices];
 
