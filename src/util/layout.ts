@@ -1,5 +1,47 @@
 import { PresentationLayoutType } from '@/types/components';
 
+/**
+ * 활성 화자(promoted)를 가시 영역(capacity) 안으로 끌어오되, 슬롯 스왑으로 위치 변동을 최소화한다.
+ * - 가려진 활성 화자를, 가시 영역의 "비활성(promoted 아님) 슬롯"과 자리만 교환한다.
+ * - 변경이 없으면 원본 배열 참조를 그대로 반환해 불필요한 리렌더를 막는다.
+ */
+export const buildDisplayOrder = (participants: string[], promoted: string[], capacity: number): string[] => {
+  if (capacity <= 0 || promoted.length === 0 || participants.length <= capacity) {
+    return participants;
+  }
+
+  const visibleSet = new Set(participants.slice(0, capacity));
+  const hiddenSpeakers = promoted.filter((id) => !visibleSet.has(id) && participants.includes(id));
+  if (hiddenSpeakers.length === 0) {
+    return participants;
+  }
+
+  const promotedSet = new Set(promoted);
+  const result = [...participants];
+  let changed = false;
+
+  for (const speaker of hiddenSpeakers) {
+    // 가시 영역 뒤쪽부터 비활성 슬롯을 찾아 화자와 자리 교환
+    let evictIdx = -1;
+    for (let i = capacity - 1; i >= 0; i--) {
+      if (!promotedSet.has(result[i])) {
+        evictIdx = i;
+        break;
+      }
+    }
+    if (evictIdx === -1) {
+      break; // 가시 슬롯이 전부 활성 화자 → 더 끌어올 수 없음
+    }
+
+    const speakerIdx = result.indexOf(speaker);
+    [result[evictIdx], result[speakerIdx]] = [result[speakerIdx], result[evictIdx]];
+    changed = true;
+  }
+
+  // 실제 교체가 없었다면 원본 참조를 반환해 불필요한 리렌더를 막는다.
+  return changed ? result : participants;
+};
+
 interface LayoutOptions {
   gap?: number;
   minWidth?: number;
