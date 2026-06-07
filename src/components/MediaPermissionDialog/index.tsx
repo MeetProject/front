@@ -54,12 +54,8 @@ export default function MediaPermissionDialog({ isOpen, onClose }: MediaPermissi
   const handleContinueWithout = () => {
     const { updatePermission } = useDeviceStore.getState();
 
-    if (status === 'both') {
-      updatePermission('audio', 'denied');
-      updatePermission('video', 'denied');
-    } else {
-      updatePermission(status, 'denied');
-    }
+    const targets: DeviceKindType[] = status === 'both' ? ['audio', 'video'] : [status];
+    targets.forEach((device) => updatePermission(device, 'denied'));
 
     onClose();
   };

@@ -68,11 +68,8 @@ const useSpeakingWhileMuted = (stream: MediaStream | null, active: boolean, opti
       analyser.getByteFrequencyData(dataArray);
       const avg = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
 
-      if (avg > threshold) {
-        speakingMsRef.current += dt;
-      } else {
-        speakingMsRef.current = Math.max(0, speakingMsRef.current - dt * 0.5);
-      }
+      speakingMsRef.current =
+        avg > threshold ? speakingMsRef.current + dt : Math.max(0, speakingMsRef.current - dt * 0.5);
 
       if (!showAlertRef.current && speakingMsRef.current >= sustainMs && Date.now() >= cooldownUntilRef.current) {
         updateShowAlert(true);

@@ -19,11 +19,7 @@ export default function Suggest({ onComplete, onVisible }: SuggestProperties) {
 
   const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
-    if (e.target.value.length > 2) {
-      onComplete(true);
-    } else {
-      onComplete(false);
-    }
+    onComplete(e.target.value.length > 2);
   };
 
   const handleImageChange = (value: null | string) => {

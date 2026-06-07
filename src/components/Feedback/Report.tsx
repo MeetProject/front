@@ -40,20 +40,12 @@ export default function Report({ onComplete, onVisible }: ReportProps) {
 
   const handleOptionButtonClick = (value: string) => {
     setOption(value);
-    if (text.length > 2) {
-      onComplete(true);
-    } else {
-      onComplete(false);
-    }
+    onComplete(text.length > 2);
   };
 
   const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
-    if (e.target.value.length > 2 && option) {
-      onComplete(true);
-    } else {
-      onComplete(false);
-    }
+    onComplete(e.target.value.length > 2 && Boolean(option));
   };
 
   const handleImageChange = (value: null | string) => {
