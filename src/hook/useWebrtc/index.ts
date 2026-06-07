@@ -16,13 +16,12 @@ import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session';
-
-const SERVER_URL = 'http://localhost:8080/ws';
+import { WS_URL } from '@/util/api';
 
 const useWebrtc = () => {
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const { connect, publish, request, subscribe, unsubscribeAll } = useSignaling(SERVER_URL);
+  const { connect, publish, request, subscribe, unsubscribeAll } = useSignaling(WS_URL);
   const {
     consumeTrack,
     createTransport,

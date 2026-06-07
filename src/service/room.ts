@@ -1,9 +1,8 @@
 import { RoomCreateResponseType, RoomValidateResponseType } from '@/types/roomType';
-
-const DOMAIN = 'http://localhost:8080';
+import { API_URL } from '@/util/api';
 
 export const createRoom = async () => {
-  const response = await fetch(`${DOMAIN}/api/rooms`, { method: 'POST' });
+  const response = await fetch(`${API_URL}/api/rooms`, { method: 'POST' });
   if (!response.ok) {
     throw new Error('방 생성 api 오류');
   }
@@ -12,7 +11,7 @@ export const createRoom = async () => {
 };
 
 export const validateRoom = async (roomId: string) => {
-  const response = await fetch(`${DOMAIN}/api/rooms/${roomId}/validate`, {
+  const response = await fetch(`${API_URL}/api/rooms/${roomId}/validate`, {
     cache: 'no-cache',
   });
 
@@ -25,5 +24,5 @@ export const validateRoom = async (roomId: string) => {
 };
 
 export const leaveRoom = async (roomId: string, userId: string) => {
-  await fetch(`${DOMAIN}/api/rooms/${roomId}/leave?userId=${userId}`);
+  await fetch(`${API_URL}/api/rooms/${roomId}/leave?userId=${userId}`);
 };
