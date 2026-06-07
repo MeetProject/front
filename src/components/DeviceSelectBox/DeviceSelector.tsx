@@ -3,10 +3,10 @@
 import { MouseEvent } from 'react';
 import { useShallow } from 'zustand/shallow';
 
+import DeviceOption from './DeviceOption';
 import DeviceVolume from './DeviceVolume';
 import SpeakerTestButton from './SpeakerTest';
 
-import * as Icon from '@/asset/svg';
 import { useDevice } from '@/hook';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
@@ -61,37 +61,14 @@ export default function DeviceSelector({
   return (
     <div className={wrapperCn}>
       {deviceList[type].map((device) => (
-        <button
-          className={cn(
-            'group relative flex h-11 w-80 items-center px-4 pl-14 transition-colors',
-            isDark
-              ? device.deviceId === currentValue.deviceId
-                ? 'hover:bg-state-hover bg-state-active'
-                : 'bg-surface-base hover:bg-surface-elevated'
-              : 'bg-white hover:bg-gray-100 active:bg-gray-200',
-          )}
+        <DeviceOption
+          device={device}
+          isDark={isDark}
+          isSelected={device.deviceId === currentValue.deviceId}
           key={device.deviceId}
-          type='button'
-          onClick={(e) => handleDeviceButtonClick(e, device)}
-        >
-          <span
-            className={cn(
-              'truncate text-left text-sm font-medium',
-              isDark
-                ? device.deviceId === currentValue.deviceId
-                  ? 'text-blue-300'
-                  : 'text-gray-300'
-                : device.deviceId === currentValue.deviceId
-                  ? 'text-blue-600'
-                  : 'text-overlay-dark',
-            )}
-          >
-            {device.label}
-          </span>
-          {device.deviceId === currentValue.deviceId && (
-            <Icon.Check className={cn('absolute left-4 size-6', isDark ? 'fill-blue-300' : 'fill-blue-600')} />
-          )}
-        </button>
+          type={type}
+          onSelect={handleDeviceButtonClick}
+        />
       ))}
       {volume && type === 'audioInput' && <DeviceVolume color={theme === 'dark' ? 'white' : 'black'} />}
       {volume && type === 'audioOutput' && (

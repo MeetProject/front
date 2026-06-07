@@ -6,11 +6,11 @@ import Dialog from '../_shared/Dialog';
 import MediaPermissionDeniedDialog from '../MediaPermissionDeniedDialog';
 
 import AudioSetting from './AudioSetting';
+import CategoryButton from './CategoryButton';
 import VideoSetting from './VideoSetting';
 
 import * as Icon from '@/asset/svg';
 import { useDevice } from '@/hook';
-import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
@@ -31,14 +31,6 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
 
   const { initStream } = useDevice();
   const isInit = useDeviceStore((state) => state.isInit);
-
-  const getButtonStyles = (isActive: boolean) => ({
-    container: `group relative flex h-12 w-full items-center gap-3 rounded-r-full px-6 transition-all ${
-      isActive ? 'z-10 bg-primary-ghost hover:shadow-md' : 'bg-white hover:bg-surface-bright'
-    }`,
-    icon: cn('transition-colors', isActive ? 'fill-primary-vivid' : 'fill-on-surface-muted'),
-    text: `max-[640px]:hidden ${isActive ? 'text-primary-dark font-medium' : 'text-on-surface-muted'}`,
-  });
 
   const handleClose = () => {
     onClose();
@@ -75,23 +67,15 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
           <aside className='border-outline-light h-full w-[256px] border-r max-[640px]:w-20'>
             <h1 className='text-1.5xl text-surface-base px-6 pt-6 font-medium max-[640px]:hidden'>설정</h1>
             <nav className='mt-6 mr-2'>
-              {CATEGORY_BUTTONS.map(({ icon: IconComponent, name, value }) => {
-                const isActive = currentCategory === value;
-                const styles = getButtonStyles(isActive);
-
-                return (
-                  <button
-                    aria-selected={isActive}
-                    className={styles.container}
-                    key={value}
-                    type='button'
-                    onClick={() => setCurrentCategory(value)}
-                  >
-                    <IconComponent className={styles.icon} height={24} width={24} />
-                    <span className={styles.text}>{name}</span>
-                  </button>
-                );
-              })}
+              {CATEGORY_BUTTONS.map(({ icon, name, value }) => (
+                <CategoryButton
+                  icon={icon}
+                  isActive={currentCategory === value}
+                  key={value}
+                  name={name}
+                  onSelect={() => setCurrentCategory(value)}
+                />
+              ))}
             </nav>
           </aside>
 

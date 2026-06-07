@@ -34,22 +34,19 @@ export default function BaseContent({ onClick }: BaseContentProps) {
         <div className='mb-5 flex justify-center'>
           <Image alt='header' height={160} src={image.feedbackHeader} width={240} />
         </div>
-        {BUTTON.map((button) => {
-          const ButtonIcon = button.icon;
-          return (
-            <button
-              className='hover:bg-surface-bright active:bg-state-hover-light flex h-15 w-full items-center gap-2 rounded py-px pr-1.5 pl-5'
-              key={button.value}
-              type='button'
-              onClick={(e) => handleButtonClick(e, button.value)}
-            >
-              <div className='bg-primary-dark flex size-7 items-center justify-center rounded-full'>
-                <ButtonIcon className='fill-white' height={18} width={18} />
-              </div>
-              <p className='text-outline-dark'>{button.name}</p>
-            </button>
-          );
-        })}
+        {BUTTON.map((item) => (
+          <button
+            className='hover:bg-surface-bright active:bg-state-hover-light flex h-15 w-full items-center gap-2 rounded py-px pr-1.5 pl-5'
+            key={item.value}
+            type='button'
+            onClick={(e) => handleButtonClick(e, item.value)}
+          >
+            <div className='bg-primary-dark flex size-7 items-center justify-center rounded-full'>
+              <item.icon className='fill-white' height={18} width={18} />
+            </div>
+            <p className='text-outline-dark'>{item.name}</p>
+          </button>
+        ))}
       </div>
     </div>
   );
