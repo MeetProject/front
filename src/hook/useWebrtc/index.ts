@@ -136,6 +136,14 @@ const useWebrtc = () => {
 
   const removeTrack = useCallback(
     (trackType: TrackType) => {
+      // 화면공유 중지 시 본인 화면 타일도 정리한다(본인은 producer/remove 브로드캐스트를 받지 못함).
+      if (trackType === 'screen') {
+        const { userId } = useUserInfoStore.getState();
+        if (userId) {
+          useParticipantStore.getState().removeTrack(userId, 'screen');
+        }
+      }
+
       const produceIds = removeProducer(trackType);
 
       if (!produceIds) {
