@@ -1,6 +1,6 @@
 'use client';
 
-import { CSSProperties, useRef } from 'react';
+import { CSSProperties } from 'react';
 
 import { useVolumeMeter } from '@/hook';
 import { mapBarHeight } from '@/util/audio';
@@ -12,8 +12,7 @@ interface VisualizerContentProps {
 }
 
 export default function VisualizerContent({ analyser, className, color }: VisualizerContentProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  useVolumeMeter(analyser, containerRef, mapBarHeight);
+  const containerRef = useVolumeMeter<HTMLDivElement>(analyser, mapBarHeight);
 
   const barColor = color ? { backgroundColor: color } : {};
   const sideBar: CSSProperties = { height: 'calc(4px + var(--meter, 0) * 0.5px)', ...barColor };

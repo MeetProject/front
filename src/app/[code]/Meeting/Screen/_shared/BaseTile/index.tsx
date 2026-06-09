@@ -7,7 +7,7 @@ import NameTag from './NameTag';
 import VideoOffOverlay from './VideoOffOverlay';
 
 import * as Icon from '@/asset/svg';
-import { Media } from '@/components';
+import { Media, Visualizer } from '@/components';
 import { DeviceEnableType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
 
@@ -65,11 +65,15 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
         )}
         <NameTag id={id} name={name} />
         <Emoji emoji={emoji} />
-        {!device.audio && (
-          <div className='bg-outline-dark absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full opacity-80'>
-            <Icon.MicOffFill className='fill-surface-info size-4.5' />
-          </div>
-        )}
+        <div className='absolute top-2.5 right-2.5'>
+          {device.audio ? (
+            <Visualizer source={isMe ? stream : id} />
+          ) : (
+            <div className='bg-outline-dark flex size-7 items-center justify-center rounded-full opacity-80'>
+              <Icon.MicOffFill className='fill-surface-info size-4.5' />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

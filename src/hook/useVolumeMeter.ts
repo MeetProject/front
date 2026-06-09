@@ -1,15 +1,13 @@
 'use client';
 
-import { RefObject, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const SMOOTHING = 0.15;
 const FRAME_MS = 33;
 
-const useVolumeMeter = (
-  analyser: AnalyserNode | null,
-  ref: RefObject<HTMLElement | null>,
-  map: (value: number) => number,
-) => {
+const useVolumeMeter = <T extends HTMLElement>(analyser: AnalyserNode | null, map?: (value: number) => number) => {
+  const ref = useRef<T>(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!analyser || !el) {
@@ -32,7 +30,7 @@ const useVolumeMeter = (
       const avg = data.reduce((sum, value) => sum + value, 0) / data.length;
       state.prev = state.prev * (1 - SMOOTHING) + avg * SMOOTHING;
 
-      el.style.setProperty('--meter', String(map(state.prev)));
+      el.style.setProperty('--meter', String(map?.(state.prev) ?? state.prev));
     };
 
     state.raf = requestAnimationFrame(tick);
@@ -41,7 +39,9 @@ const useVolumeMeter = (
       cancelAnimationFrame(state.raf);
       el.style.setProperty('--meter', '0');
     };
-  }, [analyser, ref, map]);
+  }, [analyser, map]);
+
+  return ref;
 };
 
 export default useVolumeMeter;

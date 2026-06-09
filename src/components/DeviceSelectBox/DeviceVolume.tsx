@@ -1,7 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
-
 import * as Icon from '@/asset/svg';
 import { useStreamAnalyser, useVolumeMeter } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
@@ -15,8 +13,7 @@ export default function DeviceVolume({ color }: DeviceVolumeProps) {
   const stream = useDeviceStore((state) => state.stream);
   const analyser = useStreamAnalyser(stream);
 
-  const barRef = useRef<HTMLDivElement>(null);
-  useVolumeMeter(analyser, barRef, mapBarWidth);
+  const barRef = useVolumeMeter<HTMLDivElement>(analyser, mapBarWidth);
 
   return (
     <div

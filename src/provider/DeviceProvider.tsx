@@ -4,6 +4,7 @@ import { PropsWithChildren, useEffect, useRef, useState } from 'react';
 
 import { useDevice } from '@/hook';
 import { getCurrentDeviceInfo } from '@/lib/device';
+import { useAudioStore } from '@/store/useAudioStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
@@ -165,6 +166,23 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
       }
     };
   }, [isSupportedPermission, stream, initStream]);
+
+  useEffect(() => {
+    const unlock = () => {
+      const { resumeAudioContext } = useAudioStore.getState();
+      resumeAudioContext();
+    };
+
+    window.addEventListener('pointerdown', unlock);
+    window.addEventListener('keydown', unlock);
+    window.addEventListener('touchend', unlock);
+
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+      window.removeEventListener('touchend', unlock);
+    };
+  }, []);
 
   return children;
 }
