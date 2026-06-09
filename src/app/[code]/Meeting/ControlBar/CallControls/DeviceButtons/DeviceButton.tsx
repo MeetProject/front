@@ -82,7 +82,12 @@ export default function DeviceButton({
       <div className='max-[450px]:hidden'>
         <ButtonTag align='left' name={`${type === 'audio' ? '오디오' : '비디오'} 설정`} position='top'>
           <button
-            className={`group h-12 w-22 transition-[border-radius,background-color,transform] duration-200 ease-in-out ${deviceEnable[type] || permission[type] !== 'granted' ? 'bg-surface-elevated hover:bg-action-hover rounded-3xl' : 'bg-error-deep hover:bg-error-dark rounded-xl'} `}
+            className={cn(
+              'group h-12 w-22 transition-[border-radius,background-color,transform] duration-200 ease-in-out',
+              deviceEnable[type] || permission[type] !== 'granted'
+                ? 'bg-surface-elevated hover:bg-action-hover rounded-3xl'
+                : 'bg-error-deep hover:bg-error-dark rounded-xl',
+            )}
             type='button'
             onClick={onChevronClick}
           >
@@ -128,7 +133,7 @@ export default function DeviceButton({
         )}
         <ButtonTag
           align='center'
-          className={enableMute ? '-translate-x-14' : ''}
+          className={cn(enableMute && '-translate-x-14')}
           name={
             enableMute
               ? `${type === 'audio' ? '오디오' : '마이크'} ${deviceEnable[type] ? '끄기' : '켜기'}${parseShortcut}`

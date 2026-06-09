@@ -73,7 +73,7 @@ export default function InteractionButton({
         onClick={handleClick}
       >
         <Icon
-          className={`${isActive ? 'fill-on-primary-container' : 'fill-on-surface-bright'}`}
+          className={cn(isActive ? 'fill-on-primary-container' : 'fill-on-surface-bright')}
           height={24}
           width={24}
         />

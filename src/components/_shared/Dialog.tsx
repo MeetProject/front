@@ -3,6 +3,8 @@
 import * as RadixDialog from '@radix-ui/react-dialog';
 import { ReactNode } from 'react';
 
+import { cn } from '@/lib/cn';
+
 interface DialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,7 +30,7 @@ export default function Dialog({
   title,
   zIndex = 2100,
 }: DialogProps) {
-  const cn = {
+  const cns = {
     center: `
       top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
       animate-in fade-in zoom-in-95 max-w-[calc(100svw-32px)] max-h-[calc(100svh-32px)] w-fit
@@ -45,11 +47,19 @@ export default function Dialog({
     <RadixDialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <RadixDialog.Portal>
         <RadixDialog.Overlay
-          className={`animate-in fade-in fixed inset-0 bg-[rgba(128,134,139,0.5)] duration-200 ${hidden && 'pointer-events-none opacity-0'}`}
+          className={cn(
+            'animate-in fade-in fixed inset-0 bg-[rgba(128,134,139,0.5)] duration-200',
+            hidden && 'pointer-events-none opacity-0',
+          )}
           style={{ zIndex }}
         />
         <RadixDialog.Content
-          className={`animate-in fixed bg-white shadow-2xl duration-300 outline-none ${cn[position]} ${className} ${hidden && 'pointer-events-none opacity-0'}`}
+          className={cn(
+            'animate-in fixed bg-white shadow-2xl duration-300 outline-none',
+            cns[position],
+            className,
+            hidden && 'pointer-events-none opacity-0',
+          )}
           style={{ zIndex: zIndex + 1 }}
           onPointerDownOutside={(e) => {
             if (!closeOnOutsideClick) {

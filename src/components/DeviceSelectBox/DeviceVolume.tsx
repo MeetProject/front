@@ -2,6 +2,7 @@
 
 import * as Icon from '@/asset/svg';
 import { useStreamAnalyser, useVolumeMeter } from '@/hook';
+import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { mapBarWidth } from '@/util/audio';
 
@@ -17,7 +18,10 @@ export default function DeviceVolume({ color }: DeviceVolumeProps) {
 
   return (
     <div
-      className={`${color === 'white' ? 'border-outline-dark' : 'border-surface-variant'} flex w-full items-center gap-2 border-t px-2.5 py-1`}
+      className={cn(
+        'flex w-full items-center gap-2 border-t px-2.5 py-1',
+        color === 'white' ? 'border-outline-dark' : 'border-surface-variant',
+      )}
     >
       <Icon.Mic className={color === 'white' ? 'fill-on-surface' : 'fill-outline-dark'} height={20} width={20} />
       <div className='bg-surface-variant mx-2 my-4 h-1 flex-1 overflow-hidden rounded-sm'>
