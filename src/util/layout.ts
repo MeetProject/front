@@ -1,5 +1,33 @@
 import { PresentationLayoutType } from '@/types/components';
 
+export const buildDisplayOrder = (participants: string[], promoted: string[], capacity: number): string[] => {
+  if (capacity <= 0 || promoted.length === 0 || participants.length <= capacity) {
+    return participants;
+  }
+
+  const visibleSet = new Set(participants.slice(0, capacity));
+  const hiddenSpeakers = promoted.filter((id) => !visibleSet.has(id) && participants.includes(id));
+  if (hiddenSpeakers.length === 0) {
+    return participants;
+  }
+
+  const promotedSet = new Set(promoted);
+  const result = [...participants];
+
+  hiddenSpeakers.forEach((speaker) => {
+    const evictIdx = result.findLastIndex((id, index) => index < capacity && !promotedSet.has(id));
+    if (evictIdx === -1) {
+      return;
+    }
+
+    const speakerIdx = result.indexOf(speaker);
+    [result[evictIdx], result[speakerIdx]] = [result[speakerIdx], result[evictIdx]];
+  });
+
+  const changed = result.some((id, index) => id !== participants[index]);
+  return changed ? result : participants;
+};
+
 interface LayoutOptions {
   gap?: number;
   minWidth?: number;

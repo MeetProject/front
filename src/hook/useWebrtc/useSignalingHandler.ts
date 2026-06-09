@@ -8,17 +8,17 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
 import {
+  AppData,
   ChatResponseType,
   EmojiResponseType,
   LeaveResponseType,
   ParticipantResponseType,
   ProducerRemoveResponseType,
   ProducerResponseType,
-  ToggleDeviceEnalbeResponseType,
+  ToggleDeviceEnableResponseType,
   ToggleHandsUpResponseType,
   TrackResponseType,
 } from '@/types/session';
-import { AppData } from '@/types/webRTC';
 
 export const useSignalingHandler = (
   subscribe: <T>(destination: string, callback: (response: T) => void | Promise<void>) => void,
@@ -31,7 +31,7 @@ export const useSignalingHandler = (
   } | null>,
   removeConsumer: (userId: string, trackType?: TrackType) => void,
 ) => {
-  const handleToggleDevice = useCallback(async (data: ToggleDeviceEnalbeResponseType) => {
+  const handleToggleDevice = useCallback(async (data: ToggleDeviceEnableResponseType) => {
     const { toggleDevices } = useParticipantStore.getState();
     const { mediaOption, userId } = data;
     toggleDevices(userId, mediaOption);

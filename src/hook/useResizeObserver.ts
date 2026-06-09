@@ -1,7 +1,8 @@
 'use client';
 
-import { debounce } from 'lodash';
 import { useEffect, useRef } from 'react';
+
+import { debounce } from '@/util/debounce';
 
 const useResizeObserver = <T extends HTMLElement>(callback: (width: number, height: number) => void) => {
   const containerRef = useRef<T>(null);

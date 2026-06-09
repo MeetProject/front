@@ -16,7 +16,7 @@ export default function NameTag({ id, name }: NameTagProps) {
       <div
         className={`flex h-8 items-center justify-start gap-2 overflow-hidden rounded-2xl pr-3 pl-2 ${isHandsUp ? 'animate-expand-pill bg-success-subtle origin-bottom' : 'bg-transparent'} `}
       >
-        <div className={`shrink-0 ${isHandsUp && 'animate-wave-hands'}`}>
+        <div className={cn('shrink-0', isHandsUp && 'animate-wave-hands')}>
           {isHandsUp && <Icon.FrontHand className='fill-success-deep' height={16} width={16} />}
         </div>
         <div className='shrink'>

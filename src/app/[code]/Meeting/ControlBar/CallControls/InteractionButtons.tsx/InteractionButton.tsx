@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { ButtonTag } from '@/components';
 import { useShortcutKey } from '@/hook';
 import { cn } from '@/lib/cn';
-import { formatShortcut } from '@/util/formatter';
+import { formatShortcut } from '@/util/text';
 
 interface InteractionButtonProps {
   name: string;
@@ -73,7 +73,7 @@ export default function InteractionButton({
         onClick={handleClick}
       >
         <Icon
-          className={`${isActive ? 'fill-on-primary-container' : 'fill-on-surface-bright'}`}
+          className={cn(isActive ? 'fill-on-primary-container' : 'fill-on-surface-bright')}
           height={24}
           width={24}
         />

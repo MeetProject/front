@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { GroupChatType } from '@/types/chatType';
-import { formatTime } from '@/util/formatter';
+import { formatTime } from '@/util/text';
 
 interface ChatMessageProps {
   chat: GroupChatType;

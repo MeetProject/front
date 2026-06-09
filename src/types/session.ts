@@ -1,8 +1,18 @@
-import { ConsumerOptions, RtpCapabilities, TransportOptions } from 'mediasoup-client/types';
+import {
+  AppData as PrimitiveAppData,
+  ConsumerOptions,
+  RtpCapabilities,
+  TransportOptions,
+} from 'mediasoup-client/types';
 
 import { DeviceEnableType, TrackType } from './deviceType';
 import { EmojiDataType, EmojiType } from './emojiType';
-import { AppData } from './webRTC';
+
+export type Direction = 'send' | 'recv';
+export type AppData = PrimitiveAppData & {
+  trackType: TrackType;
+  userId: string;
+};
 
 export interface DtlsReponseType {
   options: TransportOptions<AppData>;
@@ -43,7 +53,7 @@ export interface ConsumerParamsResponseType {
   consumerParams: ConsumerOptions<AppData>;
 }
 
-export interface ToggleDeviceEnalbeResponseType {
+export interface ToggleDeviceEnableResponseType {
   userId: string;
   mediaOption: DeviceEnableType;
 }

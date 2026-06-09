@@ -1,5 +1,3 @@
-import { useShallow } from 'zustand/shallow';
-
 import StagedLayout from './StagedLayout';
 import TiledLayout from './TiledLayout';
 
@@ -11,12 +9,7 @@ interface ScreenWrapperProps {
 }
 
 export default function ScreenWrapper({ updateTrackStatus }: ScreenWrapperProps) {
-  const { screenStream } = useParticipantStore(
-    useShallow((state) => ({
-      info: state.info,
-      screenStream: state.screenStream,
-    })),
-  );
+  const screenStream = useParticipantStore((state) => state.screenStream);
 
   if (screenStream && screenStream.stream) {
     return <StagedLayout updateTrackStatus={updateTrackStatus} />;

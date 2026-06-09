@@ -3,9 +3,8 @@ import { create } from 'zustand';
 import { GroupChatType } from '@/types/chatType';
 import { DeviceEnableType, TrackType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
-import { ChatResponseType, ParticipantDataType } from '@/types/session';
+import { AppData, ChatResponseType, ParticipantDataType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
-import { AppData } from '@/types/webRTC';
 
 interface StreamInfo {
   userId: string | null;

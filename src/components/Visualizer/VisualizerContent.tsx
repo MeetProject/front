@@ -1,42 +1,31 @@
+'use client';
+
+import { CSSProperties } from 'react';
+
+import { useVolumeMeter } from '@/hook';
+import { mapBarHeight } from '@/util/audio';
+
 interface VisualizerContentProps {
-  volume: number;
+  analyser: AnalyserNode | null;
   className?: string;
   color?: string;
 }
 
-export default function VisualizerContent({ className, color, volume }: VisualizerContentProps) {
-  const getMappedHeight = (val: number) => {
-    const THRESHOLD = 3;
-    if (val <= THRESHOLD) {
-      return 0;
-    }
+export default function VisualizerContent({ analyser, className, color }: VisualizerContentProps) {
+  const containerRef = useVolumeMeter<HTMLDivElement>(analyser, mapBarHeight);
 
-    const MAX_INPUT = 30;
-    const MAX_DISPLAY_HEIGHT = 12;
-
-    const normalized = Math.min((val - THRESHOLD) / (MAX_INPUT - THRESHOLD), 1);
-    return Math.pow(normalized, 1.2) * MAX_DISPLAY_HEIGHT;
-  };
-
-  const dynamicHeight = getMappedHeight(volume);
-  const MIN_HEIGHT = 4;
+  const barColor = color ? { backgroundColor: color } : {};
+  const sideBar: CSSProperties = { height: 'calc(4px + var(--meter, 0) * 0.5px)', ...barColor };
+  const centerBar: CSSProperties = { height: 'calc(4px + var(--meter, 0) * 1px)', ...barColor };
 
   return (
     <div
       className={`flex size-6.5 items-center justify-center gap-0.5 rounded-full bg-[rgba(26,115,232,0.9)] shadow-sm ${className}`}
+      ref={containerRef}
     >
-      <div
-        className='w-0.75 rounded-full bg-white transition-[height] duration-75'
-        style={{ height: `${MIN_HEIGHT + dynamicHeight / 2}px`, ...(color ? { backgroundColor: color } : {}) }}
-      />
-      <div
-        className='w-0.75 rounded-full bg-white transition-[height] duration-75'
-        style={{ height: `${MIN_HEIGHT + dynamicHeight}px`, ...(color ? { backgroundColor: color } : {}) }}
-      />
-      <div
-        className='w-0.75 rounded-full bg-white transition-[height] duration-75'
-        style={{ height: `${MIN_HEIGHT + dynamicHeight / 2}px`, ...(color ? { backgroundColor: color } : {}) }}
-      />
+      <div className='w-0.75 rounded-full bg-white' style={sideBar} />
+      <div className='w-0.75 rounded-full bg-white' style={centerBar} />
+      <div className='w-0.75 rounded-full bg-white' style={sideBar} />
     </div>
   );
 }

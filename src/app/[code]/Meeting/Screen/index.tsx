@@ -1,4 +1,4 @@
-import ScreenAudio from './ScreenAudio';
+import ParticipantAudio from './ParticipantAudio';
 import ScreenWrapper from './ScreenWrapper';
 
 import { TrackType } from '@/types/deviceType';
@@ -11,7 +11,7 @@ export default function Screen({ updateTrackStatus }: ScreenProps) {
   return (
     <>
       <ScreenWrapper updateTrackStatus={updateTrackStatus} />
-      <ScreenAudio />
+      <ParticipantAudio />
     </>
   );
 }

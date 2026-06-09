@@ -6,6 +6,7 @@ import ButtonTag from '../ButtonTag';
 
 import * as Icon from '@/asset/svg';
 import { useDevice } from '@/hook';
+import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
@@ -89,7 +90,7 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
               onClick={handleOptionButtonClick}
             >
               <Icon.Chevron
-                className={`${isOpenOption && 'rotate-180'} fill-outline-dark transition-transform duration-300`}
+                className={cn(isOpenOption && 'rotate-180', 'fill-outline-dark transition-transform duration-300')}
                 height={12}
                 width={12}
               />

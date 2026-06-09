@@ -22,14 +22,8 @@ const ICON_PROPS = {
 type Menu = 'feedback' | 'setting' | 'permission';
 
 export default function Header() {
-  /* const { client } = useClientStore(
-    useShallow((state) => ({
-      client: state.client,
-    })),
-  ); */
-
   const [menuStatus, setMenuStatus] = useState<Menu | null>(null);
-  const { initStream } = useDevice();
+  const { initStream, stopStream } = useDevice();
 
   const handleSettingClick = useCallback(async () => {
     const chromium = isChromium();
@@ -55,10 +49,9 @@ export default function Header() {
   }, [initStream]);
 
   const handleSettingClose = useCallback(() => {
-    const { stopStream } = useDeviceStore.getState();
     setMenuStatus(null);
     stopStream();
-  }, []);
+  }, [stopStream]);
 
   const handleFeedbackClick = useCallback(() => {
     setMenuStatus('feedback');
@@ -105,7 +98,6 @@ export default function Header() {
             {button.icon}
           </IconButton>
         ))}
-        {/* {client && <InfoMenu />} */}
       </div>
       <Feedback isOpen={menuStatus === 'feedback'} onClose={handleFeedbackClose} />
       <MediaPermissionDialog isOpen={menuStatus === 'permission'} onClose={handlePermissionClose} />

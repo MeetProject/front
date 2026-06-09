@@ -1,27 +1,20 @@
 'use client';
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, MediaHTMLAttributes } from 'react';
-import { useShallow } from 'zustand/shallow';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
+import { canSelectOutputDevice } from '@/util/env';
 
 interface MediaProps extends MediaHTMLAttributes<HTMLMediaElement> {
   tag: 'video' | 'audio';
   stream?: MediaStream;
-  disableSinkId?: boolean;
 }
 
-const Media = forwardRef<HTMLMediaElement, MediaProps>(({ disableSinkId = false, stream, tag, ...props }, ref) => {
+const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const {
-    device: { audioOutput },
-  } = useDeviceStore(
-    useShallow((state) => ({
-      device: state.device,
-    })),
-  );
+  const audioOutput = useDeviceStore((state) => state.device.audioOutput);
 
   useImperativeHandle(ref, () => {
     const el = tag === 'audio' ? audioRef.current : videoRef.current;
@@ -35,12 +28,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ disableSinkId = false,
     }
 
     const applyDevice = async () => {
-      if (
-        disableSinkId ||
-        !audioOutput ||
-        !('setSinkId' in HTMLMediaElement.prototype) ||
-        el.sinkId === audioOutput.deviceId
-      ) {
+      if (!audioOutput || !canSelectOutputDevice() || (el.sinkId || 'default') === audioOutput.deviceId) {
         return;
       }
 
@@ -66,7 +54,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ disableSinkId = false,
     };
 
     applyDevice();
-  }, [audioOutput, tag, disableSinkId]);
+  }, [audioOutput, tag]);
 
   useEffect(() => {
     if (!stream) {

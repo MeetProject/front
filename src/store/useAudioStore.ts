@@ -1,44 +1,29 @@
 import { create } from 'zustand';
 
-import { useDeviceStore } from '@/store/useDeviceStore';
-import { AppData } from '@/types/webRTC';
+import { AppData } from '@/types/session';
 import { createAudioContext } from '@/util/audio';
-import { canSelectOutputDevice } from '@/util/env';
 
 interface ConsumerResult {
   appData: AppData;
   track: MediaStreamTrack;
 }
 
-type MediaElementWithSink = HTMLAudioElement & { setSinkId?: (deviceId: string) => Promise<void> };
-
 interface AudioEntry {
-  analyser: AnalyserNode;
+  stream: MediaStream;
   source: MediaStreamAudioSourceNode;
-  element: MediaElementWithSink;
+  analyser: AnalyserNode;
 }
 
 interface AudioState {
   audio: Map<string, AudioEntry>;
   audioContext: AudioContext | null;
-  addAudioTrack: (trackInfo: ConsumerResult) => Promise<void>;
+  addAudioTrack: (trackInfo: ConsumerResult) => void;
   removeAudioTrack: (id: string) => void;
   resumeAudioContext: () => Promise<void>;
-  setOutputDevice: (deviceId: string) => Promise<void>;
 }
 
-const applySinkId = async (element: MediaElementWithSink, deviceId?: string) => {
-  if (!deviceId || !canSelectOutputDevice() || typeof element.setSinkId !== 'function') {
-    return;
-  }
-
-  try {
-    await element.setSinkId(deviceId);
-  } catch {}
-};
-
 export const useAudioStore = create<AudioState>((set, get) => ({
-  addAudioTrack: async (trackInfo) => {
+  addAudioTrack: (trackInfo) => {
     const {
       appData: { userId },
       track,
@@ -57,27 +42,15 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     if (previous) {
       previous.source.disconnect();
       previous.analyser.disconnect();
-      previous.element.pause();
-      previous.element.srcObject = null;
-      previous.element.load();
     }
 
     const stream = new MediaStream([track]);
-
-    const element = new window.Audio() as MediaElementWithSink;
-    element.srcObject = stream;
-    element.autoplay = true;
-
-    const { audioOutput } = useDeviceStore.getState().device;
-    await applySinkId(element, audioOutput?.deviceId);
-    element.play().catch(() => {});
-
     const source = audioContext.createMediaStreamSource(stream);
     const analyser = audioContext.createAnalyser();
     source.connect(analyser);
 
     const newAudioMap = new Map(get().audio);
-    newAudioMap.set(userId, { analyser, element, source });
+    newAudioMap.set(userId, { analyser, source, stream });
 
     set({ audio: newAudioMap, audioContext });
   },
@@ -90,12 +63,10 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       return;
     }
 
-    entry.source.disconnect();
-    entry.analyser.disconnect();
+    const { analyser, source } = entry;
 
-    entry.element.pause();
-    entry.element.srcObject = null;
-    entry.element.load();
+    source.disconnect();
+    analyser.disconnect();
 
     const newAudioMap = new Map(get().audio);
     newAudioMap.delete(id);
@@ -110,11 +81,5 @@ export const useAudioStore = create<AudioState>((set, get) => ({
         await audioContext.resume();
       } catch {}
     }
-
-    get().audio.forEach((entry) => entry.element.play().catch(() => {}));
-  },
-
-  setOutputDevice: async (deviceId: string) => {
-    await Promise.all(Array.from(get().audio.values()).map((entry) => applySinkId(entry.element, deviceId)));
   },
 }));

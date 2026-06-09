@@ -7,6 +7,7 @@ import StyleLink from './StyleLink';
 
 import * as Icon from '@/asset/svg';
 import { useOutsideClick } from '@/hook';
+import { cn } from '@/lib/cn';
 
 interface ReportProps {
   onComplete: (value: boolean) => void;
@@ -78,7 +79,10 @@ export default function Report({ onComplete, onVisible }: ReportProps) {
             <p className='text-surface-base text-sm'>{option ?? '옵션 선택'}</p>
             <div>
               <Icon.ChevronFill
-                className={`fill-primary-dark transition-transform duration-200 ${isClicked && 'fill-outline-dark rotate-180'}`}
+                className={cn(
+                  'fill-primary-dark transition-transform duration-200',
+                  isClicked && 'fill-outline-dark rotate-180',
+                )}
                 height={24}
                 width={24}
               />

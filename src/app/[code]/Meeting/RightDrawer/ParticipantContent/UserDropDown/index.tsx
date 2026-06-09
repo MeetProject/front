@@ -9,7 +9,7 @@ import UserCard from './UserCard';
 
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
-import { charMatcher } from '@/util/matcher';
+import { charMatcher } from '@/util/text';
 
 interface UserDropDownProps {
   keyword: string;

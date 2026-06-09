@@ -30,11 +30,11 @@ export default function ScreenSaver({ onClickButton }: ScreenSaverProps) {
       return '회의에서 참여자들이 나를 보도록 하시겠습니까?';
     }
 
-    if (status === 'pending') {
-      return '카메라 불러오는 중';
+    if (status === 'failed') {
+      return '카메라를 불러올 수 없습니다';
     }
 
-    return '';
+    return '카메라 불러오는 중';
   };
 
   const message = getText();

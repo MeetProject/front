@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import BaseTile from './_shared/BaseTile';
@@ -11,7 +11,7 @@ interface ParticipantTileProps {
   updateTrackStatus: (userId: string, trackType: DeviceKindType, shouldTrack: boolean) => Promise<void>;
 }
 
-export default function ParticipantTile({ id, updateTrackStatus }: ParticipantTileProps) {
+function ParticipantTile({ id, updateTrackStatus }: ParticipantTileProps) {
   const { device, emoji, info, stream } = useParticipantStore(
     useShallow((state) => ({
       device: state.devices.get(id),
@@ -46,3 +46,5 @@ export default function ParticipantTile({ id, updateTrackStatus }: ParticipantTi
     />
   );
 }
+
+export default memo(ParticipantTile);

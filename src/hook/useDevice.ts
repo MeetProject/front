@@ -6,6 +6,13 @@ import { getCurrentDeviceInfo } from '@/lib/device';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
+const AUDIO_PROCESSING: MediaTrackConstraints & { voiceIsolation?: boolean } = {
+  autoGainControl: true,
+  echoCancellation: true,
+  noiseSuppression: true,
+  voiceIsolation: true,
+};
+
 const useDevice = () => {
   const setMediaStream = useCallback(async (stream: MediaStream | null) => {
     const deviceInfo = stream
@@ -42,7 +49,10 @@ const useDevice = () => {
     const { device } = useDeviceStore.getState();
     return {
       ...(config.audio && {
-        audio: device.audioInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } } : true,
+        audio: {
+          ...(device.audioInput && { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } }),
+          ...AUDIO_PROCESSING,
+        },
       }),
       ...(config.video && {
         video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput } } : true,
@@ -137,7 +147,10 @@ const useDevice = () => {
 
       for (const { audio, last, video } of attempts) {
         try {
-          return await getStream({ audio, video }, true, last, isSyncEnable);
+          const stream = await getStream({ audio, video }, true, last, isSyncEnable);
+          if (stream) {
+            return stream;
+          }
         } catch {
           continue;
         }
@@ -150,11 +163,12 @@ const useDevice = () => {
   const replaceNewTrack = useCallback(
     async (type: DeviceKindType, deviceId: string | null, isExact = true) => {
       const { stream, updatePermission } = useDeviceStore.getState();
+      const audioOption = type === 'audio' ? AUDIO_PROCESSING : null;
       const constraint = deviceId
         ? {
-            [type]: { deviceId: isExact ? { exact: deviceId } : { ideal: deviceId } },
+            [type]: { deviceId: isExact ? { exact: deviceId } : { ideal: deviceId }, ...audioOption },
           }
-        : { [type]: true };
+        : { [type]: audioOption ?? true };
 
       try {
         const trackStream = await navigator.mediaDevices.getUserMedia(constraint);
@@ -180,7 +194,9 @@ const useDevice = () => {
           updatePermission(type, 'denied');
           return null;
         }
-        if (isExact) return replaceNewTrack(type, deviceId, false);
+        if (isExact) {
+          return replaceNewTrack(type, deviceId, false);
+        }
         throw e;
       }
     },
@@ -208,13 +224,13 @@ const useDevice = () => {
   );
 
   const toggleAudioTrack = useCallback(() => {
-    const { deviceEnable, stream, toggleDeviceEnalbe } = useDeviceStore.getState();
+    const { deviceEnable, stream, toggleDeviceEnable } = useDeviceStore.getState();
     if (!stream) {
       return;
     }
 
     const prevEnable = deviceEnable.audio;
-    toggleDeviceEnalbe('audio');
+    toggleDeviceEnable('audio');
 
     const audioTracks = stream.getAudioTracks();
     audioTracks.forEach((track) => {
@@ -229,14 +245,14 @@ const useDevice = () => {
       device: { videoInput },
       deviceEnable,
       stream,
-      toggleDeviceEnalbe,
+      toggleDeviceEnable,
     } = useDeviceStore.getState();
     if (!stream) {
       return null;
     }
 
     const prevEnable = deviceEnable.video;
-    toggleDeviceEnalbe('video');
+    toggleDeviceEnable('video');
 
     if (!prevEnable) {
       return await replaceNewTrack('video', videoInput?.deviceId ?? '', true);
@@ -250,25 +266,43 @@ const useDevice = () => {
     return null;
   }, [replaceNewTrack]);
 
-  const initScreenStream = useCallback(async (audio: boolean) => {
+  const stopScreenStream = useCallback(() => {
     const { screenStream } = useDeviceStore.getState();
-
-    if (screenStream) {
-      screenStream.getTracks().forEach((track) => track.stop());
-      useDeviceStore.setState({ screenStream: null });
+    if (!screenStream) {
+      return;
     }
+    screenStream.getTracks().forEach((track) => track.stop());
+    useDeviceStore.setState({ screenStream: null });
+  }, []);
 
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ audio });
-      useDeviceStore.setState({ screenStream: stream });
-      return stream;
-    } catch {}
+  const initScreenStream = useCallback(
+    async (audio: boolean) => {
+      stopScreenStream();
+
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ audio });
+        useDeviceStore.setState({ screenStream: stream });
+        return stream;
+      } catch {}
+    },
+    [stopScreenStream],
+  );
+
+  const stopStream = useCallback(() => {
+    const { stream } = useDeviceStore.getState();
+    if (!stream) {
+      return;
+    }
+    stream.getTracks().forEach((track) => track.stop());
+    useDeviceStore.setState({ status: null, stream: null });
   }, []);
 
   return {
     initScreenStream,
     initStream,
     replaceTrack,
+    stopScreenStream,
+    stopStream,
     toggleAudioTrack,
     toggleVideoTrack,
   };

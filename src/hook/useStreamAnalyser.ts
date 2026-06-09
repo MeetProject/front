@@ -2,36 +2,36 @@
 
 import { useEffect, useState } from 'react';
 
-import useVolume from '@/hook/useVolume';
 import { createStreamAnalyser } from '@/util/audio';
 
-const useStreamVolume = (stream: MediaStream | null) => {
+const useStreamAnalyser = (stream: MediaStream | null) => {
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-
-  const { isExpand, volume } = useVolume(analyser);
 
   useEffect(() => {
     if (!stream) {
+      setAnalyser(null);
       return;
     }
+
     const created = createStreamAnalyser(stream);
     if (!created) {
       return;
     }
-    const { analyser: audioAnalyser, audioContext, source } = created;
-    setAnalyser(audioAnalyser);
+
+    const { analyser: streamAnalyser, audioContext, source } = created;
+    setAnalyser(streamAnalyser);
 
     return () => {
+      setAnalyser(null);
       source.disconnect();
-      audioAnalyser.disconnect();
-
+      streamAnalyser.disconnect();
       if (audioContext.state !== 'closed') {
         audioContext.close();
       }
     };
   }, [stream]);
 
-  return { isExpand, volume };
+  return analyser;
 };
 
-export default useStreamVolume;
+export default useStreamAnalyser;

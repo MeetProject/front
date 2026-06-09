@@ -51,13 +51,11 @@ const getAudioOutput = (deviceInfo: MediaDeviceInfo[]) => {
   );
   const audioOutputList = [systemDefault, ...otherDevices];
 
-  let audioOutput = systemDefault;
-  if (currentAudioOutput && currentAudioOutput.deviceId !== 'default') {
-    const matched = otherDevices.find((d) => d.deviceId === currentAudioOutput.deviceId);
-    if (matched) {
-      audioOutput = matched;
-    }
-  }
+  const matched =
+    currentAudioOutput && currentAudioOutput.deviceId !== 'default'
+      ? otherDevices.find((d) => d.deviceId === currentAudioOutput.deviceId)
+      : undefined;
+  const audioOutput = matched ?? systemDefault;
 
   return { audioOutput, audioOutputList };
 };
