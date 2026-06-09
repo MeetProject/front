@@ -14,7 +14,6 @@ import { useLocalMuteStore } from '@/store/useLocalMuteStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
-import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session';
 import { WS_URL } from '@/util/api';
@@ -24,9 +23,11 @@ const useWebrtc = () => {
 
   const { connect, publish, request, subscribe, unsubscribeAll } = useSignaling(WS_URL);
   const {
+    clearDevice,
     consumeTrack,
     createTransport,
     disconnectTransport,
+    initDevice,
     pauseConsumer,
     produceTrack,
     removeConsumer,
@@ -56,8 +57,6 @@ const useWebrtc = () => {
   );
 
   const initWebrtc = useCallback(async () => {
-    const { initDevice } = useWebrtcStore.getState();
-
     const { capabilities } = await request<CapabilitiesResponseType>('/app/signal/capabilities');
     await initDevice(capabilities);
 
@@ -65,7 +64,7 @@ const useWebrtc = () => {
 
     const { stream } = useDeviceStore.getState();
     return Promise.all((stream?.getTracks() ?? []).map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')));
-  }, [createTransport, produceTrack, request]);
+  }, [createTransport, initDevice, produceTrack, request]);
 
   const joinRoom = useCallback(
     async (roomId: string) => {
@@ -114,7 +113,6 @@ const useWebrtc = () => {
         currentRoomId.current = roomId;
       } catch {
         const { reset } = useParticipantStore.getState();
-        const { clearDevice } = useWebrtcStore.getState();
         unsubscribeAll();
         disconnectTransport();
         clearDevice();
@@ -124,18 +122,17 @@ const useWebrtc = () => {
         setIsPending(false);
       }
     },
-    [consumeTrack, initSubscribe, request, connect, initWebrtc, unsubscribeAll, disconnectTransport],
+    [consumeTrack, initSubscribe, request, connect, initWebrtc, unsubscribeAll, disconnectTransport, clearDevice],
   );
 
   const leaveRoom = useCallback(() => {
     sendLeave();
     const { reset } = useParticipantStore.getState();
-    const { clearDevice } = useWebrtcStore.getState();
     unsubscribeAll();
     disconnectTransport();
     clearDevice();
     reset();
-  }, [unsubscribeAll, disconnectTransport, sendLeave]);
+  }, [unsubscribeAll, disconnectTransport, sendLeave, clearDevice]);
 
   const shareScreen = useCallback(async () => {
     const { userId } = useUserInfoStore.getState();

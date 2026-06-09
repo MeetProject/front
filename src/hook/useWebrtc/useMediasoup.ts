@@ -1,6 +1,7 @@
 'use client';
 
-import { Consumer, Producer, Transport } from 'mediasoup-client/types';
+import { Device } from 'mediasoup-client';
+import { Consumer, Producer, RtpCapabilities, Transport } from 'mediasoup-client/types';
 import { useCallback, useRef } from 'react';
 
 import { useAudioStore } from '@/store/useAudioStore';
@@ -15,6 +16,7 @@ export const useMediasoup = (
   publish: <T>(destination: string, payload?: T | undefined) => void,
   request: <T>(destination: string, payload: any) => Promise<T>,
 ) => {
+  const deviceRef = useRef<Device | null>(null);
   const sendTransport = useRef<Transport | null>(null);
   const recvTransport = useRef<Transport | null>(null);
 
@@ -26,6 +28,24 @@ export const useMediasoup = (
   const currentScreenSender = useRef<string | null>(null);
 
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
+
+  const initDevice = useCallback(async (capabilities: RtpCapabilities) => {
+    if (deviceRef.current) {
+      return deviceRef.current;
+    }
+    try {
+      const device = new Device();
+      await device.load({ routerRtpCapabilities: capabilities });
+      deviceRef.current = device;
+      return device;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const clearDevice = useCallback(() => {
+    deviceRef.current = null;
+  }, []);
 
   const handleConsumerClose = useCallback((consumer: Consumer, trackType: TrackType, userId: string) => {
     const { removeTrack } = useParticipantStore.getState();
@@ -62,7 +82,7 @@ export const useMediasoup = (
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
       const { userId: id } = useUserInfoStore.getState();
-      const { device } = useWebrtcStore.getState();
+      const device = deviceRef.current;
 
       if (!recvTransport.current || !device || targetId === id) {
         return null;
@@ -159,7 +179,7 @@ export const useMediasoup = (
 
   const createTransport = useCallback(
     async (direction: Direction) => {
-      const { device } = useWebrtcStore.getState();
+      const device = deviceRef.current;
       if (!device) {
         return;
       }
@@ -323,15 +343,12 @@ export const useMediasoup = (
     recvTransport.current = null;
   }, []);
 
-  const disconnectMediasoup = useCallback(() => {
-    useWebrtcStore.setState({ device: null });
-  }, []);
-
   return {
+    clearDevice,
     consumeTrack,
     createTransport,
-    disconnectMediasoup,
     disconnectTransport,
+    initDevice,
     pauseConsumer,
     produceTrack,
     removeConsumer,
