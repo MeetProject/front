@@ -1,6 +1,6 @@
 'use client';
 
-import { PropsWithChildren, useEffect, useRef, useState } from 'react';
+import { PropsWithChildren, useEffect } from 'react';
 
 import { useDevice } from '@/hook';
 import { getCurrentDeviceInfo } from '@/lib/device';
@@ -9,10 +9,7 @@ import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
 export default function DeviceProvider({ children }: PropsWithChildren) {
-  const timerRef = useRef<NodeJS.Timeout>(null);
-  const [isSupportedPermission, setIsSupportedPermission] = useState<boolean>(true);
-
-  const { initStream, stopStream } = useDevice();
+  const { initStream } = useDevice();
   const stream = useDeviceStore((state) => state.stream);
 
   useEffect(() => {
@@ -44,7 +41,6 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
         video.onchange = syncDevice;
         statuses.push(audio, video);
       } catch {
-        setIsSupportedPermission(false);
       } finally {
         useDeviceStore.setState({
           isInit: true,
@@ -129,43 +125,6 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
       });
     };
   }, [stream, initStream]);
-
-  useEffect(() => {
-    if (isSupportedPermission || !stream) {
-      return;
-    }
-
-    const checkDevicePermission = () => {
-      timerRef.current = setInterval(async () => {
-        const { status } = useDeviceStore.getState();
-        if (status === 'pending' && timerRef.current) {
-          clearInterval(timerRef.current);
-          return;
-        }
-        const tracks = stream.getTracks();
-        const isDeny = tracks.some((track) => track.muted || track.readyState === 'ended');
-
-        if (isDeny) {
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-
-          stopStream();
-          await initStream();
-        }
-      }, 2000);
-    };
-
-    checkDevicePermission();
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [isSupportedPermission, stream, initStream, stopStream]);
 
   useEffect(() => {
     const unlock = () => {
