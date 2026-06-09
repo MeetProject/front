@@ -1,12 +1,12 @@
 'use client';
 
-import { debounce } from 'lodash';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 
 import RaisedHandsDropDown from './RaisedHandsDropDown';
 import UserDropDown from './UserDropDown';
 
 import * as Icon from '@/asset/svg';
+import { debounce } from '@/util/debounce';
 
 export default function ParticipantContent() {
   const [keyword, setKeyword] = useState<string>('');
