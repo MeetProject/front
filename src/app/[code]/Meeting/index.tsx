@@ -22,7 +22,7 @@ import { API_URL } from '@/util/api';
 
 export default function Meeting() {
   const roomId = usePathname().slice(1);
-  const { initScreenStream, initStream } = useDevice();
+  const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
   const { isInit, screenStreams } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
@@ -49,7 +49,7 @@ export default function Meeting() {
   const audioControl = useMemo(() => ({ toggleMute: toggleParticipantAudio }), [toggleParticipantAudio]);
 
   const handleScreenShare = useCallback(async () => {
-    const { screenStream, stopScreenStream } = useDeviceStore.getState();
+    const { screenStream } = useDeviceStore.getState();
 
     if (screenStream) {
       removeTrack('screen');
@@ -58,7 +58,7 @@ export default function Meeting() {
     }
     await initScreenStream(true);
     await shareScreen();
-  }, [initScreenStream, shareScreen, removeTrack]);
+  }, [initScreenStream, shareScreen, removeTrack, stopScreenStream]);
 
   const handleToggleTrack = useCallback(
     async (userId: string, trackType: TrackType, shouldTrack: boolean) => {
@@ -88,14 +88,13 @@ export default function Meeting() {
 
   useEffect(
     () => () => {
-      const { stopScreenStream, stopStream } = useDeviceStore.getState();
       const { reset } = useDrawerStore.getState();
       stopStream();
       stopScreenStream();
       reset();
       leaveRoom();
     },
-    [leaveRoom],
+    [leaveRoom, stopStream, stopScreenStream],
   );
 
   useEffect(() => {
@@ -127,7 +126,6 @@ export default function Meeting() {
     }
 
     videoTrack.onended = () => {
-      const { stopScreenStream } = useDeviceStore.getState();
       removeTrack('screen');
       stopScreenStream();
     };
@@ -135,7 +133,7 @@ export default function Meeting() {
     return () => {
       videoTrack.onended = null;
     };
-  }, [screenStreams, removeTrack]);
+  }, [screenStreams, removeTrack, stopScreenStream]);
 
   if (isPending) {
     return <Loading isPending={isPending} />;

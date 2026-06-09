@@ -12,7 +12,7 @@ import { useDevice } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 export default function Device() {
-  const { initStream, toggleAudioTrack, toggleVideoTrack } = useDevice();
+  const { initStream, stopStream } = useDevice();
   const { isInit, permission, stream } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
@@ -68,26 +68,23 @@ export default function Device() {
       return;
     }
 
-    const { deviceEnable, toggleDeviceEnable } = useDeviceStore.getState();
+    const { deviceEnable } = useDeviceStore.getState();
 
     if (!deviceEnable.audio) {
-      toggleDeviceEnable('audio');
-      toggleAudioTrack();
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = false;
+      });
     }
 
     if (!deviceEnable.video) {
-      toggleDeviceEnable('video');
-      toggleVideoTrack();
+      stream.getVideoTracks().forEach((track) => {
+        track.stop();
+        stream.removeTrack(track);
+      });
     }
-  }, [stream, toggleAudioTrack, toggleVideoTrack, isInit]);
+  }, [stream, isInit]);
 
-  useEffect(
-    () => () => {
-      const { stopStream } = useDeviceStore.getState();
-      stopStream();
-    },
-    [],
-  );
+  useEffect(() => () => stopStream(), [stopStream]);
 
   return (
     <div className='flex w-full max-w-191 flex-col'>

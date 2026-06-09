@@ -12,7 +12,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
   const timerRef = useRef<NodeJS.Timeout>(null);
   const [isSupportedPermission, setIsSupportedPermission] = useState<boolean>(true);
 
-  const { initStream } = useDevice();
+  const { initStream, stopStream } = useDevice();
   const stream = useDeviceStore((state) => state.stream);
 
   useEffect(() => {
@@ -137,7 +137,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
 
     const checkDevicePermission = () => {
       timerRef.current = setInterval(async () => {
-        const { status, stopStream } = useDeviceStore.getState();
+        const { status } = useDeviceStore.getState();
         if (status === 'pending' && timerRef.current) {
           clearInterval(timerRef.current);
           return;
@@ -165,7 +165,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
         timerRef.current = null;
       }
     };
-  }, [isSupportedPermission, stream, initStream]);
+  }, [isSupportedPermission, stream, initStream, stopStream]);
 
   useEffect(() => {
     const unlock = () => {

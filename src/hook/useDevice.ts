@@ -137,7 +137,10 @@ const useDevice = () => {
 
       for (const { audio, last, video } of attempts) {
         try {
-          return await getStream({ audio, video }, true, last, isSyncEnable);
+          const stream = await getStream({ audio, video }, true, last, isSyncEnable);
+          if (stream) {
+            return stream;
+          }
         } catch {
           continue;
         }
@@ -252,25 +255,43 @@ const useDevice = () => {
     return null;
   }, [replaceNewTrack]);
 
-  const initScreenStream = useCallback(async (audio: boolean) => {
+  const stopScreenStream = useCallback(() => {
     const { screenStream } = useDeviceStore.getState();
-
-    if (screenStream) {
-      screenStream.getTracks().forEach((track) => track.stop());
-      useDeviceStore.setState({ screenStream: null });
+    if (!screenStream) {
+      return;
     }
+    screenStream.getTracks().forEach((track) => track.stop());
+    useDeviceStore.setState({ screenStream: null });
+  }, []);
 
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ audio });
-      useDeviceStore.setState({ screenStream: stream });
-      return stream;
-    } catch {}
+  const initScreenStream = useCallback(
+    async (audio: boolean) => {
+      stopScreenStream();
+
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ audio });
+        useDeviceStore.setState({ screenStream: stream });
+        return stream;
+      } catch {}
+    },
+    [stopScreenStream],
+  );
+
+  const stopStream = useCallback(() => {
+    const { stream } = useDeviceStore.getState();
+    if (!stream) {
+      return;
+    }
+    stream.getTracks().forEach((track) => track.stop());
+    useDeviceStore.setState({ status: null, stream: null });
   }, []);
 
   return {
     initScreenStream,
     initStream,
     replaceTrack,
+    stopScreenStream,
+    stopStream,
     toggleAudioTrack,
     toggleVideoTrack,
   };

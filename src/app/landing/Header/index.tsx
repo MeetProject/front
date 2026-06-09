@@ -23,7 +23,7 @@ type Menu = 'feedback' | 'setting' | 'permission';
 
 export default function Header() {
   const [menuStatus, setMenuStatus] = useState<Menu | null>(null);
-  const { initStream } = useDevice();
+  const { initStream, stopStream } = useDevice();
 
   const handleSettingClick = useCallback(async () => {
     const chromium = isChromium();
@@ -49,10 +49,9 @@ export default function Header() {
   }, [initStream]);
 
   const handleSettingClose = useCallback(() => {
-    const { stopStream } = useDeviceStore.getState();
     setMenuStatus(null);
     stopStream();
-  }, []);
+  }, [stopStream]);
 
   const handleFeedbackClick = useCallback(() => {
     setMenuStatus('feedback');

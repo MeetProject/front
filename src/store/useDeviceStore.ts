@@ -19,11 +19,8 @@ interface DeviceState {
   changeDeviceList: (type: DeviceType, value: MediaDeviceInfo[]) => void;
   toggleDeviceEnable: (type: DeviceKindType) => void;
   updatePermission: (type: DeviceKindType, value: PermissionState) => void;
-
-  stopStream: () => void;
-  stopScreenStream: () => void;
 }
-export const useDeviceStore = create<DeviceState>((set, get) => ({
+export const useDeviceStore = create<DeviceState>((set) => ({
   changeDevice: (type, value) => set((state) => ({ device: { ...state.device, [type]: value } })),
   changeDeviceList: (type, value) => set((state) => ({ deviceList: { ...state.deviceList, [type]: value } })),
   device: {
@@ -45,24 +42,6 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
   permission: { audio: 'prompt', video: 'prompt' },
   screenStream: null,
   status: null,
-  stopScreenStream: () => {
-    const { screenStream } = get();
-    if (!screenStream) {
-      return;
-    }
-    screenStream.getTracks().forEach((track) => track.stop());
-    set({ screenStream: null });
-  },
-
-  stopStream: () => {
-    const { stream } = get();
-    if (!stream) {
-      return;
-    }
-    stream.getTracks().forEach((track) => track.stop());
-    set({ stream: null });
-  },
-
   stream: null,
 
   toggleDeviceEnable: (type) =>
