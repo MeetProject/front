@@ -53,7 +53,7 @@ export interface ConsumerParamsResponseType {
   consumerParams: ConsumerOptions<AppData>;
 }
 
-export interface ToggleDeviceEnalbeResponseType {
+export interface ToggleDeviceEnableResponseType {
   userId: string;
   mediaOption: DeviceEnableType;
 }

@@ -68,15 +68,15 @@ export default function Device() {
       return;
     }
 
-    const { deviceEnable, toggleDeviceEnalbe } = useDeviceStore.getState();
+    const { deviceEnable, toggleDeviceEnable } = useDeviceStore.getState();
 
     if (!deviceEnable.audio) {
-      toggleDeviceEnalbe('audio');
+      toggleDeviceEnable('audio');
       toggleAudioTrack();
     }
 
     if (!deviceEnable.video) {
-      toggleDeviceEnalbe('video');
+      toggleDeviceEnable('video');
       toggleVideoTrack();
     }
   }, [stream, toggleAudioTrack, toggleVideoTrack, isInit]);

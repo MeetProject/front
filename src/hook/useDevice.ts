@@ -210,13 +210,13 @@ const useDevice = () => {
   );
 
   const toggleAudioTrack = useCallback(() => {
-    const { deviceEnable, stream, toggleDeviceEnalbe } = useDeviceStore.getState();
+    const { deviceEnable, stream, toggleDeviceEnable } = useDeviceStore.getState();
     if (!stream) {
       return;
     }
 
     const prevEnable = deviceEnable.audio;
-    toggleDeviceEnalbe('audio');
+    toggleDeviceEnable('audio');
 
     const audioTracks = stream.getAudioTracks();
     audioTracks.forEach((track) => {
@@ -231,14 +231,14 @@ const useDevice = () => {
       device: { videoInput },
       deviceEnable,
       stream,
-      toggleDeviceEnalbe,
+      toggleDeviceEnable,
     } = useDeviceStore.getState();
     if (!stream) {
       return null;
     }
 
     const prevEnable = deviceEnable.video;
-    toggleDeviceEnalbe('video');
+    toggleDeviceEnable('video');
 
     if (!prevEnable) {
       return await replaceNewTrack('video', videoInput?.deviceId ?? '', true);

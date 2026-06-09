@@ -63,7 +63,7 @@ export default function DeviceButtons({ onSettingButtonClick, onTrackChange, onT
         return;
       }
 
-      const { deviceEnable, toggleDeviceEnalbe } = useDeviceStore.getState();
+      const { deviceEnable, toggleDeviceEnable } = useDeviceStore.getState();
 
       if (trackType === 'video') {
         const newVideoTrack = await toggleVideoTrack();
@@ -77,7 +77,7 @@ export default function DeviceButtons({ onSettingButtonClick, onTrackChange, onT
       }
 
       await onTrackMute(trackType, !deviceEnable[trackType]);
-      toggleDeviceEnalbe(trackType);
+      toggleDeviceEnable(trackType);
     },
     [onTrackMute, onTrackChange, toggleVideoTrack],
   );

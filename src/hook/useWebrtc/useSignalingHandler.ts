@@ -15,7 +15,7 @@ import {
   ParticipantResponseType,
   ProducerRemoveResponseType,
   ProducerResponseType,
-  ToggleDeviceEnalbeResponseType,
+  ToggleDeviceEnableResponseType,
   ToggleHandsUpResponseType,
   TrackResponseType,
 } from '@/types/session';
@@ -31,7 +31,7 @@ export const useSignalingHandler = (
   } | null>,
   removeConsumer: (userId: string, trackType?: TrackType) => void,
 ) => {
-  const handleToggleDevice = useCallback(async (data: ToggleDeviceEnalbeResponseType) => {
+  const handleToggleDevice = useCallback(async (data: ToggleDeviceEnableResponseType) => {
     const { toggleDevices } = useParticipantStore.getState();
     const { mediaOption, userId } = data;
     toggleDevices(userId, mediaOption);

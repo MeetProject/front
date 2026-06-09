@@ -17,7 +17,7 @@ interface DeviceState {
 
   changeDevice: (type: DeviceType, value: MediaDeviceInfo) => void;
   changeDeviceList: (type: DeviceType, value: MediaDeviceInfo[]) => void;
-  toggleDeviceEnalbe: (type: DeviceKindType) => void;
+  toggleDeviceEnable: (type: DeviceKindType) => void;
   updatePermission: (type: DeviceKindType, value: PermissionState) => void;
 
   stopStream: () => void;
@@ -65,7 +65,7 @@ export const useDeviceStore = create<DeviceState>((set, get) => ({
 
   stream: null,
 
-  toggleDeviceEnalbe: (type) =>
+  toggleDeviceEnable: (type) =>
     set((state) => ({ deviceEnable: { ...state.deviceEnable, [type]: !state.deviceEnable[type] } })),
   updatePermission: (type, value) => set((state) => ({ permission: { ...state.permission, [type]: value } })),
 }));
