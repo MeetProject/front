@@ -85,6 +85,7 @@ export const useMediasoup = (
           await publish('/app/consumer/resume', {
             consumerId: consumer.id,
           });
+          resumedConsumer.current.set(consumer.id, true);
         }
 
         if (trackType === 'screen') {

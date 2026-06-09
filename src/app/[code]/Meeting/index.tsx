@@ -1,13 +1,14 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import BottomDrawer from './BottomDrawer';
 import ControlBar from './ControlBar';
 import EmojiReaction from './EmojiReaction';
 import Header from './Header';
+import { ParticipantAudioControlProvider } from './ParticipantAudioControlContext';
 import RightDrawer from './RightDrawer';
 import Screen from './Screen';
 
@@ -40,9 +41,12 @@ export default function Meeting() {
     sendEmoji,
     sendHandUp,
     shareScreen,
+    toggleParticipantAudio,
     toggleTrack,
   } = useWebrtc();
   const [isPending, setIsPending] = useState(true);
+
+  const audioControl = useMemo(() => ({ toggleMute: toggleParticipantAudio }), [toggleParticipantAudio]);
 
   const handleScreenShare = useCallback(async () => {
     const { screenStream, stopScreenStream } = useDeviceStore.getState();
@@ -138,26 +142,28 @@ export default function Meeting() {
   }
 
   return (
-    <div className='bg-surface-deep relative flex h-svh w-svw flex-col overflow-hidden select-none'>
-      <Header />
-      <div className='flex flex-1 flex-col'>
-        <div className='relative flex flex-1 flex-col'>
-          <div className='relative flex flex-1 shrink overflow-hidden px-4'>
-            <div className='flex size-full shrink overflow-hidden rounded-[20px]'>
-              <Screen updateTrackStatus={handleToggleTrack} />
+    <ParticipantAudioControlProvider value={audioControl}>
+      <div className='bg-surface-deep relative flex h-svh w-svw flex-col overflow-hidden select-none'>
+        <Header />
+        <div className='flex flex-1 flex-col'>
+          <div className='relative flex flex-1 flex-col'>
+            <div className='relative flex flex-1 shrink overflow-hidden px-4'>
+              <div className='flex size-full shrink overflow-hidden rounded-[20px]'>
+                <Screen updateTrackStatus={handleToggleTrack} />
+              </div>
+              <RightDrawer sendChat={sendChat} />
             </div>
-            <RightDrawer sendChat={sendChat} />
+            <EmojiReaction />
           </div>
-          <EmojiReaction />
+          <BottomDrawer sendEmoji={sendEmoji} />
         </div>
-        <BottomDrawer sendEmoji={sendEmoji} />
+        <ControlBar
+          sendHandUp={sendHandUp}
+          onScreenShare={handleScreenShare}
+          onTrackChange={replaceTrack}
+          onTrackMute={toggleTrack}
+        />
       </div>
-      <ControlBar
-        sendHandUp={sendHandUp}
-        onScreenShare={handleScreenShare}
-        onTrackChange={replaceTrack}
-        onTrackMute={toggleTrack}
-      />
-    </div>
+    </ParticipantAudioControlProvider>
   );
 }

@@ -10,6 +10,7 @@ import { useSignalSender } from './useSignalSender';
 import { useAudioStore } from '@/store/useAudioStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
+import { useLocalMuteStore } from '@/store/useLocalMuteStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
@@ -38,6 +39,21 @@ const useWebrtc = () => {
   const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave, sendProducerRemove } = useSignalSender(publish);
 
   const currentRoomId = useRef<string | null>(null);
+
+  const toggleParticipantAudio = useCallback(
+    (id: string) => {
+      const { mute, mutedIds, unmute } = useLocalMuteStore.getState();
+      if (mutedIds.has(id)) {
+        resumeConsumer(id, 'audio');
+        unmute(id);
+        return;
+      }
+
+      pauseConsumer(id, 'audio');
+      mute(id);
+    },
+    [pauseConsumer, resumeConsumer],
+  );
 
   const initWebrtc = useCallback(async () => {
     const { initDevice } = useWebrtcStore.getState();
@@ -177,6 +193,7 @@ const useWebrtc = () => {
     sendEmoji,
     sendHandUp,
     shareScreen,
+    toggleParticipantAudio,
     toggleTrack,
   };
 };

@@ -1,3 +1,4 @@
+import LocalMuteButton from './LocalMuteButton';
 import MicStatus from './MicStatus';
 
 import * as Icon from '@/asset/svg';
@@ -26,6 +27,7 @@ export default function ParticipantCard({ isMe, name, option, userId }: Particip
           <div className='flex size-12 items-center justify-center'>
             {option.audio && <MicStatus id={userId} isMe={isMe} />}
           </div>
+          {!isMe && <LocalMuteButton id={userId} />}
           <button className='hover:bg-action-hover flex size-12 items-center justify-center rounded-full'>
             <Icon.Menu className='fill-on-surface-dark size-6 rotate-90' />
           </button>

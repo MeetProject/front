@@ -3,14 +3,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, MediaHTMLAttributes } from 'react';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
+import { canSelectOutputDevice } from '@/util/env';
 
 interface MediaProps extends MediaHTMLAttributes<HTMLMediaElement> {
   tag: 'video' | 'audio';
   stream?: MediaStream;
-  disableSinkId?: boolean;
 }
 
-const Media = forwardRef<HTMLMediaElement, MediaProps>(({ disableSinkId = false, stream, tag, ...props }, ref) => {
+const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -28,12 +28,8 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ disableSinkId = false,
     }
 
     const applyDevice = async () => {
-      if (
-        disableSinkId ||
-        !audioOutput ||
-        !('setSinkId' in HTMLMediaElement.prototype) ||
-        el.sinkId === audioOutput.deviceId
-      ) {
+      // el.sinkId의 ''(빈 값)은 시스템 기본('default')과 동일하므로 동일 취급한다.
+      if (!audioOutput || !canSelectOutputDevice() || (el.sinkId || 'default') === audioOutput.deviceId) {
         return;
       }
 
@@ -59,7 +55,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ disableSinkId = false,
     };
 
     applyDevice();
-  }, [audioOutput, tag, disableSinkId]);
+  }, [audioOutput, tag]);
 
   useEffect(() => {
     if (!stream) {
