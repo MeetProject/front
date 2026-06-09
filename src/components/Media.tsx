@@ -28,7 +28,6 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
     }
 
     const applyDevice = async () => {
-      // el.sinkId의 ''(빈 값)은 시스템 기본('default')과 동일하므로 동일 취급한다.
       if (!audioOutput || !canSelectOutputDevice() || (el.sinkId || 'default') === audioOutput.deviceId) {
         return;
       }

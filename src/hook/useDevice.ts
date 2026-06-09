@@ -6,6 +6,13 @@ import { getCurrentDeviceInfo } from '@/lib/device';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
+const AUDIO_PROCESSING: MediaTrackConstraints & { voiceIsolation?: boolean } = {
+  autoGainControl: true,
+  echoCancellation: true,
+  noiseSuppression: true,
+  voiceIsolation: true,
+};
+
 const useDevice = () => {
   const setMediaStream = useCallback(async (stream: MediaStream | null) => {
     const deviceInfo = stream
@@ -42,7 +49,10 @@ const useDevice = () => {
     const { device } = useDeviceStore.getState();
     return {
       ...(config.audio && {
-        audio: device.audioInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } } : true,
+        audio: {
+          ...(device.audioInput && { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } }),
+          ...AUDIO_PROCESSING,
+        },
       }),
       ...(config.video && {
         video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput } } : true,
@@ -153,11 +163,12 @@ const useDevice = () => {
   const replaceNewTrack = useCallback(
     async (type: DeviceKindType, deviceId: string | null, isExact = true) => {
       const { stream, updatePermission } = useDeviceStore.getState();
+      const audioOption = type === 'audio' ? AUDIO_PROCESSING : null;
       const constraint = deviceId
         ? {
-            [type]: { deviceId: isExact ? { exact: deviceId } : { ideal: deviceId } },
+            [type]: { deviceId: isExact ? { exact: deviceId } : { ideal: deviceId }, ...audioOption },
           }
-        : { [type]: true };
+        : { [type]: audioOption ?? true };
 
       try {
         const trackStream = await navigator.mediaDevices.getUserMedia(constraint);
