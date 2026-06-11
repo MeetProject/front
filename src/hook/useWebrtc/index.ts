@@ -195,7 +195,6 @@ const useWebrtc = () => {
     leaveRoom,
     pauseTrack: pauseConsumer,
     removeTrack,
-    replaceProducerTrack,
     replaceTrack: replaceProducerTrack,
     resumeTrack: resumeConsumer,
     sendChat,

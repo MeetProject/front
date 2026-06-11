@@ -1,7 +1,7 @@
 'use client';
 
 import DeviceEnableButton from './DeviceEnableButton';
-import Volume from './Volme';
+import Volume from './Volume';
 
 import { Media } from '@/components';
 import { useDeviceStore } from '@/store/useDeviceStore';
