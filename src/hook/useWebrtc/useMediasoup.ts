@@ -12,6 +12,8 @@ import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { AppData, ConsumerParamsResponseType, Direction, DtlsReponseType } from '@/types/session';
 
+const isScreenTrack = (trackType: TrackType) => trackType === 'screen' || trackType === 'screenAudio';
+
 export const useMediasoup = (
   publish: <T>(destination: string, payload?: T | undefined) => void,
   request: <T>(destination: string, payload: any) => Promise<T>,
@@ -51,11 +53,12 @@ export const useMediasoup = (
     const { removeTrack } = useParticipantStore.getState();
     const { removeAudioTrack } = useAudioStore.getState();
 
-    if (trackType === 'screen') {
+    if (isScreenTrack(trackType)) {
       screenConsumers.current.delete(consumer.id);
       if (currentScreenSender.current === userId && screenConsumers.current.size === 0) {
         currentScreenSender.current = null;
       }
+      resumedConsumer.current.delete(consumer.id);
       return;
     }
 
@@ -108,12 +111,12 @@ export const useMediasoup = (
           resumedConsumer.current.set(consumer.id, true);
         }
 
-        if (trackType === 'screen') {
+        if (isScreenTrack(trackType)) {
           currentScreenSender.current = userId;
           screenConsumers.current.set(consumer.id, consumer);
         }
 
-        if (trackType !== 'screen') {
+        if (!isScreenTrack(trackType)) {
           const userConsumers = consumers.current.get(userId) ?? new Map<TrackType, Consumer>();
           userConsumers.set(trackType, consumer);
           consumers.current.set(userId, userConsumers);
@@ -236,7 +239,7 @@ export const useMediasoup = (
       track,
     });
 
-    if (trackType === 'screen') {
+    if (isScreenTrack(trackType)) {
       screenProducers.current.set(producer.id, producer);
       return producer.id;
     }
@@ -246,7 +249,7 @@ export const useMediasoup = (
   }, []);
 
   const removeProducer = useCallback((trackType: TrackType) => {
-    if (trackType === 'screen') {
+    if (isScreenTrack(trackType)) {
       const producerIds = Array.from(screenProducers.current.keys());
       screenProducers.current.forEach((p) => p.close());
       screenProducers.current.clear();
@@ -283,7 +286,7 @@ export const useMediasoup = (
         return;
       }
 
-      if (trackType === 'screen') {
+      if (isScreenTrack(trackType)) {
         removeScreenConsumer();
         return;
       }

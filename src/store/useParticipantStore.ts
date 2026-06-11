@@ -159,7 +159,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     }),
   removeTrack: (id: string, trackType: TrackType) =>
     set((prev) => {
-      if (trackType === 'screen') {
+      if (trackType.includes('screen')) {
         prev.screenStream.stream?.getTracks().forEach((t) => t.stop());
         return { screenStream: { stream: null, userId: null } };
       }
