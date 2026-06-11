@@ -30,16 +30,26 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
   const isLocallyMuted = useLocalMuteStore((state) => !isMe && state.mutedIds.has(id));
 
   useEffect(() => {
-    if (device.video) {
-      setTimeout(() => setIsReady(true), 200);
-      return;
-    }
-
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
+
+    if (device.video) {
+      timerRef.current = setTimeout(() => setIsReady(true), 200);
+      return;
+    }
+
     setIsReady(false);
   }, [device.video]);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
 
   const handlePlaying = useCallback(() => {
     if (timerRef.current) {

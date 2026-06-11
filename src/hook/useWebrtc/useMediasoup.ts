@@ -30,6 +30,7 @@ export const useMediasoup = (
   const currentScreenSender = useRef<string | null>(null);
 
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
+  const consumedProducers = useRef<Set<string>>(new Set());
 
   const initDevice = useCallback(async (capabilities: RtpCapabilities) => {
     if (deviceRef.current) {
@@ -87,9 +88,10 @@ export const useMediasoup = (
       const { userId: id } = useUserInfoStore.getState();
       const device = deviceRef.current;
 
-      if (!recvTransport.current || !device || targetId === id) {
+      if (!recvTransport.current || !device || targetId === id || consumedProducers.current.has(producerId)) {
         return null;
       }
+      consumedProducers.current.add(producerId);
 
       try {
         const { consumerParams } = await request<ConsumerParamsResponseType>('/app/signal/consumerParams', {
@@ -122,13 +124,17 @@ export const useMediasoup = (
           consumers.current.set(userId, userConsumers);
         }
 
-        consumer.on('@close', () => handleConsumerClose(consumer, trackType, userId));
+        consumer.on('@close', () => {
+          consumedProducers.current.delete(producerId);
+          handleConsumerClose(consumer, trackType, userId);
+        });
 
         return {
           appData,
           track,
         };
       } catch {
+        consumedProducers.current.delete(producerId);
         return null;
       }
     },
@@ -344,6 +350,7 @@ export const useMediasoup = (
     recvTransport.current?.close();
     sendTransport.current = null;
     recvTransport.current = null;
+    consumedProducers.current.clear();
   }, []);
 
   return {

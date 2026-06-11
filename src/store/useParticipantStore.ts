@@ -59,9 +59,8 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     }
 
     const timerId = setTimeout(() => {
+      get().timer.delete(id);
       set((state) => {
-        state.timer.delete(id);
-
         const nextEmoji = new Map(state.emoji);
         nextEmoji.delete(id);
 
@@ -69,8 +68,8 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       });
     }, 8000);
 
+    get().timer.set(id, timerId);
     set((state) => {
-      state.timer.set(id, timerId);
       const nextEmoji = new Map(state.emoji);
       nextEmoji.set(id, value);
 
@@ -178,7 +177,9 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       return { videoStreams: prevStreams };
     }),
   reset: () => {
-    get().timer.forEach((t) => t && clearTimeout(t));
+    const { timer } = get();
+    timer.forEach((t) => t && clearTimeout(t));
+    timer.clear();
     set(useParticipantStore.getInitialState());
   },
 
