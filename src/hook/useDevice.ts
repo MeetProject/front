@@ -50,12 +50,12 @@ const useDevice = () => {
     return {
       ...(config.audio && {
         audio: {
-          ...(device.audioInput && { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } }),
+          ...(device.audioInput && { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput.deviceId } }),
           ...AUDIO_PROCESSING,
         },
       }),
       ...(config.video && {
-        video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput } } : true,
+        video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput.deviceId } } : true,
       }),
     } as MediaStreamConstraints;
   }, []);
