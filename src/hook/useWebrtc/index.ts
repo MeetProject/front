@@ -67,6 +67,17 @@ const useWebrtc = () => {
     return Promise.all((stream?.getTracks() ?? []).map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')));
   }, [createTransport, initDevice, produceTrack, request]);
 
+  const cleanupRoomState = useCallback(() => {
+    unsubscribeAll();
+    disconnectTransport();
+    clearDevice();
+    useParticipantStore.getState().reset();
+    useAudioStore.getState().reset();
+    useInteractionStore.getState().reset();
+    useLocalMuteStore.getState().reset();
+    currentRoomId.current = null;
+  }, [unsubscribeAll, disconnectTransport, clearDevice]);
+
   const joinRoom = useCallback(
     async (roomId: string) => {
       const { addParticipant, addTrack } = useParticipantStore.getState();
@@ -114,29 +125,20 @@ const useWebrtc = () => {
         currentRoomId.current = roomId;
         return true;
       } catch {
-        const { reset } = useParticipantStore.getState();
-        unsubscribeAll();
-        disconnectTransport();
-        clearDevice();
-        reset();
-        currentRoomId.current = null;
+        cleanupRoomState();
         useAlertStore.getState().addAlert('회의 참여에 실패하였습니다.');
         return false;
       } finally {
         setIsPending(false);
       }
     },
-    [consumeTrack, initSubscribe, request, connect, initWebrtc, unsubscribeAll, disconnectTransport, clearDevice],
+    [consumeTrack, initSubscribe, request, connect, initWebrtc, cleanupRoomState],
   );
 
   const leaveRoom = useCallback(() => {
     sendLeave();
-    const { reset } = useParticipantStore.getState();
-    unsubscribeAll();
-    disconnectTransport();
-    clearDevice();
-    reset();
-  }, [unsubscribeAll, disconnectTransport, sendLeave, clearDevice]);
+    cleanupRoomState();
+  }, [sendLeave, cleanupRoomState]);
 
   const shareScreen = useCallback(async () => {
     const { userId } = useUserInfoStore.getState();

@@ -4,6 +4,7 @@ interface LocalMuteState {
   mutedIds: Set<string>;
   mute: (id: string) => void;
   unmute: (id: string) => void;
+  reset: () => void;
 }
 
 export const useLocalMuteStore = create<LocalMuteState>((set) => ({
@@ -17,6 +18,7 @@ export const useLocalMuteStore = create<LocalMuteState>((set) => ({
       return { mutedIds: next };
     }),
   mutedIds: new Set(),
+  reset: () => set({ mutedIds: new Set() }),
   unmute: (id) =>
     set((state) => {
       if (!state.mutedIds.has(id)) {
