@@ -68,6 +68,7 @@ const useWebrtc = () => {
   }, [createTransport, initDevice, produceTrack, request]);
 
   const cleanupRoomState = useCallback(() => {
+    // 신원(userId)이 소켓에 묶여 있으므로 퇴장 시에도 소켓·유저 정보는 유지하고 구독만 해제한다
     unsubscribeAll();
     disconnectTransport();
     clearDevice();
@@ -125,8 +126,11 @@ const useWebrtc = () => {
         currentRoomId.current = roomId;
         return true;
       } catch {
+        const { isDisconnected } = useSignalStore.getState();
         cleanupRoomState();
-        useAlertStore.getState().addAlert('회의 참여에 실패하였습니다.');
+        if (!isDisconnected) {
+          useAlertStore.getState().addAlert('회의 참여에 실패하였습니다.');
+        }
         return false;
       } finally {
         setIsPending(false);

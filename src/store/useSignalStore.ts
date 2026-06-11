@@ -11,10 +11,12 @@ interface SignalState {
   client: null | Client;
   subscription: Map<string, StompSubscription>;
   pendingRequest: Map<string, PendingRequest>;
+  isDisconnected: boolean;
 }
 
 export const useSignalStore = create<SignalState>(() => ({
   client: null,
+  isDisconnected: false,
   pendingRequest: new Map(),
   subscription: new Map(),
 }));

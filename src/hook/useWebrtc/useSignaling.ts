@@ -46,7 +46,7 @@ export const useSignaling = (url: string) => {
           ...config,
           brokerURL: undefined,
           onConnect: (frame: IFrame) => {
-            useSignalStore.setState({ client: newClient });
+            useSignalStore.setState({ client: newClient, isDisconnected: false });
 
             const repliesSub = newClient.subscribe('/user/queue/replies', handleReply);
             subscription.set('replies', repliesSub);
@@ -61,7 +61,11 @@ export const useSignaling = (url: string) => {
           onWebSocketClose: (evt: CloseEvent) => {
             config?.onWebSocketClose?.(evt);
 
-            const { pendingRequest, subscription: currentSubscription } = useSignalStore.getState();
+            const {
+              client: connectedClient,
+              pendingRequest,
+              subscription: currentSubscription,
+            } = useSignalStore.getState();
             pendingRequest.forEach(({ reject: rejectRequest, timeoutId }) => {
               clearTimeout(timeoutId);
               rejectRequest(new Error('WebSocket connection closed'));
@@ -70,7 +74,11 @@ export const useSignaling = (url: string) => {
             currentSubscription.clear();
 
             newClient.deactivate().catch(() => {});
-            useSignalStore.setState({ client: null });
+            useSignalStore.setState({
+              client: null,
+              // 연결에 성공했던 클라이언트가 닫힌 경우에만 끊김으로 표시 (최초 연결 실패와 구분)
+              isDisconnected: connectedClient !== null,
+            });
 
             reject(new Error('WebSocket connection closed'));
           },

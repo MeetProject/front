@@ -14,8 +14,10 @@ import Screen from './Screen';
 
 import { Loading } from '@/components';
 import { useDevice, useWebrtc } from '@/hook';
+import { useAlertStore } from '@/store/useAlertStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
+import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
 import { API_URL } from '@/util/api';
@@ -101,6 +103,17 @@ export default function Meeting() {
     },
     [leaveRoom, stopStream, stopScreenStream],
   );
+
+  const isDisconnected = useSignalStore((state) => state.isDisconnected);
+
+  useEffect(() => {
+    if (!isDisconnected) {
+      return;
+    }
+
+    useAlertStore.getState().addAlert('연결이 끊어져 회의에서 나갑니다.');
+    router.push('/');
+  }, [isDisconnected, router]);
 
   useEffect(() => {
     const handleForceLeave = () => {
