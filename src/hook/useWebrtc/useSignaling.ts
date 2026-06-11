@@ -38,7 +38,7 @@ export const useSignaling = (url: string) => {
         const { userId } = useUserInfoStore.getState();
 
         if (!userId) {
-          reject('userId');
+          reject(new Error('userId가 없습니다'));
           return;
         }
 
@@ -61,14 +61,21 @@ export const useSignaling = (url: string) => {
           onWebSocketClose: (evt: CloseEvent) => {
             config?.onWebSocketClose?.(evt);
 
-            if (evt?.code === 1000) {
-              newClient.deactivate();
-              resolve(newClient);
-              return;
-            }
+            const { pendingRequest, subscription: currentSubscription } = useSignalStore.getState();
+            pendingRequest.forEach(({ reject: rejectRequest, timeoutId }) => {
+              clearTimeout(timeoutId);
+              rejectRequest(new Error('WebSocket connection closed'));
+            });
+            pendingRequest.clear();
+            currentSubscription.clear();
+
+            newClient.deactivate().catch(() => {});
+            useSignalStore.setState({ client: null });
 
             reject(new Error('WebSocket connection closed'));
           },
+          // 신원이 소켓에 묶인 설계라 자동 재연결로는 구독·신원이 복구되지 않음 → 명시적으로 끔.
+          reconnectDelay: 0,
           webSocketFactory: () =>
             new SockJS(`${url}?userId=${userId}`, null, {
               timeout: 5000,
@@ -107,19 +114,9 @@ export const useSignaling = (url: string) => {
     subscription.set(destination, sub);
   }, []);
 
-  const unsubscribe = useCallback((destination: string) => {
-    const { subscription } = useSignalStore.getState();
-    if (!subscription.has(destination)) {
-      return;
-    }
-
-    subscription.get(destination)?.unsubscribe();
-    subscription.delete(destination);
-  }, []);
-
   const unsubscribeAll = useCallback(() => {
     const { subscription } = useSignalStore.getState();
-    subscription.keys().forEach((path) => {
+    [...subscription.keys()].forEach((path) => {
       if (path === 'replies') {
         return;
       }
@@ -127,19 +124,6 @@ export const useSignaling = (url: string) => {
       subscription.get(path)?.unsubscribe();
       subscription.delete(path);
     });
-  }, []);
-
-  const disconnect = useCallback(() => {
-    const { client, subscription } = useSignalStore.getState();
-    if (!client) {
-      return;
-    }
-
-    subscription.values().forEach((sub) => sub.unsubscribe());
-    subscription.clear();
-
-    client.deactivate();
-    useSignalStore.setState({ client: null });
   }, []);
 
   const request = useCallback(
@@ -174,11 +158,9 @@ export const useSignaling = (url: string) => {
 
   return {
     connect,
-    disconnect,
     publish,
     request,
     subscribe,
-    unsubscribe,
     unsubscribeAll,
   };
 };
