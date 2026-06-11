@@ -21,7 +21,8 @@ export default function NameForm() {
 
   const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!userName) {
+    const trimmedName = userName.trim();
+    if (!trimmedName) {
       return;
     }
 
@@ -31,13 +32,11 @@ export default function NameForm() {
 
     const payload: UserRegisterPayloadType = {
       userColor,
-      userName,
+      userName: trimmedName,
     };
 
     try {
-      const { userId } = await register(payload);
       const { value } = await validateRoom(sessionId);
-      const { setUserInfo } = useUserInfoStore.getState();
 
       if (!value) {
         router.push('/');
@@ -45,7 +44,9 @@ export default function NameForm() {
         return;
       }
 
-      setUserInfo(userId, userName, userColor);
+      const { userId } = await register(payload);
+      const { setUserInfo } = useUserInfoStore.getState();
+      setUserInfo(userId, trimmedName, userColor);
     } catch {
       addAlert('유저 등록에 실패하였습니다.');
     } finally {
@@ -68,8 +69,8 @@ export default function NameForm() {
         <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${userName.length} / ${MAX_SIZE}`}</p>
       </div>
       <button
-        className={`mt-4 h-14 w-60 rounded-full ${userName.length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled'} text-center`}
-        disabled={userName.length === 0 || isPending}
+        className={`mt-4 h-14 w-60 rounded-full ${userName.trim().length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled'} text-center`}
+        disabled={userName.trim().length === 0 || isPending}
         type='submit'
       >
         참여하기
