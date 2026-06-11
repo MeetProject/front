@@ -42,12 +42,13 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     set((prev) => {
       const newChat = [...prev.chat];
       const { userId, ...chatData } = data;
-      if (newChat.length !== 0 && newChat[newChat.length - 1].userId === userId) {
-        newChat[newChat.length - 1].messages.push(chatData);
+      const lastGroup = newChat[newChat.length - 1];
+      if (lastGroup && lastGroup.userId === userId) {
+        newChat[newChat.length - 1] = { ...lastGroup, messages: [...lastGroup.messages, chatData] };
         return { chat: newChat };
       }
 
-      newChat.push({ messages: [chatData], userId: data.userId });
+      newChat.push({ messages: [chatData], userId });
       return { chat: newChat };
     });
   },
@@ -89,7 +90,11 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newDevices = new Map(state.devices);
       newDevices.set(userId, mediaOption);
 
-      return { devices: newDevices, info: newInfo, participants: [...state.participants, userId] };
+      const newParticipants = state.participants.includes(userId)
+        ? state.participants
+        : [...state.participants, userId];
+
+      return { devices: newDevices, info: newInfo, participants: newParticipants };
     });
   },
 
