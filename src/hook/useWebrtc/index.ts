@@ -141,7 +141,9 @@ const useWebrtc = () => {
       return;
     }
 
-    await Promise.all(screenStream.getTracks().map(async (track) => await produceTrack(track, 'screen')));
+    await Promise.all(
+      screenStream.getTracks().map((track) => produceTrack(track, track.kind === 'audio' ? 'screenAudio' : 'screen')),
+    );
 
     useParticipantStore.setState({ screenStream: { stream: screenStream, userId } });
   }, [produceTrack]);
