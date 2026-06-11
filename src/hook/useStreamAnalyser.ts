@@ -26,7 +26,7 @@ const useStreamAnalyser = (stream: MediaStream | null) => {
       source.disconnect();
       streamAnalyser.disconnect();
       if (audioContext.state !== 'closed') {
-        audioContext.close();
+        audioContext.close().catch(() => {});
       }
     };
   }, [stream]);
