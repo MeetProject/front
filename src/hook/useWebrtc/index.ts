@@ -7,6 +7,7 @@ import { useSignaling } from './useSignaling';
 import { useSignalingHandler } from './useSignalingHandler';
 import { useSignalSender } from './useSignalSender';
 
+import { useAlertStore } from '@/store/useAlertStore';
 import { useAudioStore } from '@/store/useAudioStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
@@ -111,6 +112,7 @@ const useWebrtc = () => {
           handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
         });
         currentRoomId.current = roomId;
+        return true;
       } catch {
         const { reset } = useParticipantStore.getState();
         unsubscribeAll();
@@ -118,6 +120,8 @@ const useWebrtc = () => {
         clearDevice();
         reset();
         currentRoomId.current = null;
+        useAlertStore.getState().addAlert('회의 참여에 실패하였습니다.');
+        return false;
       } finally {
         setIsPending(false);
       }

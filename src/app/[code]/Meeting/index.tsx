@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -21,6 +21,7 @@ import { TrackType } from '@/types/deviceType';
 import { API_URL } from '@/util/api';
 
 export default function Meeting() {
+  const router = useRouter();
   const roomId = usePathname().slice(1);
   const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
   const { isInit, screenStreams } = useDeviceStore(
@@ -79,12 +80,16 @@ export default function Meeting() {
 
     const init = async () => {
       await initStream();
-      await joinRoom(roomId);
+      const isJoined = await joinRoom(roomId);
+      if (!isJoined) {
+        router.push('/');
+        return;
+      }
       setIsPending(false);
     };
 
     init();
-  }, [isInit, initStream, joinRoom, roomId]);
+  }, [isInit, initStream, joinRoom, roomId, router]);
 
   useEffect(
     () => () => {
