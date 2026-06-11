@@ -29,9 +29,9 @@ export default function VideoSetting({ onDisabledClick }: VideoSettingProps) {
                 <Media
                   autoPlay={true}
                   className='aspect-video w-40 object-cover max-[640px]:w-full sm:rounded-md'
+                  mirror={true}
                   muted={true}
                   stream={stream}
-                  style={{ transform: 'rotateY(180deg)' }}
                   tag='video'
                 />
               )}

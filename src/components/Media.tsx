@@ -8,9 +8,10 @@ import { canSelectOutputDevice } from '@/util/env';
 interface MediaProps extends MediaHTMLAttributes<HTMLMediaElement> {
   tag: 'video' | 'audio';
   stream?: MediaStream;
+  mirror?: boolean;
 }
 
-const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props }, ref) => {
+const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream, tag, ...props }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -90,7 +91,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
   if (tag === 'audio') {
     return <audio ref={audioRef} {...props} />;
   }
-  return <video ref={videoRef} style={{ transform: 'scaleX(-1)' }} {...props} />;
+  return <video ref={videoRef} {...props} style={{ ...(mirror && { transform: 'scaleX(-1)' }), ...props.style }} />;
 });
 
 Media.displayName = 'Media';
