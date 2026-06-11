@@ -24,7 +24,7 @@ interface ButtonType {
 }
 
 const DEVICE_BUTTONS: ButtonType[] = [
-  { shortcutKey: isMac() ? ['Meta', 'd'] : ['Control', 'e'], type: 'audio' },
+  { shortcutKey: isMac() ? ['Meta', 'd'] : ['Control', 'd'], type: 'audio' },
   { shortcutKey: isMac() ? ['Meta', 'e'] : ['Control', 'e'], type: 'video' },
 ];
 
