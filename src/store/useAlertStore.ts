@@ -8,9 +8,11 @@ interface AlertState {
   removeAlert: (id: number) => void;
 }
 
+const alertId = { current: 0 };
+
 export const useAlertStore = create<AlertState>((set) => ({
   addAlert: (message, duration = 4000, onClose) => {
-    const id = Date.now();
+    const id = (alertId.current += 1);
     set((state) => ({ alerts: [...state.alerts, { id, message }] }));
 
     setTimeout(() => {
