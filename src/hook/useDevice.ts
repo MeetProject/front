@@ -100,7 +100,7 @@ const useDevice = () => {
       } catch (e) {
         const error = e as DOMException;
         if ((error.name === 'OverconstrainedError' || error.name === 'NotFoundError') && isExact) {
-          return getStream(constraint, false, isLast);
+          return getStream(constraint, false, isLast, isSyncEnable);
         }
 
         if (error.name === 'NotAllowedError' && !isLast) {
