@@ -22,17 +22,17 @@ export default function ParticipateMeetingForm() {
     if (!roomId) {
       return;
     }
+    const { addAlert } = useAlertStore.getState();
     setIsPending(true);
     try {
       const { value: isValid } = await validateRoom(roomId);
 
       if (!isValid) {
-        alert('이미 닫힌 회의방입니다.');
-        throw new Error('유효하지 않은 id');
+        addAlert('이미 닫힌 회의방입니다.');
+        return;
       }
       router.push(`/${roomId}`);
     } catch {
-      const { addAlert } = useAlertStore.getState();
       addAlert('존재하지 않는 세션입니다.');
     } finally {
       setIsPending(false);
