@@ -50,7 +50,7 @@ export default function Suggest({ onComplete, onVisible }: SuggestProperties) {
           onChange={handleTextChange}
         />
         <div className='-mt-0.5 flex items-center gap-2'>
-          <p className='text-outline-dark text-xs'>민간함 정보는 포함하지 마세요.</p>
+          <p className='text-outline-dark text-xs'>민감한 정보는 포함하지 마세요.</p>
           <ButtonTag
             instant={true}
             name='민감한 정보는 보호되어야 하는 모든 데이터를 의미합니다. 예를 들어 비밀번호, 신용카드 번호, 세부적인 개인 정보를 포함하지 마세요.'

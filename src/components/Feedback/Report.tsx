@@ -111,13 +111,13 @@ export default function Report({ onComplete, onVisible }: ReportProps) {
         <p className='text-surface-base text-sm'>문제 설명</p>
         <textarea
           className='text-surface-base placeholder:text-surface-base border-outline-dark min-h-30.5 resize-none overflow-hidden rounded border border-solid p-3.75 outline-none'
-          placeholder='어떤 문제가 발생했고 작동자히 않는 기능은 무엇인지 알려주세요.'
+          placeholder='어떤 문제가 발생했고 작동하지 않는 기능은 무엇인지 알려주세요.'
           ref={textareaReference}
           value={text}
           onChange={handleTextChange}
         />
         <div className='-mt-0.5 flex items-center gap-2'>
-          <p className='text-outline-dark text-xs'>민간함 정보는 포함하지 마세요.</p>
+          <p className='text-outline-dark text-xs'>민감한 정보는 포함하지 마세요.</p>
           <ButtonTag
             instant={true}
             name='민감한 정보는 보호되어야 하는 모든 데이터를 의미합니다. 예를 들어 비밀번호, 신용카드 번호, 세부적인 개인 정보를 포함하지 마세요.'
