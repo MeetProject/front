@@ -34,8 +34,11 @@ export default function InteractionButton({
       return;
     }
     isClicked.current = true;
-    await onClick();
-    isClicked.current = false;
+    try {
+      await onClick();
+    } finally {
+      isClicked.current = false;
+    }
   }, [onClick]);
 
   useShortcutKey(shortcutKey, handleClick);
