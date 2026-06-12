@@ -14,7 +14,14 @@ export const useSignaling = (url: string) => {
 
   const handleReply = useCallback((message: IMessage) => {
     const { pendingRequest } = useSignalStore.getState();
-    const { correlationId, ...data } = JSON.parse(message.body);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(message.body);
+    } catch {
+      return;
+    }
+    const { correlationId, ...data } = parsed;
 
     const request = pendingRequest.get(correlationId);
 
@@ -40,7 +47,6 @@ export const useSignaling = (url: string) => {
         return client;
       }
 
-      // 동시에 connect가 불려도 클라이언트가 하나만 생성되도록 진행 중인 연결을 공유
       if (connectPromise.current) {
         return connectPromise.current;
       }
@@ -68,7 +74,6 @@ export const useSignaling = (url: string) => {
           },
           onStompError: (frame) => {
             config?.onStompError?.(frame);
-            // ERROR 프레임 이후 서버가 연결을 닫으므로 더 못 쓰는 클라이언트를 정리 (스토어 저장 전이라 여기서만 접근 가능)
             newClient.deactivate().catch(() => {});
             reject(new Error('STOMP protocol error'));
           },
@@ -90,13 +95,13 @@ export const useSignaling = (url: string) => {
             newClient.deactivate().catch(() => {});
             useSignalStore.setState({
               client: null,
-              // 연결에 성공했던 클라이언트가 닫힌 경우에만 끊김으로 표시 (최초 연결 실패와 구분)
               isDisconnected: connectedClient !== null,
             });
 
+            useUserInfoStore.setState({ userColor: null, userId: null, userName: null });
+
             reject(new Error('WebSocket connection closed'));
           },
-          // 신원이 소켓에 묶인 설계라 자동 재연결로는 구독·신원이 복구되지 않음 → 명시적으로 끔.
           reconnectDelay: 0,
           webSocketFactory: () =>
             new SockJS(`${url}?userId=${userId}`, null, {
@@ -117,18 +122,24 @@ export const useSignaling = (url: string) => {
     [url, handleReply],
   );
 
+  // 전송 성공 여부를 반환해 호출부가 로컬 상태(예: consumer resume 마킹)를 실제 전송과 맞출 수 있게 한다
   const publish = useCallback(<T>(destination: string, payload?: T) => {
     const { client } = useSignalStore.getState();
     // 미연결 상태에서 publish하면 stompjs가 throw하므로 connected까지 확인
     if (!client?.connected) {
-      return;
+      return false;
     }
 
-    client.publish({
-      body: JSON.stringify(payload),
-      destination,
-      headers: { 'content-type': 'application/json' },
-    });
+    try {
+      client.publish({
+        body: JSON.stringify(payload),
+        destination,
+        headers: { 'content-type': 'application/json' },
+      });
+    } catch {
+      return false;
+    }
+    return true;
   }, []);
 
   const subscribe = useCallback(<T>(destination: string, callback: (response: T) => Promise<void> | void) => {
@@ -137,11 +148,15 @@ export const useSignaling = (url: string) => {
       return;
     }
 
-    // 같은 destination을 다시 구독하면 이전 구독이 맵에서 유실돼 해제 불가능해지므로 먼저 정리
     subscription.get(destination)?.unsubscribe();
 
     const sub = client.subscribe(destination, async (message: Message) => {
-      const data = JSON.parse(message.body) as T;
+      let data: T;
+      try {
+        data = JSON.parse(message.body) as T;
+      } catch {
+        return;
+      }
       await callback(data);
     });
 
@@ -188,7 +203,6 @@ export const useSignaling = (url: string) => {
             headers: { 'content-type': 'application/json' },
           });
         } catch (e) {
-          // connected 체크와 publish 사이에 끊긴 경우 타임아웃까지 기다리지 않고 즉시 정리
           clearTimeout(timeoutId);
           pendingRequest.delete(correlationId);
           reject(e);

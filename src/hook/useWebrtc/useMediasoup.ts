@@ -15,7 +15,7 @@ import { AppData, ConsumerParamsResponseType, Direction, DtlsResponseType } from
 const isScreenTrack = (trackType: TrackType) => trackType === 'screen' || trackType === 'screenAudio';
 
 export const useMediasoup = (
-  publish: <T>(destination: string, payload?: T | undefined) => void,
+  publish: <T>(destination: string, payload?: T | undefined) => boolean,
   request: <T>(destination: string, payload: any) => Promise<T>,
 ) => {
   const deviceRef = useRef<Device | null>(null);
@@ -123,10 +123,12 @@ export const useMediasoup = (
         const { trackType, userId } = appData as AppData;
 
         if (trackType !== 'video') {
-          publish('/app/consumer/resume', {
+          const sent = publish('/app/consumer/resume', {
             consumerId: consumer.id,
           });
-          resumedConsumer.current.set(consumer.id, true);
+          if (sent) {
+            resumedConsumer.current.set(consumer.id, true);
+          }
         }
 
         if (isScreenTrack(trackType)) {
@@ -176,10 +178,12 @@ export const useMediasoup = (
         return;
       }
 
-      await publish('/app/consumer/resume', {
+      const sent = publish('/app/consumer/resume', {
         consumerId,
       });
-      resumedConsumer.current.set(consumerId, true);
+      if (sent) {
+        resumedConsumer.current.set(consumerId, true);
+      }
     },
     [publish],
   );
@@ -198,11 +202,12 @@ export const useMediasoup = (
         return;
       }
 
-      await publish('/app/consumer/pause', {
+      const sent = publish('/app/consumer/pause', {
         consumerId,
       });
-
-      resumedConsumer.current.delete(consumerId);
+      if (sent) {
+        resumedConsumer.current.delete(consumerId);
+      }
     },
     [publish],
   );
