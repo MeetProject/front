@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import * as webp from '@/asset/webp';
 import { useInteractionStore } from '@/store/useInteractionStore';
@@ -29,6 +29,7 @@ const EMOJI_IMAGE = {
 function EmojiIcon({ emoji, emojiId }: EmojiAnimationProps) {
   const userId = useUserInfoStore((state) => state.userId);
   const participantsUserData = useParticipantStore((state) => state.info);
+  const [left] = useState(() => Math.random() * 264);
 
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -42,7 +43,7 @@ function EmojiIcon({ emoji, emojiId }: EmojiAnimationProps) {
   return (
     <div
       className='animate-move-bottom-up absolute bottom-0 z-9999 flex flex-col items-center justify-center gap-2'
-      style={{ left: `${Math.random() * 264}px` }}
+      style={{ left: `${left}px` }}
     >
       <Image alt={emoji.emoji} height={36} src={EMOJI_IMAGE[emoji.emoji]} unoptimized={true} width={36} />
       <div

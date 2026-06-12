@@ -23,7 +23,7 @@ const EMOJI = {
 
 export default function Emoji({ emoji }: EmojiProps) {
   if (!emoji) {
-    return;
+    return null;
   }
 
   return (
