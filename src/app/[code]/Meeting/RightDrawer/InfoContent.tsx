@@ -1,35 +1,21 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useRef, useState } from 'react';
 
 import * as Icon from '@/asset/svg';
 import { useAlertStore } from '@/store/useAlertStore';
 
 export default function InfoContent() {
   const pathname = usePathname();
-  const url = window.location.origin + pathname;
-
-  const timerRef = useRef<NodeJS.Timeout>(null);
-  const [isCopied, setIsCopied] = useState(false);
+  const url = typeof window === 'undefined' ? pathname : window.location.origin + pathname;
 
   const handleClipboardButtonClick = async () => {
     const { addAlert } = useAlertStore.getState();
     try {
-      setIsCopied(true);
       await navigator.clipboard.writeText(url);
-      if (isCopied) {
-        addAlert('회의 링크 복사됨');
-      }
+      addAlert('회의 링크 복사됨');
     } catch {
       addAlert('회의 링크 복사 실패');
-    } finally {
-      if (timerRef.current) {
-        return;
-      }
-      timerRef.current = setTimeout(() => {
-        setIsCopied(false);
-      }, 4000);
     }
   };
 

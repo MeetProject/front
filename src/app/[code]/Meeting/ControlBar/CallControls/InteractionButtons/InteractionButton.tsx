@@ -26,19 +26,19 @@ export default function InteractionButton({
   onClick,
   shortcutKey = [],
 }: InteractionButtonProps) {
-  const isClicekd = useRef(false);
+  const isClicked = useRef(false);
   const timerRef = useRef<NodeJS.Timeout>(null);
 
-  useShortcutKey(shortcutKey, onClick);
-
   const handleClick = useCallback(async () => {
-    if (isClicekd.current) {
+    if (isClicked.current) {
       return;
     }
-    isClicekd.current = true;
+    isClicked.current = true;
     await onClick();
-    isClicekd.current = false;
+    isClicked.current = false;
   }, [onClick]);
+
+  useShortcutKey(shortcutKey, handleClick);
 
   useEffect(() => {
     if (!isActive || !autoDeselectDelay) {

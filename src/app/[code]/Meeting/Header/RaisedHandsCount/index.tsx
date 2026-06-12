@@ -35,7 +35,7 @@ export default function RaisedHandsCount() {
       return '';
     }
 
-    const suffix = handsUp.size > 1 ? `외 ${handsUp.size - 1}명` : '';
+    const suffix = handsUp.size > 1 ? ` 외 ${handsUp.size - 1}명` : '';
 
     const id = handsUp.values().next().value;
     if (userId === id) {
