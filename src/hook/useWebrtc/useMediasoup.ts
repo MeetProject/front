@@ -376,9 +376,14 @@ export const useMediasoup = (
 
   const toggleProducerTrack = useCallback(
     async (trackType: DeviceKindType, value?: boolean) => {
+      const pending = pendingProduce.current.get(trackType);
+      if (pending) {
+        await pending.catch(() => {});
+      }
+
       const producer = producers.current.get(trackType);
       if (!producer) {
-        return;
+        throw new Error(`${trackType} producer가 없습니다.`);
       }
 
       const { deviceEnable } = useDeviceStore.getState();

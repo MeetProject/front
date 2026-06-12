@@ -47,11 +47,26 @@ export const getLuminance = (hex: string) => {
 
 const getRandomValue = (start: number, end: number) => Math.floor(Math.random() * (end - start) + start);
 
-export const getRandomHexColor = (): string => {
-  const HEX = '0123456789abcdef';
-  const rr = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
-  const gg = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
-  const bb = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
+export const hslToHex = (h: number, s: number, l: number): string => {
+  const sNorm = s / 100;
+  const lNorm = l / 100;
 
-  return `#${rr}${gg}${bb}`;
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = sNorm * Math.min(lNorm, 1 - lNorm);
+  const channel = (n: number) => {
+    const value = lNorm - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return Math.round(value * 255)
+      .toString(16)
+      .padStart(2, '0');
+  };
+
+  return `#${channel(0)}${channel(8)}${channel(4)}`;
+};
+
+export const getRandomHexColor = (): string => {
+  const hue = getRandomValue(0, 360);
+  const saturation = getRandomValue(45, 75);
+  const lightness = getRandomValue(35, 60);
+
+  return hslToHex(hue, saturation, lightness);
 };

@@ -7,6 +7,7 @@ interface InteractionState {
   emoji: Map<string, EmojiDataType>;
 
   toggleHandsUp: (id: string) => void;
+  setHandUp: (id: string, value: boolean) => void;
   addEmoji: (id: string, value: EmojiDataType) => void;
   removeEmoji: (id: string) => void;
   reset: () => void;
@@ -28,6 +29,21 @@ export const useInteractionStore = create<InteractionState>((set) => ({
       return { emoji: newMap };
     }),
   reset: () => set({ emoji: new Map(), handsUp: new Set() }),
+
+  setHandUp: (id, value) =>
+    set((prev) => {
+      if (prev.handsUp.has(id) === value) {
+        return {};
+      }
+
+      const newSet = new Set(prev.handsUp);
+      if (value) {
+        newSet.add(id);
+      } else {
+        newSet.delete(id);
+      }
+      return { handsUp: newSet };
+    }),
 
   toggleHandsUp: (id) =>
     set((prev) => {

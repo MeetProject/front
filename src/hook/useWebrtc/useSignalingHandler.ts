@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 
 import { useAudioStore } from '@/store/useAudioStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
+import { useLocalMuteStore } from '@/store/useLocalMuteStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
@@ -61,7 +62,7 @@ export const useSignalingHandler = (
     const { participant } = data;
     const { userId: id } = useUserInfoStore.getState();
     const { addParticipant } = useParticipantStore.getState();
-    const { toggleHandsUp } = useInteractionStore.getState();
+    const { setHandUp } = useInteractionStore.getState();
 
     const {
       isHandUp,
@@ -73,9 +74,7 @@ export const useSignalingHandler = (
     }
     addParticipant(participant);
 
-    if (isHandUp) {
-      toggleHandsUp(userId);
-    }
+    setHandUp(userId, isHandUp);
   }, []);
 
   const handleProducer = useCallback(
@@ -153,6 +152,9 @@ export const useSignalingHandler = (
       const { removeParticipant } = useParticipantStore.getState();
       removeParticipant(userId);
       removeConsumer(userId);
+
+      useInteractionStore.getState().setHandUp(userId, false);
+      useLocalMuteStore.getState().unmute(userId);
     },
     [removeConsumer],
   );

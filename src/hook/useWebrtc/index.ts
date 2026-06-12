@@ -183,12 +183,12 @@ const useWebrtc = () => {
     );
 
     const { screenStream: prevScreenStream } = useParticipantStore.getState();
-    if (prevScreenStream.stream && prevScreenStream.userId !== userId) {
-      prevScreenStream.stream.getTracks().forEach((track) => track.stop());
+    if (prevScreenStream.stream && prevScreenStream.userId && prevScreenStream.userId !== userId) {
+      removeConsumer(prevScreenStream.userId, 'screen');
     }
 
     useParticipantStore.setState({ screenStream: { stream: screenStream, userId } });
-  }, [produceTrack]);
+  }, [produceTrack, removeConsumer]);
 
   const removeTrack = useCallback(
     (trackType: TrackType) => {

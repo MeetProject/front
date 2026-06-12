@@ -7,6 +7,7 @@ import * as Icon from '@/asset/svg';
 import { Loading } from '@/components';
 import { validateRoom } from '@/service/room';
 import { useAlertStore } from '@/store/useAlertStore';
+import { extractRoomCode } from '@/util/text';
 
 export default function ParticipateMeetingForm() {
   const router = useRouter();
@@ -19,19 +20,20 @@ export default function ParticipateMeetingForm() {
 
   const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!roomId) {
+    const code = extractRoomCode(roomId);
+    if (!code) {
       return;
     }
     const { addAlert } = useAlertStore.getState();
     setIsPending(true);
     try {
-      const { value: isValid } = await validateRoom(roomId);
+      const { value: isValid } = await validateRoom(code);
 
       if (!isValid) {
         addAlert('이미 닫힌 회의방입니다.');
         return;
       }
-      router.push(`/${roomId}`);
+      router.push(`/${encodeURIComponent(code)}`);
     } catch {
       addAlert('회의 코드를 확인하지 못했습니다. 코드를 다시 확인해주세요.');
     } finally {

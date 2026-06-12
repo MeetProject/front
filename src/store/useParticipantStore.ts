@@ -116,11 +116,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
         return { screenStream: { stream: newStream, userId } };
       }
 
-      const prev = state.videoStreams.get(userId);
-      if (prev) {
-        prev.getTracks().forEach((t) => t.stop());
-      }
-
       const newStreams = new Map(state.videoStreams);
       newStreams.set(userId, new MediaStream([track]));
       return { videoStreams: newStreams };
@@ -138,10 +133,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newIds = prev.participants.filter((i) => i !== id);
 
       const newStreams = new Map(prev.videoStreams);
-      newStreams
-        .get(id)
-        ?.getTracks()
-        .forEach((t) => t.stop());
       newStreams.delete(id);
 
       const newDevices = new Map(prev.devices);
@@ -175,10 +166,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       }
 
       const prevStreams = new Map(prev.videoStreams);
-      prevStreams
-        .get(id)
-        ?.getTracks()
-        .forEach((t) => t.stop());
       prevStreams.delete(id);
 
       return { videoStreams: prevStreams };

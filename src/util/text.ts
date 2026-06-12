@@ -33,6 +33,20 @@ export const formatDate = (date: Date | string | null) => {
   return `${month}월 ${day}일 (${week})`;
 };
 
+export const extractRoomCode = (input: string) => {
+  const trimmed = input.trim();
+  if (!trimmed.includes('/')) {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
+    return url.pathname.split('/').filter(Boolean).pop() ?? '';
+  } catch {
+    return trimmed.split('/').filter(Boolean).pop() ?? '';
+  }
+};
+
 const SHORT_CUT_KEY = {
   Control: 'Ctrl',
   Meta: '⌘',

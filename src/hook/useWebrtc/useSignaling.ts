@@ -25,6 +25,11 @@ export const useSignaling = (url: string) => {
     clearTimeout(request.timeoutId);
     pendingRequest.delete(correlationId);
 
+    if (data.error) {
+      request.reject(new Error(typeof data.error === 'string' ? data.error : 'STOMP request failed'));
+      return;
+    }
+
     request.resolve(data);
   }, []);
 
