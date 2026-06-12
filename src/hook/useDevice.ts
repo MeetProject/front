@@ -33,10 +33,7 @@ const useDevice = () => {
   const syncEnable = useCallback((stream: MediaStream, constraint: Record<DeviceKindType, boolean>) => {
     const { deviceEnable } = useDeviceStore.getState();
 
-    if (constraint.audio && !deviceEnable.audio) {
-      stream.getAudioTracks().forEach((track) => (track.enabled = false));
-    }
-
+    // 오디오 음소거는 producer pause로 처리하고 트랙은 발화 감지를 위해 살려 둔다 (PreJoin 미리보기 음소거는 PreJoin이 직접 처리)
     if (constraint.video && !deviceEnable.video) {
       stream.getVideoTracks().forEach((track) => {
         track.stop();
@@ -105,7 +102,6 @@ const useDevice = () => {
         }
 
         if (error.name === 'NotAllowedError' && !isLast) {
-          // 다음 시도로 넘어가더라도 이번에 거부된 권한은 기록해 둔다 (이후 성공 시 granted로 덮어써짐)
           const { permission: prevPermission } = useDeviceStore.getState();
           useDeviceStore.setState({
             permission: {

@@ -111,7 +111,6 @@ export const useSignalingHandler = (
 
       removeConsumer(userId, trackType);
 
-      // audio/video는 consumer close 시 스토어가 정리되므로, close 핸들러가 다루지 않는 screen만 직접 정리
       if (trackType.includes('screen')) {
         removeTrack(userId, trackType);
       }

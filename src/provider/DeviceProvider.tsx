@@ -85,7 +85,6 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
         return;
       }
       stream.getTracks().forEach((track) => track.removeEventListener('ended', handleTrackEnded));
-      // 자동 복구 시 사용자가 꺼 둔 장치가 다시 켜지지 않도록 enable 상태를 반영
       initStream(true);
     };
 

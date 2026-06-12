@@ -36,9 +36,15 @@ export default function NameForm() {
     };
 
     try {
-      const { value } = await validateRoom(sessionId);
+      let isValidRoom = false;
+      try {
+        ({ value: isValidRoom } = await validateRoom(sessionId));
+      } catch {
+        addAlert('방 정보를 확인하지 못했습니다.');
+        return;
+      }
 
-      if (!value) {
+      if (!isValidRoom) {
         router.push('/');
         addAlert('이미 닫힌 방입니다.');
         return;

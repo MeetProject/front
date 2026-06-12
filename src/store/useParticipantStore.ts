@@ -163,7 +163,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
   removeTrack: (id: string, trackType: TrackType) =>
     set((prev) => {
       if (trackType.includes('screen')) {
-        // 이미 다른 사용자의 공유로 교체된 뒤 늦게 도착한 remove가 새 공유를 끊지 않도록 sender를 확인
         if (prev.screenStream.userId !== id) {
           return {};
         }

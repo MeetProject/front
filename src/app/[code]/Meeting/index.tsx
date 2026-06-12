@@ -60,8 +60,15 @@ export default function Meeting() {
       stopScreenStream();
       return;
     }
-    await initScreenStream(true);
-    await shareScreen();
+
+    try {
+      await initScreenStream(true);
+      await shareScreen();
+    } catch {
+      removeTrack('screen');
+      stopScreenStream();
+      useAlertStore.getState().addAlert('화면 공유에 실패하였습니다.');
+    }
   }, [initScreenStream, shareScreen, removeTrack, stopScreenStream]);
 
   const handleToggleTrack = useCallback(
@@ -82,7 +89,7 @@ export default function Meeting() {
     }
 
     const init = async () => {
-      await initStream();
+      await initStream(true);
       const isJoined = await joinRoom(roomId);
       if (!isJoined) {
         router.push('/');

@@ -31,6 +31,7 @@ export const useMediasoup = (
 
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
   const consumedProducers = useRef<Set<string>>(new Set());
+  const pendingProduce = useRef<Map<DeviceKindType, Promise<string>>>(new Map());
 
   const initDevice = useCallback(async (capabilities: RtpCapabilities) => {
     if (deviceRef.current) {
@@ -336,21 +337,31 @@ export const useMediasoup = (
 
   const replaceProducerTrack = useCallback(
     async (trackType: DeviceKindType, newTrack: MediaStreamTrack | null) => {
+      const pending = pendingProduce.current.get(trackType);
+      if (pending) {
+        await pending.catch(() => {});
+      }
+
       const producer = producers.current.get(trackType);
       if (producer?.track === newTrack) {
         return;
       }
 
-      // 입장 시 권한 거부 등으로 producer 없이 합류한 뒤 트랙이 생기면 새로 produce
       if (!producer) {
         if (!newTrack) {
           return;
         }
 
-        const producerId = await produceTrack(newTrack, trackType);
-        const { deviceEnable } = useDeviceStore.getState();
-        if (producerId && !deviceEnable[trackType]) {
-          await request('/app/signal/producer/pause', { producerId });
+        const producePromise = produceTrack(newTrack, trackType);
+        pendingProduce.current.set(trackType, producePromise);
+        try {
+          const producerId = await producePromise;
+          const { deviceEnable } = useDeviceStore.getState();
+          if (producerId && !deviceEnable[trackType]) {
+            await request('/app/signal/producer/pause', { producerId });
+          }
+        } finally {
+          pendingProduce.current.delete(trackType);
         }
         return;
       }
@@ -391,6 +402,7 @@ export const useMediasoup = (
     screenConsumers.current.clear();
     resumedConsumer.current.clear();
     consumedProducers.current.clear();
+    pendingProduce.current.clear();
     currentScreenSender.current = null;
   }, []);
 

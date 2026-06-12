@@ -60,15 +60,25 @@ const useWebrtc = () => {
     const { capabilities } = await request<CapabilitiesResponseType>('/app/signal/capabilities');
     const device = await initDevice(capabilities);
 
-    // device 없이 진행하면 아무것도 송수신하지 못하는 유령 참가자가 되므로 join 실패로 처리
     if (!device) {
       throw new Error('mediasoup device 초기화에 실패했습니다.');
     }
 
     await Promise.all([createTransport('send'), createTransport('recv')]);
 
-    const { stream } = useDeviceStore.getState();
-    return Promise.all((stream?.getTracks() ?? []).map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')));
+    const { deviceEnable, stream } = useDeviceStore.getState();
+    return Promise.all(
+      (stream?.getTracks() ?? []).map(async (track) => {
+        const trackType = track.kind === 'audio' ? 'audio' : 'video';
+        const producerId = await produceTrack(track, trackType);
+
+        // 꺼 둔 상태로 입장한 장치가 송출되지 않도록 producer를 pause한다 (트랙은 음소거 중 발화 감지를 위해 유지)
+        if (producerId && !deviceEnable[trackType]) {
+          await request('/app/signal/producer/pause', { producerId });
+        }
+        return producerId;
+      }),
+    );
   }, [createTransport, initDevice, produceTrack, request]);
 
   const cleanupRoomState = useCallback(() => {
@@ -172,7 +182,6 @@ const useWebrtc = () => {
       screenStream.getTracks().map((track) => produceTrack(track, track.kind === 'audio' ? 'screenAudio' : 'screen')),
     );
 
-    // 다른 사용자의 화면공유를 대체하는 경우 이전 원격 스트림을 정지하고 교체
     const { screenStream: prevScreenStream } = useParticipantStore.getState();
     if (prevScreenStream.stream && prevScreenStream.userId !== userId) {
       prevScreenStream.stream.getTracks().forEach((track) => track.stop());
@@ -206,8 +215,9 @@ const useWebrtc = () => {
       const { deviceEnable } = useDeviceStore.getState();
 
       const updatedOption = { ...deviceEnable, [trackType]: value !== undefined ? value : !deviceEnable[trackType] };
-      sendDeviceEnable(updatedOption);
+      // producer 상태 변경이 실패하면 브로드캐스트를 보내지 않아 다른 참가자의 UI와 실제 송출 상태가 어긋나지 않게 한다
       await toggleProducerTrack(trackType, value);
+      sendDeviceEnable(updatedOption);
     },
     [sendDeviceEnable, toggleProducerTrack],
   );
