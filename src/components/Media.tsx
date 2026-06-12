@@ -64,7 +64,6 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream
     }
 
     if (!stream) {
-      // 이전 스트림이 붙은 채로 남지 않도록 해제
       if (el.srcObject) {
         el.pause();
         el.srcObject = null;
@@ -72,12 +71,22 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream
       return;
     }
 
+    const retryPlay = () => {
+      if (el.srcObject && el.paused) {
+        el.play().catch(() => {});
+      }
+    };
+
     const updateStreamSrc = () => {
       if (el.srcObject === stream) {
         return;
       }
       el.srcObject = stream;
-      el.play().catch(() => {});
+      el.play().catch(() => {
+        // 자동재생이 차단된 경우 첫 사용자 입력 시 재생을 재시도
+        window.addEventListener('pointerdown', retryPlay, { once: true });
+        window.addEventListener('keydown', retryPlay, { once: true });
+      });
     };
 
     updateStreamSrc();
@@ -87,6 +96,8 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream
     });
 
     return () => {
+      window.removeEventListener('pointerdown', retryPlay);
+      window.removeEventListener('keydown', retryPlay);
       stream.getTracks().forEach((track) => {
         track.removeEventListener('ended', updateStreamSrc);
       });

@@ -76,10 +76,12 @@ export const charMatcher = (search = '') => {
     return /(?:)/;
   }
 
+  const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+
   const regex = FIRST_CONSTANT.reduce(
     (accumulator, first, index) =>
       accumulator.replace(new RegExp(first, 'g'), `[${charCode(index, 0, 0)}-${charCode(index + 1, 0, -1)}]`),
-    search,
+    escaped,
   );
 
   return new RegExp(`(${regex})`, 'g');

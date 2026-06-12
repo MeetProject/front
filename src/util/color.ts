@@ -49,9 +49,9 @@ const getRandomValue = (start: number, end: number) => Math.floor(Math.random() 
 
 export const getRandomHexColor = (): string => {
   const HEX = '0123456789abcdef';
-  const rr = `${HEX[getRandomValue(0, 15)]}${HEX[getRandomValue(0, 15)]}`;
-  const gg = `${HEX[getRandomValue(0, 15)]}${HEX[getRandomValue(0, 15)]}`;
-  const bb = `${HEX[getRandomValue(0, 15)]}${HEX[getRandomValue(0, 15)]}`;
+  const rr = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
+  const gg = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
+  const bb = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
 
   return `#${rr}${gg}${bb}`;
 };

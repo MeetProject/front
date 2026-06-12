@@ -33,7 +33,7 @@ export default function ParticipateMeetingForm() {
       }
       router.push(`/${roomId}`);
     } catch {
-      addAlert('존재하지 않는 세션입니다.');
+      addAlert('회의 코드를 확인하지 못했습니다. 코드를 다시 확인해주세요.');
     } finally {
       setIsPending(false);
     }
