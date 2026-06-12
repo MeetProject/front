@@ -28,7 +28,7 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
     }
     setIsPlay(true);
     audioReference.current.currentTime = 0;
-    audioReference.current.play();
+    audioReference.current.play().catch(() => {});
     timerReference.current = setTimeout(() => {
       if (audioReference.current) {
         audioReference.current.pause();

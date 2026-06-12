@@ -36,7 +36,7 @@ export default function SpeakerTestButton({ color, onPlay }: SpeakerTestButtonPr
     setIsPlaying(true);
     onPlay(true);
     el.currentTime = 0;
-    el.play();
+    el.play().catch(() => {});
   };
 
   const handleAudioEnded = useCallback(() => {
