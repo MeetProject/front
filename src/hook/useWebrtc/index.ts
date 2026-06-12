@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { useMediasoup } from './useMediasoup';
 import { useSignaling } from './useSignaling';
@@ -20,8 +20,6 @@ import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session'
 import { WS_URL } from '@/util/api';
 
 const useWebrtc = () => {
-  const [isPending, setIsPending] = useState<boolean>(false);
-
   const { connect, publish, request, subscribe, unsubscribeAll } = useSignaling(WS_URL);
   const {
     clearDevice,
@@ -41,6 +39,7 @@ const useWebrtc = () => {
   const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave, sendProducerRemove } = useSignalSender(publish);
 
   const currentRoomId = useRef<string | null>(null);
+  const joinPromise = useRef<{ promise: Promise<boolean>; roomId: string } | null>(null);
 
   const toggleParticipantAudio = useCallback(
     (id: string) => {
@@ -59,7 +58,12 @@ const useWebrtc = () => {
 
   const initWebrtc = useCallback(async () => {
     const { capabilities } = await request<CapabilitiesResponseType>('/app/signal/capabilities');
-    await initDevice(capabilities);
+    const device = await initDevice(capabilities);
+
+    // device 없이 진행하면 아무것도 송수신하지 못하는 유령 참가자가 되므로 join 실패로 처리
+    if (!device) {
+      throw new Error('mediasoup device 초기화에 실패했습니다.');
+    }
 
     await Promise.all([createTransport('send'), createTransport('recv')]);
 
@@ -68,7 +72,6 @@ const useWebrtc = () => {
   }, [createTransport, initDevice, produceTrack, request]);
 
   const cleanupRoomState = useCallback(() => {
-    // 신원(userId)이 소켓에 묶여 있으므로 퇴장 시에도 소켓·유저 정보는 유지하고 구독만 해제한다
     unsubscribeAll();
     disconnectTransport();
     clearDevice();
@@ -79,15 +82,14 @@ const useWebrtc = () => {
     currentRoomId.current = null;
   }, [unsubscribeAll, disconnectTransport, clearDevice]);
 
-  const joinRoom = useCallback(
+  const executeJoinRoom = useCallback(
     async (roomId: string) => {
       const { addParticipant, addTrack } = useParticipantStore.getState();
       const { deviceEnable } = useDeviceStore.getState();
       const { client } = useSignalStore.getState();
-      setIsPending(true);
 
       try {
-        if (!client?.active) {
+        if (!client?.connected) {
           await connect();
         }
 
@@ -132,11 +134,26 @@ const useWebrtc = () => {
           useAlertStore.getState().addAlert('회의 참여에 실패하였습니다.');
         }
         return false;
-      } finally {
-        setIsPending(false);
       }
     },
     [consumeTrack, initSubscribe, request, connect, initWebrtc, cleanupRoomState],
+  );
+
+  const joinRoom = useCallback(
+    (roomId: string) => {
+      if (joinPromise.current?.roomId === roomId) {
+        return joinPromise.current.promise;
+      }
+
+      const promise = executeJoinRoom(roomId).finally(() => {
+        if (joinPromise.current?.roomId === roomId) {
+          joinPromise.current = null;
+        }
+      });
+      joinPromise.current = { promise, roomId };
+      return promise;
+    },
+    [executeJoinRoom],
   );
 
   const leaveRoom = useCallback(() => {
@@ -155,6 +172,12 @@ const useWebrtc = () => {
       screenStream.getTracks().map((track) => produceTrack(track, track.kind === 'audio' ? 'screenAudio' : 'screen')),
     );
 
+    // 다른 사용자의 화면공유를 대체하는 경우 이전 원격 스트림을 정지하고 교체
+    const { screenStream: prevScreenStream } = useParticipantStore.getState();
+    if (prevScreenStream.stream && prevScreenStream.userId !== userId) {
+      prevScreenStream.stream.getTracks().forEach((track) => track.stop());
+    }
+
     useParticipantStore.setState({ screenStream: { stream: screenStream, userId } });
   }, [produceTrack]);
 
@@ -167,13 +190,13 @@ const useWebrtc = () => {
         }
       }
 
-      const produceIds = removeProducer(trackType);
+      const removedProducers = removeProducer(trackType);
 
-      if (!produceIds) {
+      if (!removedProducers) {
         return;
       }
 
-      produceIds.forEach((id) => sendProducerRemove(id, trackType));
+      removedProducers.forEach(({ id, trackType: removedTrackType }) => sendProducerRemove(id, removedTrackType));
     },
     [removeProducer, sendProducerRemove],
   );
@@ -190,7 +213,6 @@ const useWebrtc = () => {
   );
 
   return {
-    isPending,
     joinRoom,
     leaveRoom,
     pauseTrack: pauseConsumer,
