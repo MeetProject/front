@@ -19,11 +19,11 @@ const EMOJI_IMAGE = {
   CURIOUS: webp.curiousEmoji,
   HEART: webp.heartEmoji,
   LAUGHTER: webp.laughterEmoji,
-  PARTYPOPPER: webp.partyPoperEmoji,
+  PARTYPOPPER: webp.partyPopperEmoji,
   SAD: webp.sadEmoji,
-  SURPRISE: webp.surpriceEmoji,
+  SURPRISE: webp.surpriseEmoji,
   THUMBDOWN: webp.thumbDownEmoji,
-  THUMBUP: webp.thumbDownEmoji,
+  THUMBUP: webp.thumbUpEmoji,
 };
 
 function EmojiIcon({ emoji, emojiId }: EmojiAnimationProps) {
@@ -31,10 +31,12 @@ function EmojiIcon({ emoji, emojiId }: EmojiAnimationProps) {
   const participantsUserData = useParticipantStore((state) => state.info);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timerId = setTimeout(() => {
       const { removeEmoji } = useInteractionStore.getState();
       removeEmoji(emojiId);
     }, 4000);
+
+    return () => clearTimeout(timerId);
   }, [emojiId, emoji]);
 
   return (

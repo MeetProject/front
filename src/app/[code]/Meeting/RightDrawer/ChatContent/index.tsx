@@ -1,14 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import ChatInput from './ChatInput';
 import ChatMessage from './ChatMessage';
 
 import * as image from '@/asset/image';
 import * as Icon from '@/asset/svg';
+import { useAlertStore } from '@/store/useAlertStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { useSignalStore } from '@/store/useSignalStore';
 
 interface ChatContentProps {
   sendChat: (message: string) => void;
@@ -16,13 +18,24 @@ interface ChatContentProps {
 
 export default function ChatContent({ sendChat }: ChatContentProps) {
   const chatData = useParticipantStore((state) => state.chat);
+  const bottomAnchorRef = useRef<HTMLDivElement>(null);
 
   const handleChatSubmit = useCallback(
     (value: string) => {
+      const { client } = useSignalStore.getState();
+      if (!client?.connected) {
+        useAlertStore.getState().addAlert('연결이 끊겨 메시지를 보낼 수 없습니다.');
+        throw new Error('STOMP client is not connected');
+      }
+
       sendChat(value);
     },
     [sendChat],
   );
+
+  useEffect(() => {
+    bottomAnchorRef.current?.scrollIntoView({ block: 'end' });
+  }, [chatData]);
 
   return (
     <div className='flex size-full flex-col'>
@@ -47,6 +60,7 @@ export default function ChatContent({ sendChat }: ChatContentProps) {
             {chatData.map((el) => (
               <ChatMessage chat={el} key={el.userId + el.messages[0].timestamp} />
             ))}
+            <div ref={bottomAnchorRef} />
           </div>
         )}
       </div>

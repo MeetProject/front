@@ -48,7 +48,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
         return { chat: newChat };
       }
 
-      newChat.push({ messages: [chatData], userId });
+      newChat.push({ messages: [chatData], userId, userInfo: prev.info.get(userId) });
       return { chat: newChat };
     });
   },

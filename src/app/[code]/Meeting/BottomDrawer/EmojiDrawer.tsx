@@ -14,10 +14,10 @@ interface EmojiDrawerProps {
 const EMOJI_BUTTON = [
   { hoverSrc: wepb.heartEmoji, name: 'HEART', src: image.heartEmoji },
   { hoverSrc: wepb.thumbUpEmoji, name: 'THUMBUP', src: image.thumbUpEmoji },
-  { hoverSrc: wepb.partyPoperEmoji, name: 'PARTYPOPPER', src: image.partyPoperEmoji },
+  { hoverSrc: wepb.partyPopperEmoji, name: 'PARTYPOPPER', src: image.partyPopperEmoji },
   { hoverSrc: wepb.clapEmoji, name: 'CLAP', src: image.clapEmoji },
   { hoverSrc: wepb.laughterEmoji, name: 'LAUGHTER', src: image.laughterEmoji },
-  { hoverSrc: wepb.surpriceEmoji, name: 'SURPRISE', src: image.surpriceEmoji },
+  { hoverSrc: wepb.surpriseEmoji, name: 'SURPRISE', src: image.surpriseEmoji },
   { hoverSrc: wepb.sadEmoji, name: 'SAD', src: image.sadEmoji },
   { hoverSrc: wepb.curiousEmoji, name: 'CURIOUS', src: image.curiousEmoji },
   { hoverSrc: wepb.thumbDownEmoji, name: 'THUMBDOWN', src: image.thumbDownEmoji },

@@ -14,9 +14,9 @@ const EMOJI = {
   CURIOUS: image.curiousEmoji,
   HEART: image.heartEmoji,
   LAUGHTER: image.laughterEmoji,
-  PARTYPOPPER: image.partyPoperEmoji,
+  PARTYPOPPER: image.partyPopperEmoji,
   SAD: image.sadEmoji,
-  SURPRISE: image.surpriceEmoji,
+  SURPRISE: image.surpriseEmoji,
   THUMBDOWN: image.thumbDownEmoji,
   THUMBUP: image.thumbUpEmoji,
 };
