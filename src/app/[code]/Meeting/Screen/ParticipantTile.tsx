@@ -22,18 +22,18 @@ function ParticipantTile({ id, updateTrackStatus }: ParticipantTileProps) {
   );
 
   useEffect(() => {
-    const handleTrackEnable = async (value: boolean) => {
-      if (!stream) {
-        return;
-      }
-      await updateTrackStatus(id, 'video', value);
-    };
-
-    handleTrackEnable(true);
-    return () => {
-      handleTrackEnable(false);
-    };
+    if (!stream) {
+      return;
+    }
+    updateTrackStatus(id, 'video', true);
   }, [updateTrackStatus, id, stream]);
+
+  useEffect(
+    () => () => {
+      updateTrackStatus(id, 'video', false);
+    },
+    [updateTrackStatus, id],
+  );
 
   return (
     <BaseTile
