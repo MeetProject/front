@@ -1,13 +1,20 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import * as Icon from '@/asset/svg';
 import { useAlertStore } from '@/store/useAlertStore';
 
 export default function InfoContent() {
   const pathname = usePathname();
-  const url = typeof window === 'undefined' ? pathname : window.location.origin + pathname;
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const url = origin + pathname;
 
   const handleClipboardButtonClick = async () => {
     const { addAlert } = useAlertStore.getState();
