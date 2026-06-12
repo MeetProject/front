@@ -105,18 +105,18 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
     set((state) => {
       if (trackType.includes('screen')) {
-        if (state.screenStream.userId !== userId) {
-          state.screenStream.stream?.getTracks().forEach((t) => {
-            t.stop();
-            state.screenStream.stream?.removeTrack(t);
-          });
+        const isSameSender = state.screenStream.userId === userId;
+        if (!isSameSender) {
+          state.screenStream.stream?.getTracks().forEach((t) => t.stop());
         }
-        const newStream = new MediaStream(state.screenStream.stream?.getTracks() ?? []);
+
+        const baseTracks = isSameSender ? (state.screenStream.stream?.getTracks() ?? []) : [];
+        const newStream = new MediaStream(baseTracks);
         newStream.addTrack(track);
         return { screenStream: { stream: newStream, userId } };
       }
 
-      const prev = get().videoStreams.get(userId);
+      const prev = state.videoStreams.get(userId);
       if (prev) {
         prev.getTracks().forEach((t) => t.stop());
       }
@@ -138,6 +138,10 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newIds = prev.participants.filter((i) => i !== id);
 
       const newStreams = new Map(prev.videoStreams);
+      newStreams
+        .get(id)
+        ?.getTracks()
+        .forEach((t) => t.stop());
       newStreams.delete(id);
 
       const newDevices = new Map(prev.devices);
@@ -159,6 +163,10 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
   removeTrack: (id: string, trackType: TrackType) =>
     set((prev) => {
       if (trackType.includes('screen')) {
+        // 이미 다른 사용자의 공유로 교체된 뒤 늦게 도착한 remove가 새 공유를 끊지 않도록 sender를 확인
+        if (prev.screenStream.userId !== id) {
+          return {};
+        }
         prev.screenStream.stream?.getTracks().forEach((t) => t.stop());
         return { screenStream: { stream: null, userId: null } };
       }

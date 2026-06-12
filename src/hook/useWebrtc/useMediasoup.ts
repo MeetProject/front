@@ -83,6 +83,21 @@ export const useMediasoup = (
     resumedConsumer.current.delete(consumer.id);
   }, []);
 
+  const removeScreenConsumer = useCallback((senderId?: string) => {
+    screenConsumers.current.forEach((consumer, consumerId) => {
+      const { userId } = consumer.appData as AppData;
+      if (senderId && userId !== senderId) {
+        return;
+      }
+      consumer.close();
+      screenConsumers.current.delete(consumerId);
+    });
+
+    if (!senderId || currentScreenSender.current === senderId) {
+      currentScreenSender.current = null;
+    }
+  }, []);
+
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
       const { userId: id } = useUserInfoStore.getState();
@@ -107,13 +122,16 @@ export const useMediasoup = (
         const { trackType, userId } = appData as AppData;
 
         if (trackType !== 'video') {
-          await publish('/app/consumer/resume', {
+          publish('/app/consumer/resume', {
             consumerId: consumer.id,
           });
           resumedConsumer.current.set(consumer.id, true);
         }
 
         if (isScreenTrack(trackType)) {
+          if (currentScreenSender.current && currentScreenSender.current !== userId) {
+            removeScreenConsumer(currentScreenSender.current);
+          }
           currentScreenSender.current = userId;
           screenConsumers.current.set(consumer.id, consumer);
         }
@@ -124,10 +142,12 @@ export const useMediasoup = (
           consumers.current.set(userId, userConsumers);
         }
 
-        consumer.on('@close', () => {
+        const handleClose = () => {
           consumedProducers.current.delete(producerId);
           handleConsumerClose(consumer, trackType, userId);
-        });
+        };
+        consumer.on('@close', handleClose);
+        consumer.on('transportclose', handleClose);
 
         return {
           appData,
@@ -138,7 +158,7 @@ export const useMediasoup = (
         return null;
       }
     },
-    [request, publish, handleConsumerClose],
+    [request, publish, handleConsumerClose, removeScreenConsumer],
   );
 
   const resumeConsumer = useCallback(
@@ -256,10 +276,13 @@ export const useMediasoup = (
 
   const removeProducer = useCallback((trackType: TrackType) => {
     if (isScreenTrack(trackType)) {
-      const producerIds = Array.from(screenProducers.current.keys());
+      const removedProducers = Array.from(screenProducers.current.values()).map((producer) => ({
+        id: producer.id,
+        trackType: (producer.appData as AppData).trackType,
+      }));
       screenProducers.current.forEach((p) => p.close());
       screenProducers.current.clear();
-      return producerIds;
+      return removedProducers;
     }
 
     const oldProducer = producers.current.get(trackType);
@@ -271,13 +294,7 @@ export const useMediasoup = (
 
     producers.current.delete(trackType);
 
-    return [oldProducer.id];
-  }, []);
-
-  const removeScreenConsumer = useCallback(() => {
-    screenConsumers.current.forEach((c) => c.close());
-    screenConsumers.current.clear();
-    currentScreenSender.current = null;
+    return [{ id: oldProducer.id, trackType }];
   }, []);
 
   const removeConsumer = useCallback(
@@ -287,13 +304,13 @@ export const useMediasoup = (
         consumers.current.delete(userId);
 
         if (currentScreenSender.current === userId) {
-          removeScreenConsumer();
+          removeScreenConsumer(userId);
         }
         return;
       }
 
       if (isScreenTrack(trackType)) {
-        removeScreenConsumer();
+        removeScreenConsumer(userId);
         return;
       }
 
@@ -317,17 +334,34 @@ export const useMediasoup = (
     [removeScreenConsumer],
   );
 
-  const replaceProducerTrack = useCallback(async (trackType: DeviceKindType, newTrack: MediaStreamTrack | null) => {
-    const producer = producers.current.get(trackType);
-    if (!producer) {
-      return;
-    }
+  const replaceProducerTrack = useCallback(
+    async (trackType: DeviceKindType, newTrack: MediaStreamTrack | null) => {
+      const producer = producers.current.get(trackType);
+      if (producer?.track === newTrack) {
+        return;
+      }
 
-    try {
-      producer.track?.stop();
-      await producer.replaceTrack({ track: newTrack });
-    } catch {}
-  }, []);
+      // 입장 시 권한 거부 등으로 producer 없이 합류한 뒤 트랙이 생기면 새로 produce
+      if (!producer) {
+        if (!newTrack) {
+          return;
+        }
+
+        const producerId = await produceTrack(newTrack, trackType);
+        const { deviceEnable } = useDeviceStore.getState();
+        if (producerId && !deviceEnable[trackType]) {
+          await request('/app/signal/producer/pause', { producerId });
+        }
+        return;
+      }
+
+      try {
+        producer.track?.stop();
+        await producer.replaceTrack({ track: newTrack });
+      } catch {}
+    },
+    [produceTrack, request],
+  );
 
   const toggleProducerTrack = useCallback(
     async (trackType: DeviceKindType, value?: boolean) => {
@@ -350,7 +384,14 @@ export const useMediasoup = (
     recvTransport.current?.close();
     sendTransport.current = null;
     recvTransport.current = null;
+
+    producers.current.clear();
+    screenProducers.current.clear();
+    consumers.current.clear();
+    screenConsumers.current.clear();
+    resumedConsumer.current.clear();
     consumedProducers.current.clear();
+    currentScreenSender.current = null;
   }, []);
 
   return {
