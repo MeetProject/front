@@ -17,6 +17,12 @@ export default function CaptureButton({ imgSrc, onImageChange, onVisible }: Capt
   const handleCaptureButtonClick = async () => {
     setIsClicked(true);
     onVisible(false);
+
+    const restore = () => {
+      onVisible(true);
+      setIsClicked(false);
+    };
+
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         preferCurrentTab: true,
@@ -45,12 +51,12 @@ export default function CaptureButton({ imgSrc, onImageChange, onVisible }: Capt
         video.remove();
         canvas.remove();
         stream?.getTracks().forEach((track) => track.stop());
+        restore();
       };
+      video.onerror = restore;
     } catch {
       inputRef.current?.click();
-    } finally {
-      onVisible(true);
-      setIsClicked(false);
+      restore();
     }
   };
 

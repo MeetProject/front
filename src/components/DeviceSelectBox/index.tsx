@@ -89,7 +89,7 @@ export default function DeviceSelectBox({
   const wrapperCn = cn(
     'flex h-14 max-h-full w-full min-w-16 items-center gap-2 truncate rounded border border-solid pr-6.25 pl-2.5',
     theme === 'dark' && 'border-outline-dark',
-    !disabled && (theme === 'default' ? 'hover:$bg-surface-info' : 'hover:bg-outline-dark'),
+    !disabled && (theme === 'default' ? 'hover:bg-surface-info' : 'hover:bg-outline-dark'),
     className,
   );
 

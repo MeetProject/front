@@ -8,6 +8,7 @@ import Report from './Report';
 import Suggest from './Suggest';
 
 import Dialog from '@/components/_shared/Dialog';
+import { useAlertStore } from '@/store/useAlertStore';
 import { FeedbackCategoryType } from '@/types/components';
 
 interface FeedbackProps {
@@ -20,10 +21,16 @@ export default function Feedback({ isOpen, onClose }: FeedbackProps) {
   const [category, setCategory] = useState<FeedbackCategoryType>(null);
   const [isCompletedForm, setIsCompletedForm] = useState(false);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setCategory(null);
+    setIsCompletedForm(false);
     onClose();
-  };
+  }, [onClose]);
+
+  const handleSubmit = useCallback(() => {
+    useAlertStore.getState().addAlert('피드백이 접수되었습니다. 소중한 의견 감사합니다.');
+    handleClose();
+  }, [handleClose]);
 
   const handleVisible = useCallback((value: boolean) => {
     setIsVisible(value);
@@ -57,6 +64,7 @@ export default function Feedback({ isOpen, onClose }: FeedbackProps) {
               }`}
               disabled={!isCompletedForm}
               type='button'
+              onClick={handleSubmit}
             >
               보내기
             </button>
