@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -24,12 +24,13 @@ import { API_URL } from '@/util/api';
 
 export default function Meeting() {
   const router = useRouter();
-  const roomId = usePathname().slice(1);
+  const { code: roomId } = useParams<{ code: string }>();
   const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
-  const { isInit, screenStreams } = useDeviceStore(
+  const { isInit, screenStreams, stream } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
       screenStreams: state.screenStream,
+      stream: state.stream,
     })),
   );
 
@@ -93,6 +94,16 @@ export default function Meeting() {
     init();
   }, [isInit, initStream, joinRoom, roomId, router]);
 
+  // 장치 끊김 복구 등으로 로컬 스트림이 교체되면 producer 트랙도 함께 교체 (동일 트랙이면 내부에서 무시됨)
+  useEffect(() => {
+    if (!stream) {
+      return;
+    }
+
+    replaceTrack('audio', stream.getAudioTracks()[0] ?? null);
+    replaceTrack('video', stream.getVideoTracks()[0] ?? null);
+  }, [stream, replaceTrack]);
+
   useEffect(
     () => () => {
       const { reset } = useDrawerStore.getState();
@@ -131,7 +142,7 @@ export default function Meeting() {
     return () => {
       window.removeEventListener('beforeunload', handleForceLeave);
     };
-  }, [leaveRoom, roomId]);
+  }, [roomId]);
 
   useEffect(() => {
     if (!screenStreams) {

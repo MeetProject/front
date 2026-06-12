@@ -105,6 +105,14 @@ const useDevice = () => {
         }
 
         if (error.name === 'NotAllowedError' && !isLast) {
+          // 다음 시도로 넘어가더라도 이번에 거부된 권한은 기록해 둔다 (이후 성공 시 granted로 덮어써짐)
+          const { permission: prevPermission } = useDeviceStore.getState();
+          useDeviceStore.setState({
+            permission: {
+              audio: constraint.audio ? 'denied' : prevPermission.audio,
+              video: constraint.video ? 'denied' : prevPermission.video,
+            },
+          });
           throw e;
         }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ChangeEvent, FormEvent, useState } from 'react';
 
 import { validateRoom } from '@/service/room';
@@ -14,7 +14,7 @@ const MAX_SIZE = 60;
 
 export default function NameForm() {
   const router = useRouter();
-  const sessionId = usePathname().slice(1);
+  const { code: sessionId } = useParams<{ code: string }>();
 
   const [userName, setUserName] = useState<string>('');
   const [isPending, setIsPending] = useState<boolean>(false);

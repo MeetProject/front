@@ -58,12 +58,17 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream
   }, [audioOutput, tag]);
 
   useEffect(() => {
-    if (!stream) {
+    const el = tag === 'audio' ? audioRef.current : videoRef.current;
+    if (!el) {
       return;
     }
 
-    const el = tag === 'audio' ? audioRef.current : videoRef.current;
-    if (!el) {
+    if (!stream) {
+      // 이전 스트림이 붙은 채로 남지 않도록 해제
+      if (el.srcObject) {
+        el.pause();
+        el.srcObject = null;
+      }
       return;
     }
 
