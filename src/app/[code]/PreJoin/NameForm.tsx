@@ -61,7 +61,7 @@ export default function NameForm() {
   };
 
   const handleNameInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setUserName(e.target.value.slice(0, MAX_SIZE));
+    setUserName([...e.target.value].slice(0, MAX_SIZE).join(''));
   };
   return (
     <form className='flex w-full max-w-75 flex-col items-center justify-center' onSubmit={handleFormSubmit}>
@@ -72,7 +72,7 @@ export default function NameForm() {
           value={userName}
           onChange={handleNameInputChange}
         />
-        <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${userName.length} / ${MAX_SIZE}`}</p>
+        <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${[...userName].length} / ${MAX_SIZE}`}</p>
       </div>
       <button
         className={`mt-4 h-14 w-60 rounded-full ${userName.trim().length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled'} text-center`}
