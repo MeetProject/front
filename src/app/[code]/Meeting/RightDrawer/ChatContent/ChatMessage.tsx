@@ -16,7 +16,7 @@ export default function ChatMessage({ chat }: ChatMessageProps) {
   const user = useParticipantStore((state) => state.info.get(chat.userId)) ??
     chat.userInfo ?? {
       userColor: '#ccc',
-      userName: 'Unknown',
+      userName: '알 수 없는 사용자',
     };
   const { id } = useUserInfoStore(
     useShallow((state) => ({

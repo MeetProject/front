@@ -19,6 +19,9 @@ interface ChatContentProps {
 export default function ChatContent({ sendChat }: ChatContentProps) {
   const chatData = useParticipantStore((state) => state.chat);
   const bottomAnchorRef = useRef<HTMLDivElement>(null);
+  const isAtBottomRef = useRef(true);
+
+  const hasChat = chatData.length > 0;
 
   const handleChatSubmit = useCallback(
     (value: string) => {
@@ -28,12 +31,30 @@ export default function ChatContent({ sendChat }: ChatContentProps) {
         throw new Error('STOMP client is not connected');
       }
 
+      isAtBottomRef.current = true;
       sendChat(value);
     },
     [sendChat],
   );
 
   useEffect(() => {
+    const anchor = bottomAnchorRef.current;
+    if (!anchor) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      isAtBottomRef.current = entry.isIntersecting;
+    });
+    observer.observe(anchor);
+
+    return () => observer.disconnect();
+  }, [hasChat]);
+
+  useEffect(() => {
+    if (!isAtBottomRef.current) {
+      return;
+    }
     bottomAnchorRef.current?.scrollIntoView({ block: 'end' });
   }, [chatData]);
 
@@ -58,7 +79,7 @@ export default function ChatContent({ sendChat }: ChatContentProps) {
         ) : (
           <div className='flex-1'>
             {chatData.map((el) => (
-              <ChatMessage chat={el} key={el.userId + el.messages[0].timestamp} />
+              <ChatMessage chat={el} key={el.messages[0].id} />
             ))}
             <div ref={bottomAnchorRef} />
           </div>
