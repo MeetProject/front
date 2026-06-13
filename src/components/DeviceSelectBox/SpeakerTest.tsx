@@ -7,6 +7,7 @@ import Media from '../Media';
 import * as Icon from '@/asset/svg';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
+import { canSelectOutputDevice } from '@/util/env';
 
 interface SpeakerTestButtonProps {
   color: 'white' | 'black';
@@ -27,7 +28,7 @@ export default function SpeakerTestButton({ color, onPlay }: SpeakerTestButtonPr
     const el = audioRef.current;
     const { audioOutput } = useDeviceStore.getState().device;
 
-    if (audioOutput?.deviceId && 'setSinkId' in el) {
+    if (audioOutput?.deviceId && canSelectOutputDevice() && 'setSinkId' in el) {
       try {
         await el.setSinkId(audioOutput.deviceId);
       } catch {}
