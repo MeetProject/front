@@ -261,7 +261,7 @@ const useDevice = () => {
     toggleDeviceEnable('video');
 
     if (!prevEnable) {
-      return await replaceNewTrack('video', videoInput?.deviceId ?? '', true);
+      return await replaceNewTrack('video', videoInput?.deviceId ?? null, true);
     }
 
     stream.getVideoTracks().forEach((track) => {
