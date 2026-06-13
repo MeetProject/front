@@ -4,7 +4,15 @@ export const createAudioContext = (): AudioContext | null => {
   }
 
   const AudioContextClass = window.AudioContext ?? window.webkitAudioContext;
-  return AudioContextClass ? new AudioContextClass() : null;
+  if (!AudioContextClass) {
+    return null;
+  }
+
+  try {
+    return new AudioContextClass();
+  } catch {
+    return null;
+  }
 };
 
 interface StreamAnalyser {
