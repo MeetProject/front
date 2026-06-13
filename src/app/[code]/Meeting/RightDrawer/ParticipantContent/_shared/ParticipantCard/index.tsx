@@ -28,7 +28,7 @@ export default function ParticipantCard({ isMe, name, option, userId }: Particip
             {option.audio && <MicStatus id={userId} isMe={isMe} />}
           </div>
           {!isMe && <LocalMuteButton id={userId} />}
-          <button className='hover:bg-action-hover flex size-12 items-center justify-center rounded-full'>
+          <button className='hover:bg-action-hover flex size-12 items-center justify-center rounded-full' type='button'>
             <Icon.Menu className='fill-on-surface-dark size-6 rotate-90' />
           </button>
         </div>
