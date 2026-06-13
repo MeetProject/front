@@ -16,7 +16,7 @@ export default function NewMeetingButton() {
     setIsPending(true);
     try {
       const { roomId: id } = await createRoom();
-      router.push(`/${id}`);
+      router.push(`/${encodeURIComponent(id)}`);
     } catch {
       const { addAlert } = useAlertStore.getState();
       addAlert('방 생성에 실패하였습니다.');
