@@ -26,6 +26,8 @@ export default function Page() {
             <Link
               className='border-primary-vivid text-primary-vivid border-solid hover:border-b'
               href='https://github.com/MeetProject'
+              rel='noopener noreferrer'
+              target='_blank'
             >
               자세히 알아보세요.
             </Link>

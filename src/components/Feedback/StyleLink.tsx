@@ -3,7 +3,12 @@ import { PropsWithChildren } from 'react';
 
 export default function StyleLink({ children }: PropsWithChildren) {
   return (
-    <Link className='text-primary-dark underline' href='https://github.com/MeetProject'>
+    <Link
+      className='text-primary-dark underline'
+      href='https://github.com/MeetProject'
+      rel='noopener noreferrer'
+      target='_blank'
+    >
       {children}
     </Link>
   );

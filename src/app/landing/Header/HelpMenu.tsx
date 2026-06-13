@@ -29,7 +29,7 @@ export default function HelpMenu() {
   };
 
   const handleHelpButtonClick = (href: string) => {
-    window.open(href, '_blank');
+    window.open(href, '_blank', 'noopener,noreferrer');
     setIsOpen(false);
   };
 
