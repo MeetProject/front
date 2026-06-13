@@ -12,7 +12,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
   const [chat, setChat] = useState<string>('');
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const handleInputChage = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setChat(e.target.value);
 
     if (!inputRef.current) {
@@ -23,7 +23,6 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
   };
 
   const handleChatSubmit = async () => {
-    // 전송 버튼은 disabled로 막히지만 Enter 키 경로는 통과하므로 빈 메시지를 여기서 차단
     if (isPending || !chat.trim()) {
       return;
     }
@@ -71,7 +70,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
           ref={inputRef}
           rows={1}
           value={chat}
-          onChange={handleInputChage}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
         />
         <div>
