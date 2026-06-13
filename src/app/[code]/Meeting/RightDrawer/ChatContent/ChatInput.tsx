@@ -23,7 +23,8 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
   };
 
   const handleChatSubmit = async () => {
-    if (isPending) {
+    // 전송 버튼은 disabled로 막히지만 Enter 키 경로는 통과하므로 빈 메시지를 여기서 차단
+    if (isPending || !chat.trim()) {
       return;
     }
     setIsPending(true);
