@@ -83,7 +83,6 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream
       }
       el.srcObject = stream;
       el.play().catch(() => {
-        // 자동재생이 차단된 경우 첫 사용자 입력 시 재생을 재시도
         window.addEventListener('pointerdown', retryPlay, { once: true });
         window.addEventListener('keydown', retryPlay, { once: true });
       });

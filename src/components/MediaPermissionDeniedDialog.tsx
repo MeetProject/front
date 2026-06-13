@@ -31,7 +31,6 @@ export default function MediaPermissionDeniedDialog({ isOpen, onClose, zIndex }:
       return '카메라';
     }
 
-    // 권한 상태가 갱신되는 중 등 denied가 없는 경우의 기본 문구
     return '마이크 및 카메라';
   };
 

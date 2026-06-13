@@ -33,7 +33,6 @@ const useDevice = () => {
   const syncEnable = useCallback((stream: MediaStream, constraint: Record<DeviceKindType, boolean>) => {
     const { deviceEnable } = useDeviceStore.getState();
 
-    // 오디오 음소거는 producer pause로 처리하고 트랙은 발화 감지를 위해 살려 둔다 (PreJoin 미리보기 음소거는 PreJoin이 직접 처리)
     if (constraint.video && !deviceEnable.video) {
       stream.getVideoTracks().forEach((track) => {
         track.stop();

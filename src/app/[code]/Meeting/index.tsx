@@ -101,7 +101,6 @@ export default function Meeting() {
     init();
   }, [isInit, initStream, joinRoom, roomId, router]);
 
-  // 장치 끊김 복구 등으로 로컬 스트림이 교체되면 producer 트랙도 함께 교체 (동일 트랙이면 내부에서 무시됨)
   useEffect(() => {
     if (!stream) {
       return;

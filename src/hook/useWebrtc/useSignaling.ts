@@ -122,10 +122,8 @@ export const useSignaling = (url: string) => {
     [url, handleReply],
   );
 
-  // 전송 성공 여부를 반환해 호출부가 로컬 상태(예: consumer resume 마킹)를 실제 전송과 맞출 수 있게 한다
   const publish = useCallback(<T>(destination: string, payload?: T) => {
     const { client } = useSignalStore.getState();
-    // 미연결 상태에서 publish하면 stompjs가 throw하므로 connected까지 확인
     if (!client?.connected) {
       return false;
     }

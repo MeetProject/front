@@ -67,9 +67,7 @@ const useWebrtc = () => {
     await Promise.all([createTransport('send'), createTransport('recv')]);
 
     const { stream } = useDeviceStore.getState();
-    // replaceProducerTrack은 pendingProduce에 등록해 진행 중 produce를 추적하므로,
-    // 스트림 교체 effect와 동시에 실행돼도 같은 트랙이 중복 produce되지 않는다
-    // (꺼 둔 장치의 producer pause 처리도 내부에서 수행)
+
     return Promise.all(
       (stream?.getTracks() ?? []).map((track) =>
         replaceProducerTrack(track.kind === 'audio' ? 'audio' : 'video', track),
@@ -211,7 +209,6 @@ const useWebrtc = () => {
       const { deviceEnable } = useDeviceStore.getState();
 
       const updatedOption = { ...deviceEnable, [trackType]: value !== undefined ? value : !deviceEnable[trackType] };
-      // producer 상태 변경이 실패하면 브로드캐스트를 보내지 않아 다른 참가자의 UI와 실제 송출 상태가 어긋나지 않게 한다
       await toggleProducerTrack(trackType, value);
       sendDeviceEnable(updatedOption);
     },
