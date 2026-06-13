@@ -47,7 +47,7 @@ export default function Setting({ category = 'audio', isOpen, onClose }: Setting
     }
 
     setIsOpenDeniedDialog(false);
-    initStream();
+    initStream(true);
   }, [isInit, initStream, isOpen]);
 
   useEffect(() => {
