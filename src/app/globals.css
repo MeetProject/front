@@ -32,15 +32,6 @@
   }
 }
 
-@keyframes slide-in-bottom {
-  0% {
-    transform: scaleY(0);
-  }
-  100% {
-    transform: scaleY(1);
-  }
-}
-
 @keyframes slide-in-left {
   0% {
     transform: scaleX(0);
@@ -279,7 +270,6 @@
   --width-device-select-box-sm-md: calc(100vw - 320px);
 
   --animate-move-bottom-up: move-bottom-up 3s linear forwards;
-  --animate-slide-in-bottom: slide-in-bottom 0.3s ease forwards;
   --animate-slide-in-left: slide-in-left 0.3s ease forwards;
   --animate-slide-out-left: slide-out-left 0.3s ease forwards;
   --animate-spinner: custom-spinner 1s linear infinite;
