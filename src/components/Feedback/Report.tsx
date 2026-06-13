@@ -136,7 +136,10 @@ export default function Report({ onComplete, onVisible }: ReportProps) {
       <CaptureButton imgSrc={imgSource} onImageChange={handleImageChange} onVisible={onVisible} />
       <div className='flex items-center gap-4 px-1.5 pt-2.5'>
         <button
-          className={`flex size-4.5 items-center justify-center rounded-sm ${isChecked ? 'bg-primary-dark' : 'border-on-surface-dark border-2 border-solid'}`}
+          className={cn(
+            'flex size-4.5 items-center justify-center rounded-sm',
+            isChecked ? 'bg-primary-dark' : 'border-on-surface-dark border-2 border-solid',
+          )}
           type='button'
           onClick={handleCheckButtonClick}
         >

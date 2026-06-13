@@ -5,6 +5,7 @@ import { ChangeEvent, FormEvent, useState } from 'react';
 
 import * as Icon from '@/asset/svg';
 import { Loading } from '@/components';
+import { cn } from '@/lib/cn';
 import { validateRoom } from '@/service/room';
 import { useAlertStore } from '@/store/useAlertStore';
 import { extractRoomCode } from '@/util/text';
@@ -55,7 +56,11 @@ export default function ParticipateMeetingForm() {
         </div>
 
         <button
-          className={`shrink-0 rounded px-4 py-3 text-[16px] ${roomId ? 'text-primary-main' : 'text-outline-strong'} ${roomId && 'hover:bg-surface-info'}`}
+          className={cn(
+            'shrink-0 rounded px-4 py-3 text-[16px]',
+            roomId ? 'text-primary-main' : 'text-outline-strong',
+            roomId && 'hover:bg-surface-info',
+          )}
           disabled={!roomId}
           type='submit'
         >

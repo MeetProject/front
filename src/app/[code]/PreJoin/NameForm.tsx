@@ -3,6 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { ChangeEvent, FormEvent, useState } from 'react';
 
+import { cn } from '@/lib/cn';
 import { validateRoom } from '@/service/room';
 import { register } from '@/service/user';
 import { useAlertStore } from '@/store/useAlertStore';
@@ -75,7 +76,10 @@ export default function NameForm() {
         <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${[...userName].length} / ${MAX_SIZE}`}</p>
       </div>
       <button
-        className={`mt-4 h-14 w-60 rounded-full ${userName.trim().length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled'} text-center`}
+        className={cn(
+          'mt-4 h-14 w-60 rounded-full text-center',
+          userName.trim().length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled',
+        )}
         disabled={userName.trim().length === 0 || isPending}
         type='submit'
       >

@@ -5,6 +5,7 @@ import StyleLink from './StyleLink';
 
 import * as Icon from '@/asset/svg';
 import { ButtonTag } from '@/components';
+import { cn } from '@/lib/cn';
 
 interface SuggestProperties {
   onComplete: (value: boolean) => void;
@@ -69,7 +70,10 @@ export default function Suggest({ onComplete, onVisible }: SuggestProperties) {
       <CaptureButton imgSrc={imgSource} onImageChange={handleImageChange} onVisible={onVisible} />
       <div className='flex items-center gap-4 px-1.5 pt-2.5'>
         <button
-          className={`flex size-4.5 items-center justify-center rounded-sm ${isChecked ? 'bg-primary-dark' : 'border-on-surface-dark border-2 border-solid'}`}
+          className={cn(
+            'flex size-4.5 items-center justify-center rounded-sm',
+            isChecked ? 'bg-primary-dark' : 'border-on-surface-dark border-2 border-solid',
+          )}
           type='button'
           onClick={handleCheckButtonClick}
         >

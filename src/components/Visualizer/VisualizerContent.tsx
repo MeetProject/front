@@ -3,6 +3,7 @@
 import { CSSProperties } from 'react';
 
 import { useVolumeMeter } from '@/hook';
+import { cn } from '@/lib/cn';
 import { mapBarHeight } from '@/util/audio';
 
 interface VisualizerContentProps {
@@ -20,7 +21,10 @@ export default function VisualizerContent({ analyser, className, color }: Visual
 
   return (
     <div
-      className={`flex size-6.5 items-center justify-center gap-0.5 rounded-full bg-[rgba(26,115,232,0.9)] shadow-sm ${className}`}
+      className={cn(
+        'flex size-6.5 items-center justify-center gap-0.5 rounded-full bg-[rgba(26,115,232,0.9)] shadow-sm',
+        className,
+      )}
       ref={containerRef}
     >
       <div className='w-0.75 rounded-full bg-white' style={sideBar} />

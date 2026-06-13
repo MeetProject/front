@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { memo, useEffect, useState } from 'react';
 
 import * as webp from '@/asset/webp';
+import { cn } from '@/lib/cn';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
@@ -47,7 +48,10 @@ function EmojiIcon({ emoji, emojiId }: EmojiAnimationProps) {
     >
       <Image alt={emoji.emoji} height={36} src={EMOJI_IMAGE[emoji.emoji]} unoptimized={true} width={36} />
       <div
-        className={`max-w-28 truncate rounded-full px-2 text-sm ${emoji.userId === userId ? 'bg-primary-light text-black' : 'bg-surface-base text-white'} `}
+        className={cn(
+          'max-w-28 truncate rounded-full px-2 text-sm',
+          emoji.userId === userId ? 'bg-primary-light text-black' : 'bg-surface-base text-white',
+        )}
       >
         {userId === emoji.userId ? '나' : participantsUserData.get(emoji.userId)?.userName}
       </div>
