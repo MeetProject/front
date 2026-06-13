@@ -7,9 +7,11 @@ import * as Icon from '@/asset/svg';
 import { ButtonTag } from '@/components';
 import { useOutsideClick } from '@/hook';
 import { cn } from '@/lib/cn';
+import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
+import { isMac } from '@/util/env';
 
 interface InteractionButtonsProps {
   sendHandUp: (value: boolean) => void;
@@ -26,11 +28,9 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
   );
 
   const handsUp = useInteractionStore((state) => state.handsUp.has(userId ?? ''));
+  const isScreenSharing = useDeviceStore((state) => !!state.screenStream);
 
   const [isOpenOption, setIsOpenOption] = useState<boolean>(false);
-  const [active, setActive] = useState<Record<'screenShare', boolean>>({
-    screenShare: false,
-  });
 
   const handleOptionButtonClick = () => {
     setIsOpenOption((prev) => !prev);
@@ -41,7 +41,6 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
   }, []);
 
   const handleScreenShareButtonClick = useCallback(async () => {
-    setActive((prev) => ({ ...prev, screenShare: !prev.screenShare }));
     await shareScreen();
     handleOptionClose();
   }, [handleOptionClose, shareScreen]);
@@ -71,8 +70,8 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
   const BUTTON = [
     {
       icon: Icon.ScreenShare,
-      isActive: active.screenShare,
-      name: active.screenShare ? '화면 공유 중지' : '화면 공유',
+      isActive: isScreenSharing,
+      name: isScreenSharing ? '화면 공유 중지' : '화면 공유',
       onClick: handleScreenShareButtonClick,
     },
     { icon: Icon.Emoji, isActive: emoji, name: '반응 보내기', onClick: handleEmojiButtonClick },
@@ -88,7 +87,7 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
       isActive: handsUp,
       name: handsUp ? '손 내리기' : '손들기',
       onClick: handleHandUpButtonClick,
-      shortcutKey: ['Control', 'Meta', 'h'],
+      shortcutKey: isMac() ? ['Control', 'Meta', 'h'] : ['Control', 'Alt', 'h'],
     },
   ];
 

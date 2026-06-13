@@ -42,12 +42,13 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     set((prev) => {
       const newChat = [...prev.chat];
       const { userId, ...chatData } = data;
-      if (newChat.length !== 0 && newChat[newChat.length - 1].userId === userId) {
-        newChat[newChat.length - 1].messages.push(chatData);
+      const lastGroup = newChat[newChat.length - 1];
+      if (lastGroup && lastGroup.userId === userId) {
+        newChat[newChat.length - 1] = { ...lastGroup, messages: [...lastGroup.messages, chatData] };
         return { chat: newChat };
       }
 
-      newChat.push({ messages: [chatData], userId: data.userId });
+      newChat.push({ messages: [chatData], userId, userInfo: prev.info.get(userId) });
       return { chat: newChat };
     });
   },
@@ -58,9 +59,8 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     }
 
     const timerId = setTimeout(() => {
+      get().timer.delete(id);
       set((state) => {
-        state.timer.delete(id);
-
         const nextEmoji = new Map(state.emoji);
         nextEmoji.delete(id);
 
@@ -68,8 +68,8 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       });
     }, 8000);
 
+    get().timer.set(id, timerId);
     set((state) => {
-      state.timer.set(id, timerId);
       const nextEmoji = new Map(state.emoji);
       nextEmoji.set(id, value);
 
@@ -89,7 +89,11 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newDevices = new Map(state.devices);
       newDevices.set(userId, mediaOption);
 
-      return { devices: newDevices, info: newInfo, participants: [...state.participants, userId] };
+      const newParticipants = state.participants.includes(userId)
+        ? state.participants
+        : [...state.participants, userId];
+
+      return { devices: newDevices, info: newInfo, participants: newParticipants };
     });
   },
 
@@ -101,20 +105,15 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
     set((state) => {
       if (trackType.includes('screen')) {
-        if (state.screenStream.userId !== userId) {
-          state.screenStream.stream?.getTracks().forEach((t) => {
-            t.stop();
-            state.screenStream.stream?.removeTrack(t);
-          });
+        const isSameSender = state.screenStream.userId === userId;
+        if (!isSameSender) {
+          state.screenStream.stream?.getTracks().forEach((t) => t.stop());
         }
-        const newStream = new MediaStream(state.screenStream.stream?.getTracks() ?? []);
+
+        const baseTracks = isSameSender ? (state.screenStream.stream?.getTracks() ?? []) : [];
+        const newStream = new MediaStream(baseTracks);
         newStream.addTrack(track);
         return { screenStream: { stream: newStream, userId } };
-      }
-
-      const prev = get().videoStreams.get(userId);
-      if (prev) {
-        prev.getTracks().forEach((t) => t.stop());
       }
 
       const newStreams = new Map(state.videoStreams);
@@ -154,7 +153,10 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     }),
   removeTrack: (id: string, trackType: TrackType) =>
     set((prev) => {
-      if (trackType === 'screen') {
+      if (trackType.includes('screen')) {
+        if (prev.screenStream.userId !== id) {
+          return {};
+        }
         prev.screenStream.stream?.getTracks().forEach((t) => t.stop());
         return { screenStream: { stream: null, userId: null } };
       }
@@ -164,16 +166,14 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       }
 
       const prevStreams = new Map(prev.videoStreams);
-      prevStreams
-        .get(id)
-        ?.getTracks()
-        .forEach((t) => t.stop());
       prevStreams.delete(id);
 
       return { videoStreams: prevStreams };
     }),
   reset: () => {
-    get().timer.forEach((t) => t && clearTimeout(t));
+    const { timer } = get();
+    timer.forEach((t) => t && clearTimeout(t));
+    timer.clear();
     set(useParticipantStore.getInitialState());
   },
 

@@ -169,20 +169,26 @@ export const calculatePresentationLayout = (
   };
 };
 
+const measureContext: { current: CanvasRenderingContext2D | null } = { current: null };
+
+const getMeasureContext = () => {
+  measureContext.current ??= document.createElement('canvas').getContext('2d');
+  return measureContext.current;
+};
+
 export const getTruncatedWords = (
   words: string[],
   suffix: string,
   maxWidth: number,
   font: string = "12px 'Google Sans', Roboto, Arial, sans-serif",
 ) => {
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
+  const context = getMeasureContext();
   if (words.length === 0 || !context) {
     return { count: 0, text: '' };
   }
 
   context.font = font;
-  const sufficWidth = context.measureText(suffix).width;
+  const suffixWidth = context.measureText(suffix).width;
 
   const { count, text } = words.reduce(
     (acc, word, i) => {
@@ -190,7 +196,7 @@ export const getTruncatedWords = (
         return acc;
       }
       const nextText = acc.text ? [acc.text, word].join(', ') : word;
-      const isOver = context.measureText(nextText).width + sufficWidth + 10 >= maxWidth;
+      const isOver = context.measureText(nextText).width + suffixWidth + 10 >= maxWidth;
 
       if (isOver) {
         return { count: acc.count, isOver: isOver, text: `${acc.text}${suffix}` };

@@ -29,8 +29,8 @@ export default function OptionButton({ onClickFeedbackButton, onClickSettingButt
     const handleFullscreenChange = () => {
       const isFull = !!(
         document.fullscreenElement ||
-        (document as any).webkitFullscreenElement ||
-        (document as any).mozFullScreenElement
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement
       );
       setIsFullscreen(isFull);
     };

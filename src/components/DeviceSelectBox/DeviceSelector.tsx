@@ -18,7 +18,6 @@ interface DeviceSelectorProps {
   onClose: () => void;
   positionY: 'top' | 'bottom';
   positionX: 'left' | 'right' | 'center';
-  overflow: boolean;
   theme?: 'default' | 'dark';
   volume?: boolean;
   onPlay: (value: boolean) => void;

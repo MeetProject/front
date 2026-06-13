@@ -17,6 +17,12 @@ export default function CaptureButton({ imgSrc, onImageChange, onVisible }: Capt
   const handleCaptureButtonClick = async () => {
     setIsClicked(true);
     onVisible(false);
+
+    const restore = () => {
+      onVisible(true);
+      setIsClicked(false);
+    };
+
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         preferCurrentTab: true,
@@ -27,30 +33,48 @@ export default function CaptureButton({ imgSrc, onImageChange, onVisible }: Capt
 
       const video = document.createElement('video');
       video.srcObject = stream;
-      video.autoplay = true;
+      video.muted = true;
       video.playsInline = true;
 
-      video.onplay = () => {
+      const state = { settled: false };
+      const cleanup = () => {
+        if (state.settled) {
+          return;
+        }
+        state.settled = true;
+        clearTimeout(timeoutId);
+        video.remove();
+        stream.getTracks().forEach((track) => track.stop());
+        restore();
+      };
+
+      const capture = () => {
+        if (state.settled) {
+          return;
+        }
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
 
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (context && canvas.width > 0 && canvas.height > 0) {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          onImageChange(canvas.toDataURL('image/png'));
+        }
 
-        const capturedImage = canvas.toDataURL('image/png');
-        onImageChange(capturedImage);
-
-        video.remove();
         canvas.remove();
-        stream?.getTracks().forEach((track) => track.stop());
+        cleanup();
       };
+
+      const timeoutId = setTimeout(cleanup, 5000);
+
+      video.onloadedmetadata = capture;
+      video.onerror = cleanup;
+      await video.play().catch(cleanup);
     } catch {
       inputRef.current?.click();
-    } finally {
-      onVisible(true);
-      setIsClicked(false);
+      restore();
     }
   };
 

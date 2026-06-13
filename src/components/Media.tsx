@@ -8,9 +8,10 @@ import { canSelectOutputDevice } from '@/util/env';
 interface MediaProps extends MediaHTMLAttributes<HTMLMediaElement> {
   tag: 'video' | 'audio';
   stream?: MediaStream;
+  mirror?: boolean;
 }
 
-const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props }, ref) => {
+const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream, tag, ...props }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -35,7 +36,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
       try {
         await el.setSinkId(audioOutput.deviceId);
         if (!el.paused && !el.ended && el.readyState) {
-          el.play();
+          el.play().catch(() => {});
         }
       } catch {
         const { changeDevice, changeDeviceList, deviceList } = useDeviceStore.getState();
@@ -57,40 +58,48 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
   }, [audioOutput, tag]);
 
   useEffect(() => {
-    if (!stream) {
-      return;
-    }
-
     const el = tag === 'audio' ? audioRef.current : videoRef.current;
     if (!el) {
       return;
     }
+
+    if (!stream) {
+      if (el.srcObject) {
+        el.pause();
+        el.srcObject = null;
+      }
+      return;
+    }
+
+    const retryPlay = () => {
+      if (el.srcObject && el.paused) {
+        el.play().catch(() => {});
+      }
+    };
 
     const updateStreamSrc = () => {
       if (el.srcObject === stream) {
         return;
       }
       el.srcObject = stream;
-      el.play().catch(() => {});
+      el.play().catch(() => {
+        window.addEventListener('pointerdown', retryPlay, { once: true });
+        window.addEventListener('keydown', retryPlay, { once: true });
+      });
     };
 
     updateStreamSrc();
 
-    stream.getTracks().forEach((track) => {
-      track.addEventListener('ended', updateStreamSrc);
-    });
-
     return () => {
-      stream.getTracks().forEach((track) => {
-        track.removeEventListener('ended', updateStreamSrc);
-      });
+      window.removeEventListener('pointerdown', retryPlay);
+      window.removeEventListener('keydown', retryPlay);
     };
   }, [stream, tag]);
 
   if (tag === 'audio') {
     return <audio ref={audioRef} {...props} />;
   }
-  return <video ref={videoRef} style={{ transform: 'scaleX(-1)' }} {...props} />;
+  return <video ref={videoRef} {...props} style={{ ...(mirror && { transform: 'scaleX(-1)' }), ...props.style }} />;
 });
 
 Media.displayName = 'Media';

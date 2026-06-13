@@ -35,8 +35,8 @@ export default function Header() {
     const { permission } = useDeviceStore.getState();
     const values = Object.values(permission);
 
-    const hasGranted = values.some((status) => status === 'prompt');
-    if (hasGranted) {
+    const needsPermission = values.some((status) => status === 'prompt');
+    if (needsPermission) {
       setMenuStatus('permission');
       return;
     }

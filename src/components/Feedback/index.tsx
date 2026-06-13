@@ -8,6 +8,8 @@ import Report from './Report';
 import Suggest from './Suggest';
 
 import Dialog from '@/components/_shared/Dialog';
+import { cn } from '@/lib/cn';
+import { useAlertStore } from '@/store/useAlertStore';
 import { FeedbackCategoryType } from '@/types/components';
 
 interface FeedbackProps {
@@ -20,10 +22,16 @@ export default function Feedback({ isOpen, onClose }: FeedbackProps) {
   const [category, setCategory] = useState<FeedbackCategoryType>(null);
   const [isCompletedForm, setIsCompletedForm] = useState(false);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setCategory(null);
+    setIsCompletedForm(false);
     onClose();
-  };
+  }, [onClose]);
+
+  const handleSubmit = useCallback(() => {
+    useAlertStore.getState().addAlert('피드백이 접수되었습니다. 소중한 의견 감사합니다.');
+    handleClose();
+  }, [handleClose]);
 
   const handleVisible = useCallback((value: boolean) => {
     setIsVisible(value);
@@ -52,11 +60,13 @@ export default function Feedback({ isOpen, onClose }: FeedbackProps) {
         {category && (
           <div className='flex justify-end bg-white p-5 pb-4 shadow-[0_-1px_4px_rgba(48,48,48,0.3)]'>
             <button
-              className={`font-googleSans h-9 rounded px-6 text-sm transition-colors ${
-                isCompletedForm ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-muted'
-              }`}
+              className={cn(
+                'font-googleSans h-9 rounded px-6 text-sm transition-colors',
+                isCompletedForm ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-muted',
+              )}
               disabled={!isCompletedForm}
               type='button'
+              onClick={handleSubmit}
             >
               보내기
             </button>

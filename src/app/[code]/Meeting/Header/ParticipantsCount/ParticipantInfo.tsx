@@ -24,7 +24,7 @@ export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
   const participants = useParticipantStore((state) => state.info);
 
   const { count, text } = getTruncatedWords(
-    [userName ?? '', ...participants.entries().map(([_, { userName: name }]) => name)],
+    [userName ?? '', ...[...participants.values()].map(({ userName: name }) => name)],
     ' 등',
     150,
   );

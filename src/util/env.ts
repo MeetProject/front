@@ -54,11 +54,6 @@ export const isSafari = (): boolean => {
 };
 export const canSelectOutputDevice = (): boolean => canUseSetSinkId() && !isSafari();
 
-export const isScreenShareSupported = () =>
-  typeof navigator !== 'undefined' &&
-  !!navigator.mediaDevices &&
-  typeof navigator.mediaDevices.getDisplayMedia === 'function';
-
 export const isMac = () => {
   if (navigator.userAgentData) {
     return navigator.userAgentData.platform.toLowerCase().includes('mac');

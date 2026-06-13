@@ -8,6 +8,7 @@ export const register = async (payload: UserRegisterPayloadType) => {
       'Content-Type': 'application/json',
     },
     method: 'POST',
+    signal: AbortSignal.timeout(10000),
   });
   if (!response.ok) {
     throw new Error('회원 등록 실패');

@@ -1,9 +1,8 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 
-import ButtonTag from '../ButtonTag';
-
 import CaptureButton from './CaptureButton';
-import StyleLink from './StyleLink';
+import ConsentNotice from './ConsentNotice';
+import SensitiveInfoNotice from './SensitiveInfoNotice';
 
 import * as Icon from '@/asset/svg';
 import { useOutsideClick } from '@/hook';
@@ -29,7 +28,6 @@ export default function Report({ onComplete, onVisible }: ReportProps) {
   const [option, setOption] = useState<null | string>(null);
   const [text, setText] = useState<string>('');
   const [imgSource, setImgSource] = useState<string | null>(null);
-  const [isChecked, setIsChecked] = useState(false);
 
   const handleButtonClick = () => {
     setIsClicked((previous) => !previous);
@@ -51,10 +49,6 @@ export default function Report({ onComplete, onVisible }: ReportProps) {
 
   const handleImageChange = (value: null | string) => {
     setImgSource(value);
-  };
-
-  const handleCheckButtonClick = () => {
-    setIsChecked((previous) => !previous);
   };
 
   useEffect(() => {
@@ -111,48 +105,15 @@ export default function Report({ onComplete, onVisible }: ReportProps) {
         <p className='text-surface-base text-sm'>문제 설명</p>
         <textarea
           className='text-surface-base placeholder:text-surface-base border-outline-dark min-h-30.5 resize-none overflow-hidden rounded border border-solid p-3.75 outline-none'
-          placeholder='어떤 문제가 발생했고 작동자히 않는 기능은 무엇인지 알려주세요.'
+          placeholder='어떤 문제가 발생했고 작동하지 않는 기능은 무엇인지 알려주세요.'
           ref={textareaReference}
           value={text}
           onChange={handleTextChange}
         />
-        <div className='-mt-0.5 flex items-center gap-2'>
-          <p className='text-outline-dark text-xs'>민간함 정보는 포함하지 마세요.</p>
-          <ButtonTag
-            instant={true}
-            name='민감한 정보는 보호되어야 하는 모든 데이터를 의미합니다. 예를 들어 비밀번호, 신용카드 번호, 세부적인 개인 정보를 포함하지 마세요.'
-            style={{
-              height: '64px',
-              left: '-30px',
-              padding: '8px',
-              top: '100%',
-              width: '294px',
-            }}
-          >
-            <Icon.Help className='group fill-outline-dark' height={16} width={16} />
-          </ButtonTag>
-        </div>
+        <SensitiveInfoNotice />
       </div>
       <CaptureButton imgSrc={imgSource} onImageChange={handleImageChange} onVisible={onVisible} />
-      <div className='flex items-center gap-4 px-1.5 pt-2.5'>
-        <button
-          className={`flex size-4.5 items-center justify-center rounded-sm ${isChecked ? 'bg-primary-dark' : 'border-on-surface-dark border-2 border-solid'}`}
-          type='button'
-          onClick={handleCheckButtonClick}
-        >
-          <Icon.Check className='fill-white' height={18} width={18} />
-        </button>
-
-        <p className='text-outline-dark text-sm'>추가 정보와 최신 소식이 담긴 이메일 전송에 동의</p>
-      </div>
-      <div className='mt-2'>
-        <p className='text-outline-dark text-xs'>
-          일부 <StyleLink>계정 및 시스템 정보</StyleLink>가 Google에 전송될 수 있습니다. 이 정보는{' '}
-          <StyleLink>개인정보처리방침</StyleLink> 및 <StyleLink>서비스 약관</StyleLink>에 따라 문제를 해결하고 서비스를
-          개선하는 데 사용됩니다. 이메일로 추가 정보와 소식을 전달해 드릴 수 있습니다. 법적인 이유로 콘텐츠 변경을
-          요청하려면 <StyleLink>법률 정보 고객센터</StyleLink>로 이동하세요.
-        </p>
-      </div>
+      <ConsentNotice />
     </div>
   );
 }

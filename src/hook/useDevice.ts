@@ -30,14 +30,10 @@ const useDevice = () => {
     });
   }, []);
 
-  const syncEnable = useCallback((stream: MediaStream, constranint: Record<DeviceKindType, boolean>) => {
+  const syncEnable = useCallback((stream: MediaStream, constraint: Record<DeviceKindType, boolean>) => {
     const { deviceEnable } = useDeviceStore.getState();
 
-    if (constranint.audio && !deviceEnable.audio) {
-      stream.getAudioTracks().forEach((track) => (track.enabled = false));
-    }
-
-    if (constranint.video && !deviceEnable.video) {
+    if (constraint.video && !deviceEnable.video) {
       stream.getVideoTracks().forEach((track) => {
         track.stop();
         stream.removeTrack(track);
@@ -50,12 +46,12 @@ const useDevice = () => {
     return {
       ...(config.audio && {
         audio: {
-          ...(device.audioInput && { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } }),
+          ...(device.audioInput && { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput.deviceId } }),
           ...AUDIO_PROCESSING,
         },
       }),
       ...(config.video && {
-        video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput } } : true,
+        video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput.deviceId } } : true,
       }),
     } as MediaStreamConstraints;
   }, []);
@@ -86,11 +82,12 @@ const useDevice = () => {
           });
         }
 
+        const { permission } = useDeviceStore.getState();
         useDeviceStore.setState({
           ...deviceInfo,
           permission: {
-            audio: constraint.audio ? 'granted' : 'denied',
-            video: constraint.video ? 'granted' : 'denied',
+            audio: constraint.audio ? 'granted' : permission.audio,
+            video: constraint.video ? 'granted' : permission.video,
           },
           status: 'success',
           stream,
@@ -100,21 +97,30 @@ const useDevice = () => {
       } catch (e) {
         const error = e as DOMException;
         if ((error.name === 'OverconstrainedError' || error.name === 'NotFoundError') && isExact) {
-          return getStream(constraint, false, isLast);
+          return getStream(constraint, false, isLast, isSyncEnable);
         }
 
         if (error.name === 'NotAllowedError' && !isLast) {
+          const { permission: prevPermission } = useDeviceStore.getState();
+          useDeviceStore.setState({
+            permission: {
+              audio: constraint.audio ? 'denied' : prevPermission.audio,
+              video: constraint.video ? 'denied' : prevPermission.video,
+            },
+          });
           throw e;
         }
 
+        const isNotAllowed = error.name === 'NotAllowedError';
+        const { permission } = useDeviceStore.getState();
         useDeviceStore.setState({
           device: { audioInput: null, audioOutput: null, videoInput: null },
           deviceList: { audioInput: [], audioOutput: [], videoInput: [] },
           permission: {
-            audio: constraint.audio && error.name !== 'NotAllowedError' ? 'granted' : 'denied',
-            video: constraint.video && error.name !== 'NotAllowedError' ? 'granted' : 'denied',
+            audio: constraint.audio && isNotAllowed ? 'denied' : permission.audio,
+            video: constraint.video && isNotAllowed ? 'denied' : permission.video,
           },
-          status: error.name === 'NotAllowedError' ? 'rejected' : 'failed',
+          status: isNotAllowed ? 'rejected' : 'failed',
           stream: null,
         });
         return null;
@@ -255,7 +261,7 @@ const useDevice = () => {
     toggleDeviceEnable('video');
 
     if (!prevEnable) {
-      return await replaceNewTrack('video', videoInput?.deviceId ?? '', true);
+      return await replaceNewTrack('video', videoInput?.deviceId ?? null, true);
     }
 
     stream.getVideoTracks().forEach((track) => {

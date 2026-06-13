@@ -28,7 +28,7 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
     }
     setIsPlay(true);
     audioReference.current.currentTime = 0;
-    audioReference.current.play();
+    audioReference.current.play().catch(() => {});
     timerReference.current = setTimeout(() => {
       if (audioReference.current) {
         audioReference.current.pause();
@@ -61,7 +61,7 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
             <DeviceSelectBox type='audioInput' onDisabledClick={onDisabledClick} />
           </div>
           <div className='flex w-full flex-1 items-center justify-center'>
-            {permission?.audio && <Visualizer source={stream} />}
+            {permission.audio === 'granted' && stream && <Visualizer source={stream} />}
           </div>
         </div>
       </div>

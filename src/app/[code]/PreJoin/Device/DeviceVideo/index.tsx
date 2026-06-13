@@ -1,7 +1,7 @@
 'use client';
 
 import DeviceEnableButton from './DeviceEnableButton';
-import Volume from './Volme';
+import Volume from './Volume';
 
 import { Media } from '@/components';
 import { useDeviceStore } from '@/store/useDeviceStore';
@@ -25,7 +25,7 @@ export default function DeviceVideo({ onOpenDialog }: DeviceVideoProps) {
           backgroundImage: 'linear-gradient(to bottom,rgba(0,0,0,0.7) 0,rgba(0,0,0,0.3) 50%,rgba(0,0,0,0) 100%)',
         }}
       />
-      <Media className='size-full object-cover' stream={stream} tag='video' />
+      <Media className='size-full object-cover' mirror={true} stream={stream} tag='video' />
       <div
         className='absolute bottom-0 z-1 h-20 w-full'
         style={{

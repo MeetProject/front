@@ -1,8 +1,9 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ChangeEvent, FormEvent, useState } from 'react';
 
+import { cn } from '@/lib/cn';
 import { validateRoom } from '@/service/room';
 import { register } from '@/service/user';
 import { useAlertStore } from '@/store/useAlertStore';
@@ -14,14 +15,15 @@ const MAX_SIZE = 60;
 
 export default function NameForm() {
   const router = useRouter();
-  const sessionId = usePathname().slice(1);
+  const { code: sessionId } = useParams<{ code: string }>();
 
   const [userName, setUserName] = useState<string>('');
   const [isPending, setIsPending] = useState<boolean>(false);
 
   const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!userName) {
+    const trimmedName = userName.trim();
+    if (!trimmedName) {
       return;
     }
 
@@ -31,21 +33,25 @@ export default function NameForm() {
 
     const payload: UserRegisterPayloadType = {
       userColor,
-      userName,
+      userName: trimmedName,
     };
 
     try {
-      const { userId } = await register(payload);
-      const { value } = await validateRoom(sessionId);
-      const { setUserInfo } = useUserInfoStore.getState();
+      const validation = await validateRoom(sessionId).catch(() => null);
+      if (!validation) {
+        addAlert('방 정보를 확인하지 못했습니다.');
+        return;
+      }
 
-      if (!value) {
+      if (!validation.value) {
         router.push('/');
         addAlert('이미 닫힌 방입니다.');
         return;
       }
 
-      setUserInfo(userId, userName, userColor);
+      const { userId } = await register(payload);
+      const { setUserInfo } = useUserInfoStore.getState();
+      setUserInfo(userId, trimmedName, userColor);
     } catch {
       addAlert('유저 등록에 실패하였습니다.');
     } finally {
@@ -54,7 +60,7 @@ export default function NameForm() {
   };
 
   const handleNameInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setUserName(e.target.value.slice(0, MAX_SIZE));
+    setUserName([...e.target.value].slice(0, MAX_SIZE).join(''));
   };
   return (
     <form className='flex w-full max-w-75 flex-col items-center justify-center' onSubmit={handleFormSubmit}>
@@ -65,11 +71,14 @@ export default function NameForm() {
           value={userName}
           onChange={handleNameInputChange}
         />
-        <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${userName.length} / ${MAX_SIZE}`}</p>
+        <p className='text-outline-dark w-full px-4 pt-1 text-right text-xs'>{`${[...userName].length} / ${MAX_SIZE}`}</p>
       </div>
       <button
-        className={`mt-4 h-14 w-60 rounded-full ${userName.length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled'} text-center`}
-        disabled={userName.length === 0 || isPending}
+        className={cn(
+          'mt-4 h-14 w-60 rounded-full text-center',
+          userName.trim().length ? 'bg-primary-dark text-white' : 'bg-outline-light text-on-surface-disabled',
+        )}
+        disabled={userName.trim().length === 0 || isPending}
         type='submit'
       >
         참여하기

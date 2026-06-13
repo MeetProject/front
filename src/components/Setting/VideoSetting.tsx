@@ -8,12 +8,15 @@ interface VideoSettingProps {
 }
 
 export default function VideoSetting({ onDisabledClick }: VideoSettingProps) {
-  const { permission, stream } = useDeviceStore(
+  const { deviceEnable, permission, stream } = useDeviceStore(
     useShallow((state) => ({
+      deviceEnable: state.deviceEnable,
       permission: state.permission,
       stream: state.stream,
     })),
   );
+
+  const canPreview = permission.video === 'granted' && stream && deviceEnable.video;
 
   return (
     <div className='flex flex-1 flex-col gap-6'>
@@ -25,15 +28,19 @@ export default function VideoSetting({ onDisabledClick }: VideoSettingProps) {
           <div className='flex flex-1 items-center gap-4 max-[640px]:flex-col-reverse'>
             <DeviceSelectBox type='videoInput' onDisabledClick={onDisabledClick} />
             <div className='flex w-fit justify-center overflow-hidden rounded-md bg-gray-700'>
-              {permission?.video === 'granted' && stream && (
+              {canPreview ? (
                 <Media
                   autoPlay={true}
                   className='aspect-video w-40 object-cover max-[640px]:w-full sm:rounded-md'
+                  mirror={true}
                   muted={true}
                   stream={stream}
-                  style={{ transform: 'rotateY(180deg)' }}
                   tag='video'
                 />
+              ) : (
+                <div className='flex aspect-video w-40 items-center justify-center max-[640px]:w-full'>
+                  <p className='text-xs text-white'>카메라 꺼짐</p>
+                </div>
               )}
             </div>
           </div>

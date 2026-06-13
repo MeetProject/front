@@ -2,6 +2,8 @@
 
 import { CSSProperties, ReactNode, useRef, useState } from 'react';
 
+import { cn } from '@/lib/cn';
+
 interface ButtonTagProperties {
   children: ReactNode;
   name: string;
@@ -52,7 +54,12 @@ export default function ButtonTag({
       {children}
       {isDrag && (
         <div
-          className={`absolute z-999999 flex h-6 w-max ${align === 'left' ? 'left-0' : align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'} bg-surface-elevated items-center rounded-md px-2 text-xs text-white ${className}`}
+          className={cn(
+            'absolute z-999999 flex h-6 w-max',
+            align === 'left' ? 'left-0' : align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2',
+            'bg-surface-elevated items-center rounded-md px-2 text-xs text-white',
+            className,
+          )}
           style={{ ...positionStyle, ...style }}
         >
           {name}

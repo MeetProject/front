@@ -2,13 +2,28 @@
 
 import { useEffect, useRef } from 'react';
 
+const MODIFIER_KEYS = ['meta', 'control', 'alt', 'shift'] as const;
+
+const normalizeKey = (key: string) => {
+  const lowerKey = key.toLowerCase();
+  return lowerKey === 'command' || lowerKey === 'cmd' ? 'meta' : lowerKey;
+};
+
+const isEditableTarget = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
 const useShortcutKey = (combination: string[], callback: () => void) => {
   const keyPressed = useRef<Record<string, boolean>>({});
 
+  const comboKey = combination.map(normalizeKey).join('+');
+
   useEffect(() => {
-    if (combination.length === 0) {
+    if (!comboKey) {
       return;
     }
+
+    const requiredKeys = comboKey.split('+');
 
     const handleKeyDown = (e: KeyboardEvent) => {
       keyPressed.current['meta'] = e.metaKey;
@@ -19,14 +34,17 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
       const lowerKey = e.key.toLowerCase();
       keyPressed.current[lowerKey] = true;
 
-      const isTriggerCombi = combination.every((k) => {
-        const lowerCombi = k.toLowerCase();
-        const targetKey = lowerCombi === 'command' || lowerCombi === 'cmd' ? 'meta' : lowerCombi;
+      if (isEditableTarget(e.target)) {
+        return;
+      }
 
-        return keyPressed.current[targetKey] === true;
-      });
+      const isCombiPressed = requiredKeys.every((key) => keyPressed.current[key] === true);
 
-      if (isTriggerCombi) {
+      const hasExtraModifier = MODIFIER_KEYS.some(
+        (modifier) => !requiredKeys.includes(modifier) && keyPressed.current[modifier],
+      );
+
+      if (isCombiPressed && !hasExtraModifier) {
         e.preventDefault();
         callback();
         keyPressed.current[lowerKey] = false;
@@ -54,7 +72,7 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleBlur);
     };
-  }, [callback, combination]);
+  }, [callback, comboKey]);
 };
 
 export default useShortcutKey;

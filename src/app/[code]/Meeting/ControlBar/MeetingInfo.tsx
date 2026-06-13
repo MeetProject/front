@@ -8,7 +8,7 @@ export default function MeetingInfo() {
   const roomId = usePathname().slice(1);
   const time = useCurrentDate();
 
-  const formattedTime = time.toLocaleTimeString('en-US', {
+  const formattedTime = time?.toLocaleTimeString('en-US', {
     hour: 'numeric',
     hour12: true,
     minute: '2-digit',

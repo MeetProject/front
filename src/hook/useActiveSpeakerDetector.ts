@@ -21,6 +21,9 @@ const useActiveSpeakerDetector = (enabled: boolean, maxSpeakers: number) => {
   const stateRef = useRef<SpeakerDetectionState>({ lastActive: new Map(), sustain: new Map() });
   const prevKey = useRef<string>('');
 
+  const maxSpeakersRef = useRef(maxSpeakers);
+  maxSpeakersRef.current = maxSpeakers;
+
   useEffect(() => {
     const { setPromoted } = useActiveSpeakerStore.getState();
     const state = stateRef.current;
@@ -34,7 +37,7 @@ const useActiveSpeakerDetector = (enabled: boolean, maxSpeakers: number) => {
       }
     };
 
-    if (!enabled || maxSpeakers <= 0) {
+    if (!enabled) {
       reset();
       return;
     }
@@ -57,7 +60,7 @@ const useActiveSpeakerDetector = (enabled: boolean, maxSpeakers: number) => {
         volumes.set(userId, avg);
       });
 
-      const promoted = resolveActiveSpeakers(volumes, state, performance.now(), maxSpeakers, CONFIG);
+      const promoted = resolveActiveSpeakers(volumes, state, performance.now(), maxSpeakersRef.current, CONFIG);
 
       const key = promoted.join(',');
       if (key !== prevKey.current) {
@@ -72,7 +75,7 @@ const useActiveSpeakerDetector = (enabled: boolean, maxSpeakers: number) => {
       clearInterval(intervalId);
       reset();
     };
-  }, [enabled, maxSpeakers]);
+  }, [enabled]);
 };
 
 export default useActiveSpeakerDetector;

@@ -42,7 +42,7 @@ const useStagedLayout = () => {
     }
 
     const maxVisible = size - 1;
-    const capacity = maxVisible - (participants.length > maxVisible ? 1 : 0);
+    const capacity = Math.max(0, maxVisible - (participants.length > maxVisible ? 1 : 0));
 
     const ordered = buildDisplayOrder(participants, promoted, capacity);
     const visible = ordered.slice(0, capacity);

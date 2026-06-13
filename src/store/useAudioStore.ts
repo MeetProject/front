@@ -20,6 +20,7 @@ interface AudioState {
   addAudioTrack: (trackInfo: ConsumerResult) => void;
   removeAudioTrack: (id: string) => void;
   resumeAudioContext: () => Promise<void>;
+  reset: () => void;
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
@@ -47,6 +48,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const stream = new MediaStream([track]);
     const source = audioContext.createMediaStreamSource(stream);
     const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
     source.connect(analyser);
 
     const newAudioMap = new Map(get().audio);
@@ -72,6 +74,21 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     newAudioMap.delete(id);
 
     set({ audio: newAudioMap });
+  },
+
+  reset: () => {
+    const { audio, audioContext } = get();
+
+    audio.forEach(({ analyser, source }) => {
+      source.disconnect();
+      analyser.disconnect();
+    });
+
+    if (audioContext && audioContext.state !== 'closed') {
+      audioContext.close().catch(() => {});
+    }
+
+    set({ audio: new Map(), audioContext: null });
   },
 
   resumeAudioContext: async () => {

@@ -5,8 +5,10 @@ import { ChangeEvent, FormEvent, useState } from 'react';
 
 import * as Icon from '@/asset/svg';
 import { Loading } from '@/components';
+import { cn } from '@/lib/cn';
 import { validateRoom } from '@/service/room';
 import { useAlertStore } from '@/store/useAlertStore';
+import { extractRoomCode } from '@/util/text';
 
 export default function ParticipateMeetingForm() {
   const router = useRouter();
@@ -19,21 +21,22 @@ export default function ParticipateMeetingForm() {
 
   const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!roomId) {
+    const code = extractRoomCode(roomId);
+    if (!code) {
       return;
     }
+    const { addAlert } = useAlertStore.getState();
     setIsPending(true);
     try {
-      const { value: isValid } = await validateRoom(roomId);
+      const { value: isValid } = await validateRoom(code);
 
       if (!isValid) {
-        alert('이미 닫힌 회의방입니다.');
-        throw new Error('유효하지 않은 id');
+        addAlert('이미 닫힌 회의방입니다.');
+        return;
       }
-      router.push(`/${roomId}`);
+      router.push(`/${encodeURIComponent(code)}`);
     } catch {
-      const { addAlert } = useAlertStore.getState();
-      addAlert('존재하지 않는 세션입니다.');
+      addAlert('회의 코드를 확인하지 못했습니다. 코드를 다시 확인해주세요.');
     } finally {
       setIsPending(false);
     }
@@ -53,7 +56,11 @@ export default function ParticipateMeetingForm() {
         </div>
 
         <button
-          className={`shrink-0 rounded px-4 py-3 text-[16px] ${roomId ? 'text-primary-main' : 'text-outline-strong'} ${roomId && 'hover:bg-surface-info'}`}
+          className={cn(
+            'shrink-0 rounded px-4 py-3 text-[16px]',
+            roomId ? 'text-primary-main' : 'text-outline-strong',
+            roomId && 'hover:bg-surface-info',
+          )}
           disabled={!roomId}
           type='submit'
         >

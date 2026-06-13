@@ -8,6 +8,7 @@ import DeviceButton from './DeviceButton';
 import * as Icon from '@/asset/svg';
 import { ButtonTag, MediaPermissionDeniedDialog } from '@/components';
 import { useDevice, useOutsideClick } from '@/hook';
+import { useAlertStore } from '@/store/useAlertStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 import { isMac } from '@/util/env';
@@ -24,7 +25,7 @@ interface ButtonType {
 }
 
 const DEVICE_BUTTONS: ButtonType[] = [
-  { shortcutKey: isMac() ? ['Meta', 'd'] : ['Control', 'e'], type: 'audio' },
+  { shortcutKey: isMac() ? ['Meta', 'd'] : ['Control', 'd'], type: 'audio' },
   { shortcutKey: isMac() ? ['Meta', 'e'] : ['Control', 'e'], type: 'video' },
 ];
 
@@ -65,19 +66,23 @@ export default function DeviceButtons({ onSettingButtonClick, onTrackChange, onT
 
       const { deviceEnable, toggleDeviceEnable } = useDeviceStore.getState();
 
-      if (trackType === 'video') {
-        const newVideoTrack = await toggleVideoTrack();
+      try {
+        if (trackType === 'video') {
+          const newVideoTrack = await toggleVideoTrack();
 
-        if (!deviceEnable[trackType]) {
-          await onTrackChange?.(trackType, newVideoTrack);
+          if (!deviceEnable[trackType]) {
+            await onTrackChange?.(trackType, newVideoTrack);
+          }
+
+          await onTrackMute('video', !deviceEnable[trackType]);
+          return;
         }
 
-        await onTrackMute('video', !deviceEnable[trackType]);
-        return;
+        await onTrackMute(trackType, !deviceEnable[trackType]);
+        toggleDeviceEnable(trackType);
+      } catch {
+        useAlertStore.getState().addAlert('장치 상태를 변경하지 못했습니다.');
       }
-
-      await onTrackMute(trackType, !deviceEnable[trackType]);
-      toggleDeviceEnable(trackType);
     },
     [onTrackMute, onTrackChange, toggleVideoTrack],
   );

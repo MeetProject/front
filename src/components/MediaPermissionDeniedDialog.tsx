@@ -27,7 +27,11 @@ export default function MediaPermissionDeniedDialog({ isOpen, onClose, zIndex }:
       return '마이크';
     }
 
-    return '카메라';
+    if (permission.video === 'denied') {
+      return '카메라';
+    }
+
+    return '마이크 및 카메라';
   };
 
   const deniedDevice = getDeniedDeviceName();

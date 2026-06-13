@@ -30,16 +30,26 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
   const isLocallyMuted = useLocalMuteStore((state) => !isMe && state.mutedIds.has(id));
 
   useEffect(() => {
-    if (device.video) {
-      setTimeout(() => setIsReady(true), 200);
-      return;
-    }
-
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
+
+    if (device.video) {
+      timerRef.current = setTimeout(() => setIsReady(true), 200);
+      return;
+    }
+
     setIsReady(false);
   }, [device.video]);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
 
   const handlePlaying = useCallback(() => {
     if (timerRef.current) {
@@ -49,11 +59,12 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
   }, []);
 
   return (
-    <div className='@container-[size] relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
+    <div className='@container-size relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
       <div className='relative size-full max-h-[calc(100cqw*4/3)] max-w-[calc(100cqh*16/9)]'>
         <div className='size-full max-h-full overflow-hidden'>
           <Media
             className='size-full rounded-xl object-cover'
+            mirror={isMe}
             muted={isMe}
             stream={stream ?? undefined}
             tag='video'

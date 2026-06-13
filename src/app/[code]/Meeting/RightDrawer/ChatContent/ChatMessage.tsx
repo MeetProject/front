@@ -13,10 +13,11 @@ interface ChatMessageProps {
 }
 
 export default function ChatMessage({ chat }: ChatMessageProps) {
-  const user = useParticipantStore((state) => state.info.get(chat.userId)) ?? {
-    userColor: '#ccc',
-    userName: 'Unknown',
-  };
+  const user = useParticipantStore((state) => state.info.get(chat.userId)) ??
+    chat.userInfo ?? {
+      userColor: '#ccc',
+      userName: '알 수 없는 사용자',
+    };
   const { id } = useUserInfoStore(
     useShallow((state) => ({
       id: state.userId,
@@ -32,7 +33,7 @@ export default function ChatMessage({ chat }: ChatMessageProps) {
           className='mt-6 flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] text-white'
           style={{ backgroundColor: user.userColor }}
         >
-          {user.userName[0]}
+          {[...user.userName][0] ?? '?'}
         </div>
       )}
 

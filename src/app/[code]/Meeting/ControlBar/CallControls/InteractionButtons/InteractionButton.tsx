@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { ButtonTag } from '@/components';
 import { useShortcutKey } from '@/hook';
@@ -13,12 +13,10 @@ interface InteractionButtonProps {
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
   disabled?: boolean;
   onClick: () => Promise<void> | void;
-  autoDeselectDelay?: number;
   shortcutKey?: string[];
 }
 
 export default function InteractionButton({
-  autoDeselectDelay,
   disabled,
   icon: Icon,
   isActive,
@@ -26,37 +24,21 @@ export default function InteractionButton({
   onClick,
   shortcutKey = [],
 }: InteractionButtonProps) {
-  const isClicekd = useRef(false);
-  const timerRef = useRef<NodeJS.Timeout>(null);
-
-  useShortcutKey(shortcutKey, onClick);
+  const isClicked = useRef(false);
 
   const handleClick = useCallback(async () => {
-    if (isClicekd.current) {
+    if (isClicked.current) {
       return;
     }
-    isClicekd.current = true;
-    await onClick();
-    isClicekd.current = false;
+    isClicked.current = true;
+    try {
+      await onClick();
+    } finally {
+      isClicked.current = false;
+    }
   }, [onClick]);
 
-  useEffect(() => {
-    if (!isActive || !autoDeselectDelay) {
-      return;
-    }
-
-    timerRef.current = setTimeout(() => {
-      if (isActive) {
-        handleClick();
-      }
-    }, autoDeselectDelay);
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [isActive, handleClick, autoDeselectDelay]);
+  useShortcutKey(shortcutKey, handleClick);
 
   const formatedShortcut = shortcutKey.length > 0 ? formatShortcut(shortcutKey) : '';
   return (

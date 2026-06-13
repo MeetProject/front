@@ -10,10 +10,12 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
-import { AppData, ConsumerParamsResponseType, Direction, DtlsReponseType } from '@/types/session';
+import { AppData, ConsumerParamsResponseType, Direction, DtlsResponseType } from '@/types/session';
+
+const isScreenTrack = (trackType: TrackType) => trackType === 'screen' || trackType === 'screenAudio';
 
 export const useMediasoup = (
-  publish: <T>(destination: string, payload?: T | undefined) => void,
+  publish: <T>(destination: string, payload?: T | undefined) => boolean,
   request: <T>(destination: string, payload: any) => Promise<T>,
 ) => {
   const deviceRef = useRef<Device | null>(null);
@@ -28,6 +30,26 @@ export const useMediasoup = (
   const currentScreenSender = useRef<string | null>(null);
 
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
+  const consumedProducers = useRef<Set<string>>(new Set());
+  const pendingProduce = useRef<Map<DeviceKindType, Promise<string>>>(new Map());
+  const recvReady = useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
+  const sendReady = useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
+
+  const getRecvReady = useCallback(() => {
+    if (!recvReady.current) {
+      const { promise, resolve } = Promise.withResolvers<void>();
+      recvReady.current = { promise, resolve };
+    }
+    return recvReady.current;
+  }, []);
+
+  const getSendReady = useCallback(() => {
+    if (!sendReady.current) {
+      const { promise, resolve } = Promise.withResolvers<void>();
+      sendReady.current = { promise, resolve };
+    }
+    return sendReady.current;
+  }, []);
 
   const initDevice = useCallback(async (capabilities: RtpCapabilities) => {
     if (deviceRef.current) {
@@ -51,11 +73,12 @@ export const useMediasoup = (
     const { removeTrack } = useParticipantStore.getState();
     const { removeAudioTrack } = useAudioStore.getState();
 
-    if (trackType === 'screen') {
+    if (isScreenTrack(trackType)) {
       screenConsumers.current.delete(consumer.id);
       if (currentScreenSender.current === userId && screenConsumers.current.size === 0) {
         currentScreenSender.current = null;
       }
+      resumedConsumer.current.delete(consumer.id);
       return;
     }
 
@@ -79,14 +102,38 @@ export const useMediasoup = (
     resumedConsumer.current.delete(consumer.id);
   }, []);
 
+  const removeScreenConsumer = useCallback((senderId?: string) => {
+    screenConsumers.current.forEach((consumer, consumerId) => {
+      const { userId } = consumer.appData as AppData;
+      if (senderId && userId !== senderId) {
+        return;
+      }
+      consumer.close();
+      screenConsumers.current.delete(consumerId);
+    });
+
+    if (!senderId || currentScreenSender.current === senderId) {
+      currentScreenSender.current = null;
+    }
+  }, []);
+
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
       const { userId: id } = useUserInfoStore.getState();
-      const device = deviceRef.current;
 
-      if (!recvTransport.current || !device || targetId === id) {
+      if (targetId === id || consumedProducers.current.has(producerId)) {
         return null;
       }
+
+      if (!recvTransport.current || !deviceRef.current) {
+        await getRecvReady().promise;
+      }
+
+      const device = deviceRef.current;
+      if (!recvTransport.current || !device || consumedProducers.current.has(producerId)) {
+        return null;
+      }
+      consumedProducers.current.add(producerId);
 
       try {
         const { consumerParams } = await request<ConsumerParamsResponseType>('/app/signal/consumerParams', {
@@ -102,34 +149,45 @@ export const useMediasoup = (
         const { trackType, userId } = appData as AppData;
 
         if (trackType !== 'video') {
-          await publish('/app/consumer/resume', {
+          const sent = publish('/app/consumer/resume', {
             consumerId: consumer.id,
           });
-          resumedConsumer.current.set(consumer.id, true);
+          if (sent) {
+            resumedConsumer.current.set(consumer.id, true);
+          }
         }
 
-        if (trackType === 'screen') {
+        if (isScreenTrack(trackType)) {
+          if (currentScreenSender.current && currentScreenSender.current !== userId) {
+            removeScreenConsumer(currentScreenSender.current);
+          }
           currentScreenSender.current = userId;
           screenConsumers.current.set(consumer.id, consumer);
         }
 
-        if (trackType !== 'screen') {
+        if (!isScreenTrack(trackType)) {
           const userConsumers = consumers.current.get(userId) ?? new Map<TrackType, Consumer>();
           userConsumers.set(trackType, consumer);
           consumers.current.set(userId, userConsumers);
         }
 
-        consumer.on('@close', () => handleConsumerClose(consumer, trackType, userId));
+        const handleClose = () => {
+          consumedProducers.current.delete(producerId);
+          handleConsumerClose(consumer, trackType, userId);
+        };
+        consumer.on('@close', handleClose);
+        consumer.on('transportclose', handleClose);
 
         return {
           appData,
           track,
         };
       } catch {
+        consumedProducers.current.delete(producerId);
         return null;
       }
     },
-    [request, publish, handleConsumerClose],
+    [request, publish, handleConsumerClose, removeScreenConsumer, getRecvReady],
   );
 
   const resumeConsumer = useCallback(
@@ -146,10 +204,12 @@ export const useMediasoup = (
         return;
       }
 
-      await publish('/app/consumer/resume', {
+      const sent = publish('/app/consumer/resume', {
         consumerId,
       });
-      resumedConsumer.current.set(consumerId, true);
+      if (sent) {
+        resumedConsumer.current.set(consumerId, true);
+      }
     },
     [publish],
   );
@@ -168,11 +228,12 @@ export const useMediasoup = (
         return;
       }
 
-      await publish('/app/consumer/pause', {
+      const sent = publish('/app/consumer/pause', {
         consumerId,
       });
-
-      resumedConsumer.current.delete(consumerId);
+      if (sent) {
+        resumedConsumer.current.delete(consumerId);
+      }
     },
     [publish],
   );
@@ -184,7 +245,7 @@ export const useMediasoup = (
         return;
       }
 
-      const { options } = await request<DtlsReponseType>('/app/signal/dtls', {
+      const { options } = await request<DtlsResponseType>('/app/signal/dtls', {
         direction,
       });
 
@@ -205,6 +266,7 @@ export const useMediasoup = (
 
       if (direction === 'recv') {
         recvTransport.current = transport;
+        getRecvReady().resolve();
         return;
       }
 
@@ -222,35 +284,51 @@ export const useMediasoup = (
         }
       });
       sendTransport.current = transport;
+      getSendReady().resolve();
     },
-    [request],
+    [request, getRecvReady, getSendReady],
   );
 
-  const produceTrack = useCallback(async (track: MediaStreamTrack, trackType: TrackType) => {
-    const { userId } = useUserInfoStore.getState();
-    if (!sendTransport.current || !userId) {
-      return '';
-    }
-    const producer = await sendTransport.current.produce({
-      appData: { trackType, userId },
-      track,
-    });
+  const produceTrack = useCallback(
+    async (track: MediaStreamTrack, trackType: TrackType) => {
+      const { userId } = useUserInfoStore.getState();
+      if (!userId) {
+        return '';
+      }
 
-    if (trackType === 'screen') {
-      screenProducers.current.set(producer.id, producer);
+      if (!sendTransport.current) {
+        await getSendReady().promise;
+      }
+
+      if (!sendTransport.current) {
+        return '';
+      }
+
+      const producer = await sendTransport.current.produce({
+        appData: { trackType, userId },
+        track,
+      });
+
+      if (isScreenTrack(trackType)) {
+        screenProducers.current.set(producer.id, producer);
+        return producer.id;
+      }
+
+      producers.current.set(trackType, producer);
       return producer.id;
-    }
-
-    producers.current.set(trackType, producer);
-    return producer.id;
-  }, []);
+    },
+    [getSendReady],
+  );
 
   const removeProducer = useCallback((trackType: TrackType) => {
-    if (trackType === 'screen') {
-      const producerIds = Array.from(screenProducers.current.keys());
+    if (isScreenTrack(trackType)) {
+      const removedProducers = Array.from(screenProducers.current.values()).map((producer) => ({
+        id: producer.id,
+        trackType: (producer.appData as AppData).trackType,
+      }));
       screenProducers.current.forEach((p) => p.close());
       screenProducers.current.clear();
-      return producerIds;
+      return removedProducers;
     }
 
     const oldProducer = producers.current.get(trackType);
@@ -262,13 +340,7 @@ export const useMediasoup = (
 
     producers.current.delete(trackType);
 
-    return [oldProducer.id];
-  }, []);
-
-  const removeScreenConsumer = useCallback(() => {
-    screenConsumers.current.forEach((c) => c.close());
-    screenConsumers.current.clear();
-    currentScreenSender.current = null;
+    return [{ id: oldProducer.id, trackType }];
   }, []);
 
   const removeConsumer = useCallback(
@@ -278,13 +350,13 @@ export const useMediasoup = (
         consumers.current.delete(userId);
 
         if (currentScreenSender.current === userId) {
-          removeScreenConsumer();
+          removeScreenConsumer(userId);
         }
         return;
       }
 
-      if (trackType === 'screen') {
-        removeScreenConsumer();
+      if (isScreenTrack(trackType)) {
+        removeScreenConsumer(userId);
         return;
       }
 
@@ -308,23 +380,55 @@ export const useMediasoup = (
     [removeScreenConsumer],
   );
 
-  const replaceProducerTrack = useCallback(async (trackType: DeviceKindType, newTrack: MediaStreamTrack | null) => {
-    const producer = producers.current.get(trackType);
-    if (!producer) {
-      return;
-    }
+  const replaceProducerTrack = useCallback(
+    async (trackType: DeviceKindType, newTrack: MediaStreamTrack | null) => {
+      const pending = pendingProduce.current.get(trackType);
+      if (pending) {
+        await pending.catch(() => {});
+      }
 
-    try {
-      producer.track?.stop();
-      await producer.replaceTrack({ track: newTrack });
-    } catch {}
-  }, []);
+      const producer = producers.current.get(trackType);
+      if (producer?.track === newTrack) {
+        return;
+      }
+
+      if (!producer) {
+        if (!newTrack) {
+          return;
+        }
+
+        const producePromise = produceTrack(newTrack, trackType);
+        pendingProduce.current.set(trackType, producePromise);
+        try {
+          const producerId = await producePromise;
+          const { deviceEnable } = useDeviceStore.getState();
+          if (producerId && !deviceEnable[trackType]) {
+            await request('/app/signal/producer/pause', { producerId });
+          }
+        } finally {
+          pendingProduce.current.delete(trackType);
+        }
+        return;
+      }
+
+      try {
+        producer.track?.stop();
+        await producer.replaceTrack({ track: newTrack });
+      } catch {}
+    },
+    [produceTrack, request],
+  );
 
   const toggleProducerTrack = useCallback(
     async (trackType: DeviceKindType, value?: boolean) => {
+      const pending = pendingProduce.current.get(trackType);
+      if (pending) {
+        await pending.catch(() => {});
+      }
+
       const producer = producers.current.get(trackType);
       if (!producer) {
-        return;
+        throw new Error(`${trackType} producer가 없습니다.`);
       }
 
       const { deviceEnable } = useDeviceStore.getState();
@@ -341,6 +445,21 @@ export const useMediasoup = (
     recvTransport.current?.close();
     sendTransport.current = null;
     recvTransport.current = null;
+
+    producers.current.clear();
+    screenProducers.current.clear();
+    consumers.current.clear();
+    screenConsumers.current.clear();
+    resumedConsumer.current.clear();
+    consumedProducers.current.clear();
+    pendingProduce.current.clear();
+    currentScreenSender.current = null;
+
+    recvReady.current?.resolve();
+    recvReady.current = null;
+
+    sendReady.current?.resolve();
+    sendReady.current = null;
   }, []);
 
   return {

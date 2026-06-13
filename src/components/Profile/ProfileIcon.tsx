@@ -18,7 +18,7 @@ export default function ProfileIcon({ className, color, name }: ProfileIconProps
       )}
       style={{ background: color }}
     >
-      {name.slice(0, 2)}
+      {[...name].slice(0, 2).join('')}
     </div>
   );
 }

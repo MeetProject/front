@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -14,6 +14,7 @@ import Screen from './Screen';
 
 import { Loading } from '@/components';
 import { useDevice, useWebrtc } from '@/hook';
+import { useAlertStore } from '@/store/useAlertStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
@@ -21,12 +22,14 @@ import { TrackType } from '@/types/deviceType';
 import { API_URL } from '@/util/api';
 
 export default function Meeting() {
-  const roomId = usePathname().slice(1);
+  const router = useRouter();
+  const { code: roomId } = useParams<{ code: string }>();
   const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
-  const { isInit, screenStreams } = useDeviceStore(
+  const { isInit, screenStreams, stream } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
       screenStreams: state.screenStream,
+      stream: state.stream,
     })),
   );
 
@@ -56,8 +59,15 @@ export default function Meeting() {
       stopScreenStream();
       return;
     }
-    await initScreenStream(true);
-    await shareScreen();
+
+    try {
+      await initScreenStream(true);
+      await shareScreen();
+    } catch {
+      removeTrack('screen');
+      stopScreenStream();
+      useAlertStore.getState().addAlert('화면 공유에 실패하였습니다.');
+    }
   }, [initScreenStream, shareScreen, removeTrack, stopScreenStream]);
 
   const handleToggleTrack = useCallback(
@@ -78,13 +88,26 @@ export default function Meeting() {
     }
 
     const init = async () => {
-      await initStream();
-      await joinRoom(roomId);
+      await initStream(true);
+      const isJoined = await joinRoom(roomId);
+      if (!isJoined) {
+        router.push('/');
+        return;
+      }
       setIsPending(false);
     };
 
     init();
-  }, [isInit, initStream, joinRoom, roomId]);
+  }, [isInit, initStream, joinRoom, roomId, router]);
+
+  useEffect(() => {
+    if (!stream) {
+      return;
+    }
+
+    replaceTrack('audio', stream.getAudioTracks()[0] ?? null);
+    replaceTrack('video', stream.getVideoTracks()[0] ?? null);
+  }, [stream, replaceTrack]);
 
   useEffect(
     () => () => {
@@ -113,7 +136,7 @@ export default function Meeting() {
     return () => {
       window.removeEventListener('beforeunload', handleForceLeave);
     };
-  }, [leaveRoom, roomId]);
+  }, [roomId]);
 
   useEffect(() => {
     if (!screenStreams) {

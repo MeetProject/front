@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { useMediasoup } from './useMediasoup';
 import { useSignaling } from './useSignaling';
 import { useSignalingHandler } from './useSignalingHandler';
 import { useSignalSender } from './useSignalSender';
 
+import { useAlertStore } from '@/store/useAlertStore';
 import { useAudioStore } from '@/store/useAudioStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
@@ -19,8 +20,6 @@ import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session'
 import { WS_URL } from '@/util/api';
 
 const useWebrtc = () => {
-  const [isPending, setIsPending] = useState<boolean>(false);
-
   const { connect, publish, request, subscribe, unsubscribeAll } = useSignaling(WS_URL);
   const {
     clearDevice,
@@ -40,6 +39,7 @@ const useWebrtc = () => {
   const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave, sendProducerRemove } = useSignalSender(publish);
 
   const currentRoomId = useRef<string | null>(null);
+  const joinPromise = useRef<{ promise: Promise<boolean>; roomId: string } | null>(null);
 
   const toggleParticipantAudio = useCallback(
     (id: string) => {
@@ -58,23 +58,34 @@ const useWebrtc = () => {
 
   const initWebrtc = useCallback(async () => {
     const { capabilities } = await request<CapabilitiesResponseType>('/app/signal/capabilities');
-    await initDevice(capabilities);
+    const device = await initDevice(capabilities);
+
+    if (!device) {
+      throw new Error('mediasoup device 초기화에 실패했습니다.');
+    }
 
     await Promise.all([createTransport('send'), createTransport('recv')]);
+  }, [createTransport, initDevice, request]);
 
-    const { stream } = useDeviceStore.getState();
-    return Promise.all((stream?.getTracks() ?? []).map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')));
-  }, [createTransport, initDevice, produceTrack, request]);
+  const cleanupRoomState = useCallback(() => {
+    unsubscribeAll();
+    disconnectTransport();
+    clearDevice();
+    useParticipantStore.getState().reset();
+    useAudioStore.getState().reset();
+    useInteractionStore.getState().reset();
+    useLocalMuteStore.getState().reset();
+    currentRoomId.current = null;
+  }, [unsubscribeAll, disconnectTransport, clearDevice]);
 
-  const joinRoom = useCallback(
+  const executeJoinRoom = useCallback(
     async (roomId: string) => {
       const { addParticipant, addTrack } = useParticipantStore.getState();
       const { deviceEnable } = useDeviceStore.getState();
       const { client } = useSignalStore.getState();
-      setIsPending(true);
 
       try {
-        if (!client?.active) {
+        if (!client?.connected) {
           await connect();
         }
 
@@ -107,32 +118,47 @@ const useWebrtc = () => {
           addTrack(t);
         });
 
-        useInteractionStore.setState({
-          handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
-        });
+        useInteractionStore.setState((prev) => ({
+          handsUp: new Set([
+            ...prev.handsUp,
+            ...participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId),
+          ]),
+        }));
         currentRoomId.current = roomId;
+        return true;
       } catch {
-        const { reset } = useParticipantStore.getState();
-        unsubscribeAll();
-        disconnectTransport();
-        clearDevice();
-        reset();
-        currentRoomId.current = null;
-      } finally {
-        setIsPending(false);
+        const { isDisconnected } = useSignalStore.getState();
+        cleanupRoomState();
+        if (!isDisconnected) {
+          useAlertStore.getState().addAlert('회의 참여에 실패하였습니다.');
+        }
+        return false;
       }
     },
-    [consumeTrack, initSubscribe, request, connect, initWebrtc, unsubscribeAll, disconnectTransport, clearDevice],
+    [consumeTrack, initSubscribe, request, connect, initWebrtc, cleanupRoomState],
+  );
+
+  const joinRoom = useCallback(
+    (roomId: string) => {
+      if (joinPromise.current?.roomId === roomId) {
+        return joinPromise.current.promise;
+      }
+
+      const promise = executeJoinRoom(roomId).finally(() => {
+        if (joinPromise.current?.roomId === roomId) {
+          joinPromise.current = null;
+        }
+      });
+      joinPromise.current = { promise, roomId };
+      return promise;
+    },
+    [executeJoinRoom],
   );
 
   const leaveRoom = useCallback(() => {
     sendLeave();
-    const { reset } = useParticipantStore.getState();
-    unsubscribeAll();
-    disconnectTransport();
-    clearDevice();
-    reset();
-  }, [unsubscribeAll, disconnectTransport, sendLeave, clearDevice]);
+    cleanupRoomState();
+  }, [sendLeave, cleanupRoomState]);
 
   const shareScreen = useCallback(async () => {
     const { userId } = useUserInfoStore.getState();
@@ -141,10 +167,17 @@ const useWebrtc = () => {
       return;
     }
 
-    await Promise.all(screenStream.getTracks().map(async (track) => await produceTrack(track, 'screen')));
+    await Promise.all(
+      screenStream.getTracks().map((track) => produceTrack(track, track.kind === 'audio' ? 'screenAudio' : 'screen')),
+    );
+
+    const { screenStream: prevScreenStream } = useParticipantStore.getState();
+    if (prevScreenStream.stream && prevScreenStream.userId && prevScreenStream.userId !== userId) {
+      removeConsumer(prevScreenStream.userId, 'screen');
+    }
 
     useParticipantStore.setState({ screenStream: { stream: screenStream, userId } });
-  }, [produceTrack]);
+  }, [produceTrack, removeConsumer]);
 
   const removeTrack = useCallback(
     (trackType: TrackType) => {
@@ -155,13 +188,13 @@ const useWebrtc = () => {
         }
       }
 
-      const produceIds = removeProducer(trackType);
+      const removedProducers = removeProducer(trackType);
 
-      if (!produceIds) {
+      if (!removedProducers) {
         return;
       }
 
-      produceIds.forEach((id) => sendProducerRemove(id, trackType));
+      removedProducers.forEach(({ id, trackType: removedTrackType }) => sendProducerRemove(id, removedTrackType));
     },
     [removeProducer, sendProducerRemove],
   );
@@ -171,19 +204,17 @@ const useWebrtc = () => {
       const { deviceEnable } = useDeviceStore.getState();
 
       const updatedOption = { ...deviceEnable, [trackType]: value !== undefined ? value : !deviceEnable[trackType] };
-      sendDeviceEnable(updatedOption);
       await toggleProducerTrack(trackType, value);
+      sendDeviceEnable(updatedOption);
     },
     [sendDeviceEnable, toggleProducerTrack],
   );
 
   return {
-    isPending,
     joinRoom,
     leaveRoom,
     pauseTrack: pauseConsumer,
     removeTrack,
-    replaceProducerTrack,
     replaceTrack: replaceProducerTrack,
     resumeTrack: resumeConsumer,
     sendChat,
