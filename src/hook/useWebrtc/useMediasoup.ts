@@ -36,11 +36,8 @@ export const useMediasoup = (
 
   const getRecvReady = useCallback(() => {
     if (!recvReady.current) {
-      let resolveFn: () => void = () => {};
-      const promise = new Promise<void>((resolve) => {
-        resolveFn = resolve;
-      });
-      recvReady.current = { promise, resolve: resolveFn };
+      const { promise, resolve } = Promise.withResolvers<void>();
+      recvReady.current = { promise, resolve };
     }
     return recvReady.current;
   }, []);

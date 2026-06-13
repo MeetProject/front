@@ -169,11 +169,11 @@ export const calculatePresentationLayout = (
   };
 };
 
-let measureContext: CanvasRenderingContext2D | null = null;
+const measureContext: { current: CanvasRenderingContext2D | null } = { current: null };
 
 const getMeasureContext = () => {
-  measureContext ??= document.createElement('canvas').getContext('2d');
-  return measureContext;
+  measureContext.current ??= document.createElement('canvas').getContext('2d');
+  return measureContext.current;
 };
 
 export const getTruncatedWords = (

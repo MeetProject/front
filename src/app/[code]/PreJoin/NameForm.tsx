@@ -37,15 +37,13 @@ export default function NameForm() {
     };
 
     try {
-      let isValidRoom = false;
-      try {
-        ({ value: isValidRoom } = await validateRoom(sessionId));
-      } catch {
+      const validation = await validateRoom(sessionId).catch(() => null);
+      if (!validation) {
         addAlert('방 정보를 확인하지 못했습니다.');
         return;
       }
 
-      if (!isValidRoom) {
+      if (!validation.value) {
         router.push('/');
         addAlert('이미 닫힌 방입니다.');
         return;

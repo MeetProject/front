@@ -9,16 +9,22 @@ import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 const STOMP_TIMEOUT = 10000;
 
+const parseMessage = <T = unknown>(body: string): T | undefined => {
+  try {
+    return JSON.parse(body) as T;
+  } catch {
+    return;
+  }
+};
+
 export const useSignaling = (url: string) => {
   const connectPromise = useRef<Promise<Client> | null>(null);
 
   const handleReply = useCallback((message: IMessage) => {
     const { pendingRequest } = useSignalStore.getState();
 
-    let parsed;
-    try {
-      parsed = JSON.parse(message.body);
-    } catch {
+    const parsed = parseMessage<any>(message.body);
+    if (!parsed) {
       return;
     }
     const { correlationId, ...data } = parsed;
@@ -149,10 +155,8 @@ export const useSignaling = (url: string) => {
     subscription.get(destination)?.unsubscribe();
 
     const sub = client.subscribe(destination, async (message: Message) => {
-      let data: T;
-      try {
-        data = JSON.parse(message.body) as T;
-      } catch {
+      const data = parseMessage<T>(message.body);
+      if (data === undefined) {
         return;
       }
       await callback(data);
