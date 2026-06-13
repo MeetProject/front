@@ -8,6 +8,8 @@ interface OverflowTileProps {
 }
 
 export default function OverflowTile({ count, user }: OverflowTileProps) {
+  const remainingCount = count - user.length;
+
   return (
     <div className='@container-size flex size-full min-h-0 min-w-0 items-center justify-center'>
       <div className='bg-state-layer flex size-full max-h-[calc(100cqw*4/3)] max-w-[calc(100cqh*16/9)] flex-col items-center justify-center rounded-xl'>
@@ -20,7 +22,9 @@ export default function OverflowTile({ count, user }: OverflowTileProps) {
             />
           ))}
         </div>
-        {count > 0 && <div className='mt-3 text-center text-xs text-white'>{`다른 참여자 ${count}명`}</div>}
+        {remainingCount > 0 && (
+          <div className='mt-3 text-center text-xs text-white'>{`다른 참여자 ${remainingCount}명`}</div>
+        )}
       </div>
     </div>
   );
