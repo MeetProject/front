@@ -126,9 +126,12 @@ const useWebrtc = () => {
           addTrack(t);
         });
 
-        useInteractionStore.setState({
-          handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
-        });
+        useInteractionStore.setState((prev) => ({
+          handsUp: new Set([
+            ...prev.handsUp,
+            ...participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId),
+          ]),
+        }));
         currentRoomId.current = roomId;
         return true;
       } catch {
