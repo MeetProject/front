@@ -16,12 +16,14 @@ const isEditableTarget = (target: EventTarget | null) =>
 const useShortcutKey = (combination: string[], callback: () => void) => {
   const keyPressed = useRef<Record<string, boolean>>({});
 
+  const comboKey = combination.map(normalizeKey).join('+');
+
   useEffect(() => {
-    if (combination.length === 0) {
+    if (!comboKey) {
       return;
     }
 
-    const requiredKeys = combination.map(normalizeKey);
+    const requiredKeys = comboKey.split('+');
 
     const handleKeyDown = (e: KeyboardEvent) => {
       keyPressed.current['meta'] = e.metaKey;
@@ -38,7 +40,6 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
 
       const isCombiPressed = requiredKeys.every((key) => keyPressed.current[key] === true);
 
-      // 조합에 없는 modifier가 함께 눌린 경우(예: Ctrl+D 단축키에 Ctrl+Shift+D 입력)는 발동하지 않는다
       const hasExtraModifier = MODIFIER_KEYS.some(
         (modifier) => !requiredKeys.includes(modifier) && keyPressed.current[modifier],
       );
@@ -71,7 +72,7 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleBlur);
     };
-  }, [callback, combination]);
+  }, [callback, comboKey]);
 };
 
 export default useShortcutKey;
