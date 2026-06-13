@@ -9,6 +9,10 @@ const normalizeKey = (key: string) => {
   return lowerKey === 'command' || lowerKey === 'cmd' ? 'meta' : lowerKey;
 };
 
+const isEditableTarget = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
 const useShortcutKey = (combination: string[], callback: () => void) => {
   const keyPressed = useRef<Record<string, boolean>>({});
 
@@ -27,6 +31,10 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
 
       const lowerKey = e.key.toLowerCase();
       keyPressed.current[lowerKey] = true;
+
+      if (isEditableTarget(e.target)) {
+        return;
+      }
 
       const isCombiPressed = requiredKeys.every((key) => keyPressed.current[key] === true);
 
