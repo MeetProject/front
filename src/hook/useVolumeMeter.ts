@@ -15,7 +15,6 @@ const useVolumeMeter = <T extends HTMLElement>(analyser: AnalyserNode | null, ma
       return;
     }
 
-    analyser.fftSize = 256;
     const data = new Uint8Array(analyser.frequencyBinCount);
     const state = { last: 0, prev: 0, raf: 0 };
 

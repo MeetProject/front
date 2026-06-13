@@ -48,6 +48,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const stream = new MediaStream([track]);
     const source = audioContext.createMediaStreamSource(stream);
     const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
     source.connect(analyser);
 
     const newAudioMap = new Map(get().audio);
