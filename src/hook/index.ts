@@ -1,6 +1,7 @@
 export { default as useActiveSpeakerDetector } from './useActiveSpeakerDetector';
 export { default as useCurrentDate } from './useCurrentDate';
 export { default as useDevice } from './useDevice';
+export { default as useDrawerHover } from './useDrawerHover';
 export { default as useOutsideClick } from './useOutsideClick';
 export { default as useParticipantAnalyser } from './useParticipantAnalyser';
 export { default as useResizeObserver } from './useResizeObserver';
