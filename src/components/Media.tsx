@@ -90,16 +90,9 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream
 
     updateStreamSrc();
 
-    stream.getTracks().forEach((track) => {
-      track.addEventListener('ended', updateStreamSrc);
-    });
-
     return () => {
       window.removeEventListener('pointerdown', retryPlay);
       window.removeEventListener('keydown', retryPlay);
-      stream.getTracks().forEach((track) => {
-        track.removeEventListener('ended', updateStreamSrc);
-      });
     };
   }, [stream, tag]);
 
