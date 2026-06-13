@@ -33,7 +33,7 @@ export default function ChatMessage({ chat }: ChatMessageProps) {
           className='mt-6 flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] text-white'
           style={{ backgroundColor: user.userColor }}
         >
-          {user.userName[0] ?? '?'}
+          {[...user.userName][0] ?? '?'}
         </div>
       )}
 
