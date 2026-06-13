@@ -66,20 +66,16 @@ const useWebrtc = () => {
 
     await Promise.all([createTransport('send'), createTransport('recv')]);
 
-    const { deviceEnable, stream } = useDeviceStore.getState();
+    const { stream } = useDeviceStore.getState();
+    // replaceProducerTrack은 pendingProduce에 등록해 진행 중 produce를 추적하므로,
+    // 스트림 교체 effect와 동시에 실행돼도 같은 트랙이 중복 produce되지 않는다
+    // (꺼 둔 장치의 producer pause 처리도 내부에서 수행)
     return Promise.all(
-      (stream?.getTracks() ?? []).map(async (track) => {
-        const trackType = track.kind === 'audio' ? 'audio' : 'video';
-        const producerId = await produceTrack(track, trackType);
-
-        // 꺼 둔 상태로 입장한 장치가 송출되지 않도록 producer를 pause한다 (트랙은 음소거 중 발화 감지를 위해 유지)
-        if (producerId && !deviceEnable[trackType]) {
-          await request('/app/signal/producer/pause', { producerId });
-        }
-        return producerId;
-      }),
+      (stream?.getTracks() ?? []).map((track) =>
+        replaceProducerTrack(track.kind === 'audio' ? 'audio' : 'video', track),
+      ),
     );
-  }, [createTransport, initDevice, produceTrack, request]);
+  }, [createTransport, initDevice, replaceProducerTrack, request]);
 
   const cleanupRoomState = useCallback(() => {
     unsubscribeAll();
