@@ -32,6 +32,18 @@ export const useMediasoup = (
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
   const consumedProducers = useRef<Set<string>>(new Set());
   const pendingProduce = useRef<Map<DeviceKindType, Promise<string>>>(new Map());
+  const recvReady = useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
+
+  const getRecvReady = useCallback(() => {
+    if (!recvReady.current) {
+      let resolveFn: () => void = () => {};
+      const promise = new Promise<void>((resolve) => {
+        resolveFn = resolve;
+      });
+      recvReady.current = { promise, resolve: resolveFn };
+    }
+    return recvReady.current;
+  }, []);
 
   const initDevice = useCallback(async (capabilities: RtpCapabilities) => {
     if (deviceRef.current) {
@@ -102,9 +114,17 @@ export const useMediasoup = (
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
       const { userId: id } = useUserInfoStore.getState();
-      const device = deviceRef.current;
 
-      if (!recvTransport.current || !device || targetId === id || consumedProducers.current.has(producerId)) {
+      if (targetId === id || consumedProducers.current.has(producerId)) {
+        return null;
+      }
+
+      if (!recvTransport.current || !deviceRef.current) {
+        await getRecvReady().promise;
+      }
+
+      const device = deviceRef.current;
+      if (!recvTransport.current || !device || consumedProducers.current.has(producerId)) {
         return null;
       }
       consumedProducers.current.add(producerId);
@@ -161,7 +181,7 @@ export const useMediasoup = (
         return null;
       }
     },
-    [request, publish, handleConsumerClose, removeScreenConsumer],
+    [request, publish, handleConsumerClose, removeScreenConsumer, getRecvReady],
   );
 
   const resumeConsumer = useCallback(
@@ -240,6 +260,7 @@ export const useMediasoup = (
 
       if (direction === 'recv') {
         recvTransport.current = transport;
+        getRecvReady().resolve();
         return;
       }
 
@@ -258,7 +279,7 @@ export const useMediasoup = (
       });
       sendTransport.current = transport;
     },
-    [request],
+    [request, getRecvReady],
   );
 
   const produceTrack = useCallback(async (track: MediaStreamTrack, trackType: TrackType) => {
@@ -414,6 +435,9 @@ export const useMediasoup = (
     consumedProducers.current.clear();
     pendingProduce.current.clear();
     currentScreenSender.current = null;
+
+    recvReady.current?.resolve();
+    recvReady.current = null;
   }, []);
 
   return {
