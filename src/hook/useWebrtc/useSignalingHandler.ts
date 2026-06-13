@@ -149,7 +149,10 @@ export const useSignalingHandler = (
 
   const handleLeave = useCallback(
     async ({ userId }: LeaveResponseType) => {
-      const { removeParticipant } = useParticipantStore.getState();
+      const { removeParticipant, removeTrack, screenStream } = useParticipantStore.getState();
+      if (screenStream.userId === userId) {
+        removeTrack(userId, 'screen');
+      }
       removeParticipant(userId);
       removeConsumer(userId);
 
