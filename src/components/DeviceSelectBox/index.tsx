@@ -17,7 +17,6 @@ interface DeviceSelectBoxProps {
   className?: string;
   selectorPositionY?: 'top' | 'bottom';
   selectorPositionX?: 'center' | 'left' | 'right';
-  overflow?: boolean;
   theme?: 'default' | 'dark';
   volume?: boolean;
   onTrackChange?: (track: MediaStreamTrack | null) => Promise<void> | void;
@@ -33,7 +32,6 @@ export default function DeviceSelectBox({
   className,
   onDisabledClick,
   onTrackChange,
-  overflow = false,
   selectorPositionX = 'right',
   selectorPositionY = 'bottom',
   theme = 'default',
@@ -112,7 +110,6 @@ export default function DeviceSelectBox({
       {isClicked && device[type] && (
         <DeviceSelector
           currentValue={device[type]}
-          overflow={overflow}
           positionX={selectorPositionX}
           positionY={selectorPositionY}
           theme={theme}
