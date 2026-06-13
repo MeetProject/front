@@ -33,6 +33,7 @@ export const useMediasoup = (
   const consumedProducers = useRef<Set<string>>(new Set());
   const pendingProduce = useRef<Map<DeviceKindType, Promise<string>>>(new Map());
   const recvReady = useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
+  const sendReady = useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
 
   const getRecvReady = useCallback(() => {
     if (!recvReady.current) {
@@ -40,6 +41,14 @@ export const useMediasoup = (
       recvReady.current = { promise, resolve };
     }
     return recvReady.current;
+  }, []);
+
+  const getSendReady = useCallback(() => {
+    if (!sendReady.current) {
+      const { promise, resolve } = Promise.withResolvers<void>();
+      sendReady.current = { promise, resolve };
+    }
+    return sendReady.current;
   }, []);
 
   const initDevice = useCallback(async (capabilities: RtpCapabilities) => {
@@ -275,28 +284,41 @@ export const useMediasoup = (
         }
       });
       sendTransport.current = transport;
+      getSendReady().resolve();
     },
-    [request, getRecvReady],
+    [request, getRecvReady, getSendReady],
   );
 
-  const produceTrack = useCallback(async (track: MediaStreamTrack, trackType: TrackType) => {
-    const { userId } = useUserInfoStore.getState();
-    if (!sendTransport.current || !userId) {
-      return '';
-    }
-    const producer = await sendTransport.current.produce({
-      appData: { trackType, userId },
-      track,
-    });
+  const produceTrack = useCallback(
+    async (track: MediaStreamTrack, trackType: TrackType) => {
+      const { userId } = useUserInfoStore.getState();
+      if (!userId) {
+        return '';
+      }
 
-    if (isScreenTrack(trackType)) {
-      screenProducers.current.set(producer.id, producer);
+      if (!sendTransport.current) {
+        await getSendReady().promise;
+      }
+
+      if (!sendTransport.current) {
+        return '';
+      }
+
+      const producer = await sendTransport.current.produce({
+        appData: { trackType, userId },
+        track,
+      });
+
+      if (isScreenTrack(trackType)) {
+        screenProducers.current.set(producer.id, producer);
+        return producer.id;
+      }
+
+      producers.current.set(trackType, producer);
       return producer.id;
-    }
-
-    producers.current.set(trackType, producer);
-    return producer.id;
-  }, []);
+    },
+    [getSendReady],
+  );
 
   const removeProducer = useCallback((trackType: TrackType) => {
     if (isScreenTrack(trackType)) {
@@ -435,6 +457,9 @@ export const useMediasoup = (
 
     recvReady.current?.resolve();
     recvReady.current = null;
+
+    sendReady.current?.resolve();
+    sendReady.current = null;
   }, []);
 
   return {

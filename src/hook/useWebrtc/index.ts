@@ -65,15 +65,7 @@ const useWebrtc = () => {
     }
 
     await Promise.all([createTransport('send'), createTransport('recv')]);
-
-    const { stream } = useDeviceStore.getState();
-
-    return Promise.all(
-      (stream?.getTracks() ?? []).map((track) =>
-        replaceProducerTrack(track.kind === 'audio' ? 'audio' : 'video', track),
-      ),
-    );
-  }, [createTransport, initDevice, replaceProducerTrack, request]);
+  }, [createTransport, initDevice, request]);
 
   const cleanupRoomState = useCallback(() => {
     unsubscribeAll();
