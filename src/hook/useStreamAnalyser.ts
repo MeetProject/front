@@ -15,6 +15,7 @@ const useStreamAnalyser = (stream: MediaStream | null) => {
 
     const created = createStreamAnalyser(stream);
     if (!created) {
+      setAnalyser(null);
       return;
     }
 

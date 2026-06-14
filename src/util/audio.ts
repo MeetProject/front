@@ -22,6 +22,10 @@ interface StreamAnalyser {
 }
 
 export const createStreamAnalyser = (stream: MediaStream, fftSize = 256): StreamAnalyser | null => {
+  if (stream.getAudioTracks().length === 0) {
+    return null;
+  }
+
   const audioContext = createAudioContext();
   if (!audioContext) {
     return null;
