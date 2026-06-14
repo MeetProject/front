@@ -56,6 +56,13 @@ export default function SpeakerTestButton({ color, onPlay }: SpeakerTestButtonPr
     onPlay(false);
   }, [audioOutputId, onPlay]);
 
+  useEffect(
+    () => () => {
+      onPlay(false);
+    },
+    [onPlay],
+  );
+
   return (
     <button
       className={cn(
