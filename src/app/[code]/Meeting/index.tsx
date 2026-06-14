@@ -17,6 +17,7 @@ import { useDevice, useWebrtc } from '@/hook';
 import { useAlertStore } from '@/store/useAlertStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
+import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
 import { API_URL } from '@/util/api';
@@ -57,6 +58,13 @@ export default function Meeting() {
     if (screenStream) {
       removeTrack('screen');
       stopScreenStream();
+      return;
+    }
+
+    const { screenStream: remoteScreenStream } = useParticipantStore.getState();
+    const { userId } = useUserInfoStore.getState();
+    if (remoteScreenStream.stream && remoteScreenStream.userId !== userId) {
+      useAlertStore.getState().addAlert('다른 참여자가 화면을 공유하고 있습니다.');
       return;
     }
 

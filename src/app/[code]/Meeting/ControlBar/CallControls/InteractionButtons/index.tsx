@@ -10,6 +10,7 @@ import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useInteractionStore } from '@/store/useInteractionStore';
+import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { isMac } from '@/util/env';
 
@@ -29,6 +30,8 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
 
   const handsUp = useInteractionStore((state) => state.handsUp.has(userId ?? ''));
   const isScreenSharing = useDeviceStore((state) => !!state.screenStream);
+  const screenSharerId = useParticipantStore((state) => state.screenStream.userId);
+  const isOthersSharing = !!screenSharerId && screenSharerId !== userId;
 
   const [isOpenOption, setIsOpenOption] = useState<boolean>(false);
 
@@ -69,9 +72,10 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
 
   const BUTTON = [
     {
+      disabled: isOthersSharing,
       icon: Icon.ScreenShare,
       isActive: isScreenSharing,
-      name: isScreenSharing ? '화면 공유 중지' : '화면 공유',
+      name: isOthersSharing ? '다른 참여자가 공유 중' : isScreenSharing ? '화면 공유 중지' : '화면 공유',
       onClick: handleScreenShareButtonClick,
     },
     { icon: Icon.Emoji, isActive: emoji, name: '반응 보내기', onClick: handleEmojiButtonClick },
