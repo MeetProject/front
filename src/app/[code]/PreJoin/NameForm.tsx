@@ -66,6 +66,7 @@ export default function NameForm() {
     <form className='flex w-full max-w-75 flex-col items-center justify-center' onSubmit={handleFormSubmit}>
       <div className='font-googleSans w-full pt-5 pb-1.25'>
         <input
+          aria-label='이름'
           className='border-surface-base h-14 w-full rounded border border-solid px-4 text-base outline-none'
           placeholder='이름'
           value={userName}

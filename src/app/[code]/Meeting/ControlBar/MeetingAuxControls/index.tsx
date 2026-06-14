@@ -19,6 +19,8 @@ export default function MeetingAuxControls() {
   return (
     <div className='relative flex items-center justify-self-end' ref={targetRef}>
       <button
+        aria-expanded={isOpen}
+        aria-label={isOpen ? '회의 컨트롤 닫기' : '회의 컨트롤 더보기'}
         className='hover:bg-action-hover hidden size-12 items-center justify-center rounded-full max-[905px]:flex'
         type='button'
         onClick={() => setIsOpen(!isOpen)}

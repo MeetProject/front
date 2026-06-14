@@ -1,6 +1,6 @@
 'use client';
 
-import { CSSProperties, ReactNode, useRef, useState } from 'react';
+import { cloneElement, CSSProperties, isValidElement, ReactElement, ReactNode, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
 
@@ -30,6 +30,11 @@ export default function ButtonTag({
 
   const positionStyle = position === 'top' ? { top: `calc(-50% - ${gap}px)` } : { bottom: `calc(-50% - ${gap}px)` };
 
+  const labelledChild =
+    isValidElement(children) && (children.props as { 'aria-label'?: string })['aria-label'] === undefined
+      ? cloneElement(children as ReactElement<{ 'aria-label'?: string }>, { 'aria-label': name })
+      : children;
+
   const handleButtonMouseEnter = () => {
     if (instant) {
       setIsDrag(true);
@@ -51,7 +56,7 @@ export default function ButtonTag({
 
   return (
     <div className='relative' onMouseEnter={handleButtonMouseEnter} onMouseLeave={handleButtonMouseLeave}>
-      {children}
+      {labelledChild}
       {isDrag && (
         <div
           className={cn(

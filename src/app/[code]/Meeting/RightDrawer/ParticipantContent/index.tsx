@@ -36,6 +36,7 @@ export default function ParticipantContent() {
     <div>
       <div className='relative mb-3.75'>
         <input
+          aria-label='사용자 검색'
           className='border-outline-light text-on-surface-bright placeholder-on-surface-bright focus:border-primary-container h-12 w-full rounded-lg border px-13 pr-4 outline-2 outline-none focus:border-3'
           placeholder='사용자 검색'
           value={keyword}

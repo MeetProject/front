@@ -48,6 +48,7 @@ export default function ParticipateMeetingForm() {
       <div className='flex flex-1 items-center'>
         <div className='shrink overflow-hidden'>
           <input
+            aria-label='회의 코드 또는 링크'
             className='border-on-surface-muted text-surface-elevated outline-primary-main w-full max-w-61.5 shrink rounded border border-solid py-2.75 pr-4 pl-12 text-[16px]'
             placeholder='코드 또는 링크 입력'
             value={roomId}

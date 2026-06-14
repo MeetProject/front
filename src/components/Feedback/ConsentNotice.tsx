@@ -18,10 +18,13 @@ export default function ConsentNotice() {
     <>
       <div className='flex items-center gap-4 px-1.5 pt-2.5'>
         <button
+          aria-checked={isChecked}
+          aria-label='추가 정보와 최신 소식이 담긴 이메일 전송에 동의'
           className={cn(
             'flex size-4.5 items-center justify-center rounded-sm',
             isChecked ? 'bg-primary-dark' : 'border-on-surface-dark border-2 border-solid',
           )}
+          role='checkbox'
           type='button'
           onClick={handleCheckButtonClick}
         >

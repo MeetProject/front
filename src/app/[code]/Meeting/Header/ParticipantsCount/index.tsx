@@ -15,6 +15,7 @@ export default function ParticipantCount() {
   return (
     <div className='relative' onMouseEnter={handleHoverOn} onMouseLeave={handleHoverOff}>
       <button
+        aria-label={`참여자 ${count}명 보기`}
         className='bg-surface-base hover:bg-state-layer flex h-9 items-center gap-2 rounded-full pr-3 pl-0.5 transition-colors'
         type='button'
         onClick={() => handleDrawerOpen()}

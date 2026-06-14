@@ -47,6 +47,8 @@ export default function DeviceEnableButton({ onClickDeniedButton, type }: Device
       {permission[type] !== 'prompt' && (
         <div className='relative flex items-center'>
           <button
+            aria-label={`${type === 'audio' ? '마이크' : '카메라'} ${deviceEnable[type] ? '끄기' : '켜기'}`}
+            aria-pressed={deviceEnable[type]}
             className={cn(
               'relative flex items-center justify-center border border-solid shadow-sm',
               !deviceEnable[type] && permission[type] === 'granted'
