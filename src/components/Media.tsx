@@ -81,6 +81,17 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ mirror = false, stream
       if (el.srcObject === stream) {
         return;
       }
+
+      if (tag === 'video') {
+        const current = el.srcObject as MediaStream | null;
+        const currentTrack = current?.getVideoTracks()[0] ?? null;
+        if (current && currentTrack && currentTrack === stream.getVideoTracks()[0]) {
+          current.getAudioTracks().forEach((track) => current.removeTrack(track));
+          stream.getAudioTracks().forEach((track) => current.addTrack(track));
+          return;
+        }
+      }
+
       el.srcObject = stream;
       el.play().catch(() => {
         window.addEventListener('pointerdown', retryPlay, { once: true });
