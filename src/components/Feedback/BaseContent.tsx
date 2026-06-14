@@ -32,7 +32,7 @@ export default function BaseContent({ onClick }: BaseContentProps) {
     <div className='font-googleSans size-full overflow-auto bg-white'>
       <div className='pt-4'>
         <div className='mb-5 flex justify-center'>
-          <Image alt='header' height={160} src={image.feedbackHeader} width={240} />
+          <Image alt='header' height={160} src={image.feedbackHeader} style={{ height: 'auto' }} width={240} />
         </div>
         {BUTTON.map((item) => (
           <button
