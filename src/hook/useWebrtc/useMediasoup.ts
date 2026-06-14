@@ -32,6 +32,7 @@ export const useMediasoup = (
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
   const consumedProducers = useRef<Set<string>>(new Set());
   const pendingProduce = useRef<Map<DeviceKindType, Promise<string>>>(new Map());
+  const replaceChain = useRef<Map<DeviceKindType, Promise<void>>>(new Map());
   const recvReady = useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
   const sendReady = useRef<{ promise: Promise<void>; resolve: () => void } | null>(null);
 
@@ -382,39 +383,53 @@ export const useMediasoup = (
 
   const replaceProducerTrack = useCallback(
     async (trackType: DeviceKindType, newTrack: MediaStreamTrack | null) => {
-      const pending = pendingProduce.current.get(trackType);
-      if (pending) {
-        await pending.catch(() => {});
-      }
+      const run = async () => {
+        const pending = pendingProduce.current.get(trackType);
+        if (pending) {
+          await pending.catch(() => {});
+        }
 
-      const producer = producers.current.get(trackType);
-      if (producer?.track === newTrack) {
-        return;
-      }
-
-      if (!producer) {
-        if (!newTrack) {
+        const producer = producers.current.get(trackType);
+        if (producer?.track === newTrack) {
           return;
         }
 
-        const producePromise = produceTrack(newTrack, trackType);
-        pendingProduce.current.set(trackType, producePromise);
-        try {
-          const producerId = await producePromise;
-          const { deviceEnable } = useDeviceStore.getState();
-          if (producerId && !deviceEnable[trackType]) {
-            await request('/app/signal/producer/pause', { producerId });
+        if (!producer) {
+          if (!newTrack) {
+            return;
           }
-        } finally {
-          pendingProduce.current.delete(trackType);
-        }
-        return;
-      }
 
-      try {
-        producer.track?.stop();
-        await producer.replaceTrack({ track: newTrack });
-      } catch {}
+          const producePromise = produceTrack(newTrack, trackType);
+          pendingProduce.current.set(trackType, producePromise);
+          try {
+            const producerId = await producePromise;
+            const { deviceEnable } = useDeviceStore.getState();
+            if (producerId && !deviceEnable[trackType]) {
+              producers.current.get(trackType)?.pause();
+              await request('/app/signal/producer/pause', { producerId });
+            }
+          } finally {
+            pendingProduce.current.delete(trackType);
+          }
+          return;
+        }
+
+        try {
+          const oldTrack = producer.track;
+          await producer.replaceTrack({ track: newTrack });
+          if (oldTrack && oldTrack !== newTrack) {
+            oldTrack.stop();
+          }
+        } catch {}
+      };
+
+      const prev = replaceChain.current.get(trackType) ?? Promise.resolve();
+      const task = prev.then(run, run);
+      replaceChain.current.set(
+        trackType,
+        task.catch(() => {}),
+      );
+      await task;
     },
     [produceTrack, request],
   );
@@ -436,6 +451,12 @@ export const useMediasoup = (
       const endPoint = shouldResume ? '/app/signal/producer/resume' : '/app/signal/producer/pause';
 
       await request(endPoint, { producerId: producer.id });
+
+      if (shouldResume) {
+        producer.resume();
+      } else {
+        producer.pause();
+      }
     },
     [request],
   );
@@ -453,6 +474,7 @@ export const useMediasoup = (
     resumedConsumer.current.clear();
     consumedProducers.current.clear();
     pendingProduce.current.clear();
+    replaceChain.current.clear();
     currentScreenSender.current = null;
 
     recvReady.current?.resolve();
