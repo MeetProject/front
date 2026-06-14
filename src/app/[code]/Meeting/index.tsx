@@ -113,8 +113,8 @@ export default function Meeting() {
       return;
     }
 
-    replaceTrack('audio', stream.getAudioTracks()[0] ?? null);
-    replaceTrack('video', stream.getVideoTracks()[0] ?? null);
+    replaceTrack('audio', stream.getAudioTracks()[0] ?? null).catch(() => {});
+    replaceTrack('video', stream.getVideoTracks()[0] ?? null).catch(() => {});
   }, [stream, replaceTrack]);
 
   useEffect(

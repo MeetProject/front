@@ -293,7 +293,7 @@ export const useMediasoup = (
   const produceTrack = useCallback(
     async (track: MediaStreamTrack, trackType: TrackType) => {
       const { userId } = useUserInfoStore.getState();
-      if (!userId) {
+      if (!userId || track.readyState === 'ended') {
         return '';
       }
 
@@ -305,18 +305,22 @@ export const useMediasoup = (
         return '';
       }
 
-      const producer = await sendTransport.current.produce({
-        appData: { trackType, userId },
-        track,
-      });
+      try {
+        const producer = await sendTransport.current.produce({
+          appData: { trackType, userId },
+          track,
+        });
 
-      if (isScreenTrack(trackType)) {
-        screenProducers.current.set(producer.id, producer);
+        if (isScreenTrack(trackType)) {
+          screenProducers.current.set(producer.id, producer);
+          return producer.id;
+        }
+
+        producers.current.set(trackType, producer);
         return producer.id;
+      } catch {
+        return '';
       }
-
-      producers.current.set(trackType, producer);
-      return producer.id;
     },
     [getSendReady],
   );
