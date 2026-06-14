@@ -39,6 +39,7 @@ export default function Report({ onComplete, onVisible }: ReportProps) {
 
   const handleOptionButtonClick = (value: string) => {
     setOption(value);
+    setIsClicked(false);
     onComplete(text.length > 2);
   };
 
