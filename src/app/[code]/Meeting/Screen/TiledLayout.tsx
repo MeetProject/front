@@ -21,7 +21,7 @@ export default function TiledLayout({ updateTrackStatus }: TiledLayoutProps) {
 
   const { containerRef } = useResizeObserver<HTMLDivElement>(handleResize);
 
-  const lastRowItemCount = gridData?.lastRowItemCount || 1;
+  const lastRowItemCount = gridData.lastRowItemCount || 1;
 
   const lastRowWrapperStyle = {
     display: 'grid',
@@ -39,28 +39,28 @@ export default function TiledLayout({ updateTrackStatus }: TiledLayoutProps) {
         }}
       >
         <UserTile />
-        {gridData?.standardParticipants.map((id) => (
+        {gridData.standardParticipants.map((id) => (
           <ParticipantTile id={id} key={id} updateTrackStatus={updateTrackStatus} />
         ))}
 
-        {gridData?.hasOverflowInMainGrid && (
-          <OverflowTile count={gridData?.overflowCount} user={gridData?.overflowUsers} />
+        {gridData.hasOverflowInMainGrid && (
+          <OverflowTile count={gridData.overflowCount} user={gridData.overflowUsers} />
         )}
 
-        {gridData?.lastRowItemCount > 0 && (
+        {gridData.lastRowItemCount > 0 && (
           <div
             className={cn(
               'col-span-full flex h-full w-full items-center justify-center gap-3',
-              gridData?.isOverflow && size === 1 && 'flex-col',
+              gridData.isOverflow && size === 1 && 'flex-col',
             )}
           >
             <div className='h-full gap-3' style={lastRowWrapperStyle}>
-              {gridData?.lastRowParticipants.map((id) => (
+              {gridData.lastRowParticipants.map((id) => (
                 <ParticipantTile id={id} key={id} updateTrackStatus={updateTrackStatus} />
               ))}
 
-              {gridData?.isOverflow && !gridData.hasOverflowInMainGrid && (
-                <OverflowTile count={gridData?.overflowCount} user={gridData?.overflowUsers} />
+              {gridData.isOverflow && !gridData.hasOverflowInMainGrid && (
+                <OverflowTile count={gridData.overflowCount} user={gridData.overflowUsers} />
               )}
             </div>
           </div>

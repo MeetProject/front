@@ -30,7 +30,7 @@ export default function ParticipantInfo({ onClick }: ParticipantInfoProps) {
   );
 
   return (
-    <div className='animate-move-up absolute right-0 bottom-0 z-9999 translate-y-full group-hover:inline-block'>
+    <div className='animate-move-up absolute right-0 bottom-0 z-9999 translate-y-full'>
       <div className='bg-on-surface-light mt-2.5 flex w-79.5 flex-col items-center rounded-xl px-4 py-5 transition-all duration-200'>
         <header className='w-full'>
           <h2 className='text-on-surface-bright text-left'>사용자</h2>

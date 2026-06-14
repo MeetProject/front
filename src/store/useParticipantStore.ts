@@ -180,21 +180,16 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
   screenStream: { stream: null, userId: null },
   timer: new Map(),
 
-  toggleDevices: (id, value) => {
-    if (!get().devices.has(id)) {
-      return;
-    }
-
+  toggleDevices: (id, value) =>
     set((prev) => {
-      const newDevices = new Map(prev.devices);
-      const prevData = prev.devices.get(id);
-      if (!prevData) {
+      if (!prev.devices.has(id)) {
         return {};
       }
+
+      const newDevices = new Map(prev.devices);
       newDevices.set(id, value);
       return { devices: newDevices };
-    });
-  },
+    }),
 
   videoStreams: new Map(),
 }));
