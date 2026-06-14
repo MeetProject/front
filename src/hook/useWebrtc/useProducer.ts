@@ -102,7 +102,6 @@ export const useProducer = (core: Core, request: <T>(destination: string, payloa
           const producerId = await produceTrack(newTrack, trackType);
           const { deviceEnable } = useDeviceStore.getState();
           if (producerId && !deviceEnable[trackType]) {
-            producers.current.get(trackType)?.pause();
             await request('/app/signal/producer/pause', { producerId });
           }
           return;
@@ -132,12 +131,6 @@ export const useProducer = (core: Core, request: <T>(destination: string, payloa
         const endPoint = shouldResume ? '/app/signal/producer/resume' : '/app/signal/producer/pause';
 
         await request(endPoint, { producerId: producer.id });
-
-        if (shouldResume) {
-          producer.resume();
-        } else {
-          producer.pause();
-        }
       }),
     [enqueue, request],
   );
