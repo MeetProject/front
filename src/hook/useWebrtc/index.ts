@@ -104,6 +104,7 @@ const useWebrtc = () => {
       const { addParticipant, addTrack } = useParticipantStore.getState();
       const { deviceEnable } = useDeviceStore.getState();
       const { client } = useSignalStore.getState();
+      const { userId: selfId } = useUserInfoStore.getState();
 
       try {
         if (!client?.active) {
@@ -117,14 +118,13 @@ const useWebrtc = () => {
           roomId,
         });
 
-        participants.forEach((participant) => addParticipant(participant));
+        const others = participants.filter((participant) => participant.user.userId !== selfId);
+        others.forEach((participant) => addParticipant(participant));
 
         await initWebrtc();
 
         const results = await Promise.allSettled(
-          participants.flatMap(({ producerIds, user: { userId } }) =>
-            producerIds.map((id) => consumeTrack(userId, id)),
-          ),
+          others.flatMap(({ producerIds, user: { userId } }) => producerIds.map((id) => consumeTrack(userId, id))),
         );
         const { addAudioTrack } = useAudioStore.getState();
         const tracksInfo = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
