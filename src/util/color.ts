@@ -11,13 +11,9 @@ export const getHue = (r: number, g: number, b: number) => {
     return 0;
   }
 
-  const segment = {
-    [b]: (r - g) / d + 4,
-    [g]: (b - r) / d + 2,
-    [r]: (g - b) / d + (g < b ? 6 : 0),
-  };
+  const hue = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
 
-  return Math.round(segment[max] * 60);
+  return Math.round(hue * 60);
 };
 
 export const getSaturation = (r: number, g: number, b: number) => {
