@@ -150,7 +150,20 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
         prev.timer.delete(id);
       }
 
-      return { devices: newDevices, emoji: newEmoji, info: newInfo, participants: newIds, videoStreams: newStreams };
+      const isScreenOwner = prev.screenStream.userId === id;
+      if (isScreenOwner) {
+        prev.screenStream.stream?.getTracks().forEach((t) => t.stop());
+      }
+      const screenStream = isScreenOwner ? { stream: null, userId: null } : prev.screenStream;
+
+      return {
+        devices: newDevices,
+        emoji: newEmoji,
+        info: newInfo,
+        participants: newIds,
+        screenStream,
+        videoStreams: newStreams,
+      };
     }),
   removeTrack: (id: string, trackType: TrackType) =>
     set((prev) => {
