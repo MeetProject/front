@@ -20,6 +20,7 @@ interface AudioState {
   audioContext: AudioContext | null;
   addAudioTrack: (trackInfo: ConsumerResult) => void;
   removeAudioTrack: (id: string) => void;
+  reset: () => void;
   resumeAudioContext: () => Promise<void>;
 }
 
@@ -76,6 +77,14 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     newAudioMap.delete(id);
 
     set({ audio: newAudioMap });
+  },
+
+  reset: () => {
+    get().audio.forEach(({ analyser, source }) => {
+      source.disconnect();
+      analyser.disconnect();
+    });
+    set({ audio: new Map() });
   },
 
   resumeAudioContext: async () => {

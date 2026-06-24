@@ -157,6 +157,7 @@ const useWebrtc = () => {
         disconnectTransport();
         clearDevice();
         reset();
+        useAudioStore.getState().reset();
         currentRoomId.current = null;
       }
     },
@@ -226,10 +227,9 @@ const useWebrtc = () => {
 
         const { userId: selfId } = useUserInfoStore.getState();
         const { addParticipant, reset } = useParticipantStore.getState();
-        const { audio, removeAudioTrack } = useAudioStore.getState();
 
         disconnectTransport();
-        [...audio.keys()].forEach((id) => removeAudioTrack(id));
+        useAudioStore.getState().reset();
         reset();
 
         initSubscribe(roomId);
@@ -263,6 +263,7 @@ const useWebrtc = () => {
     disconnectTransport();
     clearDevice();
     reset();
+    useAudioStore.getState().reset();
   }, [unsubscribeAll, disconnectTransport, sendLeave, clearDevice]);
 
   const shareScreen = useCallback(async () => {
