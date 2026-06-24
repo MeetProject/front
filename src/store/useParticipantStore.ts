@@ -72,7 +72,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
     } = trackInfo;
 
     set((state) => {
-      if (trackType.includes('screen')) {
+      if (trackType === 'screen') {
         const newStream = mergeScreenTrack(state.screenStream.stream, state.screenStream.userId, userId, track);
         return { screenStream: { stream: newStream, userId } };
       }
