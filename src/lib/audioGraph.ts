@@ -32,6 +32,7 @@ export const attachAudio = (userId: string, track: MediaStreamTrack): AttachedAu
   const stream = new MediaStream([track]);
   const source = audioContext.createMediaStreamSource(stream);
   const analyser = audioContext.createAnalyser();
+  analyser.fftSize = 256;
   source.connect(analyser);
 
   nodes.set(userId, { analyser, source });

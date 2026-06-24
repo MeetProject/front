@@ -15,8 +15,16 @@ export default function VisualizerContent({ analyser, className, color }: Visual
   const containerRef = useVolumeMeter<HTMLDivElement>(analyser, mapBarHeight);
 
   const barColor = color ? { backgroundColor: color } : {};
-  const sideBar: CSSProperties = { height: 'calc(4px + var(--meter, 0) * 0.5px)', ...barColor };
-  const centerBar: CSSProperties = { height: 'calc(4px + var(--meter, 0) * 1px)', ...barColor };
+  const sideBar: CSSProperties = {
+    height: '10px',
+    transform: 'scaleY(calc((4 + var(--meter, 0) * 0.5) / 10))',
+    ...barColor,
+  };
+  const centerBar: CSSProperties = {
+    height: '16px',
+    transform: 'scaleY(calc((4 + var(--meter, 0)) / 16))',
+    ...barColor,
+  };
 
   return (
     <div
