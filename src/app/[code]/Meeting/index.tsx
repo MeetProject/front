@@ -27,10 +27,10 @@ export default function Meeting() {
   const roomId = usePathname().slice(1);
   const isReconnecting = useSignalStore((state) => state.status === 'reconnecting');
   const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
-  const { isInit, screenStreams } = useDeviceStore(
+  const { isInit, screenStream } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
-      screenStreams: state.screenStream,
+      screenStream: state.screenStream,
     })),
   );
 
@@ -53,9 +53,9 @@ export default function Meeting() {
   const audioControl = useMemo(() => ({ toggleMute: toggleParticipantAudio }), [toggleParticipantAudio]);
 
   const handleScreenShare = useCallback(async () => {
-    const { screenStream } = useDeviceStore.getState();
+    const { screenStream: currentScreenStream } = useDeviceStore.getState();
 
-    if (screenStream) {
+    if (currentScreenStream) {
       removeTrack('screen');
       stopScreenStream();
       return;
@@ -127,11 +127,11 @@ export default function Meeting() {
   }, [leaveRoom, roomId]);
 
   useEffect(() => {
-    if (!screenStreams) {
+    if (!screenStream) {
       return;
     }
 
-    const videoTrack = screenStreams.getVideoTracks()[0];
+    const videoTrack = screenStream.getVideoTracks()[0];
     if (!videoTrack) {
       return;
     }
@@ -144,7 +144,7 @@ export default function Meeting() {
     return () => {
       videoTrack.onended = null;
     };
-  }, [screenStreams, removeTrack, stopScreenStream]);
+  }, [screenStream, removeTrack, stopScreenStream]);
 
   if (isPending) {
     return <Loading isPending={isPending} />;
