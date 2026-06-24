@@ -10,6 +10,7 @@ interface ConsumerResult {
 
 interface AudioEntry {
   stream: MediaStream;
+  analysisStream: MediaStream;
   source: MediaStreamAudioSourceNode;
   analyser: AnalyserNode;
 }
@@ -42,15 +43,17 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     if (previous) {
       previous.source.disconnect();
       previous.analyser.disconnect();
+      previous.analysisStream.getTracks().forEach((t) => t.stop());
     }
 
     const stream = new MediaStream([track]);
-    const source = audioContext.createMediaStreamSource(stream);
+    const analysisStream = new MediaStream([track.clone()]);
+    const source = audioContext.createMediaStreamSource(analysisStream);
     const analyser = audioContext.createAnalyser();
     source.connect(analyser);
 
     const newAudioMap = new Map(get().audio);
-    newAudioMap.set(userId, { analyser, source, stream });
+    newAudioMap.set(userId, { analyser, analysisStream, source, stream });
 
     set({ audio: newAudioMap, audioContext });
   },
@@ -63,10 +66,11 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       return;
     }
 
-    const { analyser, source } = entry;
+    const { analyser, analysisStream, source } = entry;
 
     source.disconnect();
     analyser.disconnect();
+    analysisStream.getTracks().forEach((t) => t.stop());
 
     const newAudioMap = new Map(get().audio);
     newAudioMap.delete(id);
