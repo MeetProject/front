@@ -148,9 +148,11 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newEmoji = new Map(prev.emoji);
       newEmoji.delete(id);
 
-      if (prev.timer.has(id)) {
-        clearTimeout(prev.timer.get(id) as NodeJS.Timeout);
-        prev.timer.delete(id);
+      const newTimer = new Map(prev.timer);
+      const existingTimer = newTimer.get(id);
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+        newTimer.delete(id);
       }
 
       const isScreenOwner = prev.screenStream.userId === id;
@@ -165,6 +167,7 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
         info: newInfo,
         participants: newIds,
         screenStream,
+        timer: newTimer,
         videoStreams: newStreams,
       };
     }),
