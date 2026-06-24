@@ -31,7 +31,6 @@ export default function VideoSetting({ onDisabledClick }: VideoSettingProps) {
                   className='aspect-video w-40 object-cover max-[640px]:w-full sm:rounded-md'
                   muted={true}
                   stream={stream}
-                  style={{ transform: 'rotateY(180deg)' }}
                   tag='video'
                 />
               )}
