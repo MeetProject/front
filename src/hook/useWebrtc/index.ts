@@ -132,8 +132,6 @@ const useWebrtc = () => {
           addTrack(t);
         });
 
-        // 비디오는 consumeTrack에서 resume되지 않으므로, 로딩을 끝내기 전에 직접 resume하고
-        // 프레임이 도착할 때까지 기다려 초기 검은 화면 깜빡임을 방지한다.
         const videoTracks = tracksInfo.filter((t) => t !== null && t.appData.trackType === 'video');
         await Promise.all(
           videoTracks.map(async (t) => {
