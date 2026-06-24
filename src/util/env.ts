@@ -1,5 +1,21 @@
 'use client';
 
+import { DeviceKindType } from '@/types/deviceType';
+
+export const queryDevicePermission = async (type: DeviceKindType): Promise<PermissionState | null> => {
+  if (typeof navigator === 'undefined' || !navigator.permissions?.query) {
+    return null;
+  }
+
+  try {
+    const name: PermissionName = type === 'audio' ? 'microphone' : 'camera';
+    const status = await navigator.permissions.query({ name });
+    return status.state;
+  } catch {
+    return null;
+  }
+};
+
 export const isChromium = () => {
   if (navigator.userAgentData) {
     return navigator.userAgentData.brands.some((data) => data.brand === 'Chromium');
