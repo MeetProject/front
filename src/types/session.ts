@@ -41,6 +41,11 @@ export interface JoinRoomResponseType {
   participants: ParticipantDataType[];
 }
 
+export interface ResyncResponseType {
+  participants: ParticipantDataType[];
+  rejoinRequired: boolean;
+}
+
 export interface ParticipantResponseType {
   participant: ParticipantDataType;
 }

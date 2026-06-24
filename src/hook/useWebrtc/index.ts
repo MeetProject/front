@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useMediasoup } from './useMediasoup';
@@ -7,6 +8,7 @@ import { useSignaling } from './useSignaling';
 import { useSignalingHandler } from './useSignalingHandler';
 import { useSignalSender } from './useSignalSender';
 
+import { useAlertStore } from '@/store/useAlertStore';
 import { useAudioStore } from '@/store/useAudioStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
@@ -15,7 +17,12 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
-import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session';
+import {
+  CapabilitiesResponseType,
+  JoinRoomResponseType,
+  ParticipantDataType,
+  ResyncResponseType,
+} from '@/types/session';
 import { WS_URL } from '@/util/api';
 
 const VIDEO_READY_TIMEOUT = 3000;
@@ -46,7 +53,9 @@ const waitForTrackUnmute = (track: MediaStreamTrack, timeout: number): Promise<v
 const useWebrtc = () => {
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const { connect, publish, request, subscribe, unsubscribeAll } = useSignaling(WS_URL);
+  const router = useRouter();
+
+  const { connect, disconnect, publish, request, subscribe, unsubscribeAll } = useSignaling(WS_URL);
   const {
     clearDevice,
     consumeTrack,
@@ -65,6 +74,7 @@ const useWebrtc = () => {
   const { sendChat, sendDeviceEnable, sendEmoji, sendHandUp, sendLeave, sendProducerRemove } = useSignalSender(publish);
 
   const currentRoomId = useRef<string | null>(null);
+  const isReattaching = useRef<boolean>(false);
 
   const toggleParticipantAudio = useCallback(
     (id: string) => {
@@ -168,6 +178,89 @@ const useWebrtc = () => {
     ],
   );
 
+  const consumeParticipants = useCallback(
+    async (participants: ParticipantDataType[]) => {
+      const { userId: selfId } = useUserInfoStore.getState();
+      const { addTrack } = useParticipantStore.getState();
+      const { addAudioTrack } = useAudioStore.getState();
+
+      const results = await Promise.allSettled(
+        participants
+          .filter((participant) => participant.user.userId !== selfId)
+          .flatMap(({ producerIds, user: { userId } }) => producerIds.map((id) => consumeTrack(userId, id))),
+      );
+
+      results
+        .filter((result) => result.status === 'fulfilled')
+        .map((result) => result.value)
+        .forEach((trackInfo) => {
+          if (!trackInfo) {
+            return;
+          }
+          if (trackInfo.appData.trackType === 'audio') {
+            addAudioTrack(trackInfo);
+            return;
+          }
+          addTrack(trackInfo);
+        });
+    },
+    [consumeTrack],
+  );
+
+  const handleSessionLost = useCallback(() => {
+    disconnect();
+    useUserInfoStore.setState({ userId: null });
+    useAlertStore.getState().addAlert('연결이 끊어져 회의에서 나갔습니다. 다시 입장해 주세요.');
+    router.push('/landing');
+  }, [disconnect, router]);
+
+  const reattach = useCallback(
+    async (roomId: string) => {
+      if (isReattaching.current) {
+        return;
+      }
+      isReattaching.current = true;
+
+      try {
+        const { participants, rejoinRequired } = await request<ResyncResponseType>('/app/signal/resync', { roomId });
+
+        if (rejoinRequired) {
+          handleSessionLost();
+          return;
+        }
+
+        const { userId: selfId } = useUserInfoStore.getState();
+        const { addParticipant, reset } = useParticipantStore.getState();
+        const { audio, removeAudioTrack } = useAudioStore.getState();
+
+        disconnectTransport();
+        [...audio.keys()].forEach((id) => removeAudioTrack(id));
+        reset();
+
+        initSubscribe(roomId);
+        participants
+          .filter((participant) => participant.user.userId !== selfId)
+          .forEach((participant) => addParticipant(participant));
+
+        await initWebrtc();
+        await consumeParticipants(participants);
+
+        useInteractionStore.setState({
+          handsUp: new Set(
+            participants.filter((participant) => participant.isHandUp).map((participant) => participant.user.userId),
+          ),
+        });
+
+        currentRoomId.current = roomId;
+      } catch {
+        handleSessionLost();
+      } finally {
+        isReattaching.current = false;
+      }
+    },
+    [request, initSubscribe, disconnectTransport, initWebrtc, consumeParticipants, handleSessionLost],
+  );
+
   const leaveRoom = useCallback(() => {
     sendLeave();
     const { reset } = useParticipantStore.getState();
@@ -226,11 +319,11 @@ const useWebrtc = () => {
     return useSignalStore.subscribe((state) => {
       const { status } = state;
       if (prevStatus.current === 'reconnecting' && status === 'connected' && currentRoomId.current) {
-        initSubscribe(currentRoomId.current);
+        reattach(currentRoomId.current);
       }
       prevStatus.current = status;
     });
-  }, [initSubscribe]);
+  }, [reattach]);
 
   return {
     isPending,

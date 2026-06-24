@@ -16,12 +16,14 @@ import { Loading } from '@/components';
 import { useDevice, useWebrtc } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
+import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
 import { API_URL } from '@/util/api';
 
 export default function Meeting() {
   const roomId = usePathname().slice(1);
+  const isReconnecting = useSignalStore((state) => state.status === 'reconnecting');
   const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
   const { isInit, screenStreams } = useDeviceStore(
     useShallow((state) => ({
@@ -142,6 +144,11 @@ export default function Meeting() {
   return (
     <ParticipantAudioControlProvider value={audioControl}>
       <div className='bg-surface-deep relative flex h-svh w-svw flex-col overflow-hidden select-none'>
+        {isReconnecting && (
+          <div className='absolute top-3 left-1/2 z-50 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-sm text-white'>
+            재연결 중…
+          </div>
+        )}
         <Header />
         <div className='flex flex-1 flex-col'>
           <div className='relative flex flex-1 flex-col'>
