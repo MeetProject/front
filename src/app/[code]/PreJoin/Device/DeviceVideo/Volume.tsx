@@ -2,7 +2,7 @@
 
 import { useShallow } from 'zustand/shallow';
 
-import { Visualizer } from '@/components';
+import { LocalVisualizer } from '@/components';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 export default function Volume() {
@@ -17,7 +17,7 @@ export default function Volume() {
     <>
       {deviceEnable.audio && permission.audio === 'granted' && stream && (
         <div className='absolute bottom-4 left-4 z-3'>
-          <Visualizer source={stream} />
+          <LocalVisualizer />
         </div>
       )}
     </>

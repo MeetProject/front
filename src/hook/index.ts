@@ -3,7 +3,6 @@ export { default as useCurrentDate } from './useCurrentDate';
 export { default as useDevice } from './useDevice';
 export { default as useLocalAnalyser } from './useLocalAnalyser';
 export { default as useOutsideClick } from './useOutsideClick';
-export { default as useParticipantAnalyser } from './useParticipantAnalyser';
 export { default as useResizeObserver } from './useResizeObserver';
 export { default as useShortcutKey } from './useShortcutKey';
 export { default as useSpeakingWhileMuted } from './useSpeakingWhileMuted';

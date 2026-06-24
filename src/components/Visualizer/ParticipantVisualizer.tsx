@@ -1,6 +1,8 @@
+'use client';
+
 import VisualizerContent from './VisualizerContent';
 
-import { useParticipantAnalyser } from '@/hook';
+import { useAudioStore } from '@/store/useAudioStore';
 
 interface ParticipantVisualizerProps {
   source: string;
@@ -9,7 +11,7 @@ interface ParticipantVisualizerProps {
 }
 
 export default function ParticipantVisualizer({ className, color, source }: ParticipantVisualizerProps) {
-  const analyser = useParticipantAnalyser(source);
+  const analyser = useAudioStore((state) => state.audio.get(source)?.analyser ?? null);
 
   return <VisualizerContent analyser={analyser} className={className} color={color} />;
 }

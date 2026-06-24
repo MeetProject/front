@@ -4,7 +4,7 @@ import { MouseEvent, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import * as Icon from '@/asset/svg';
-import { ButtonTag, Visualizer } from '@/components';
+import { ButtonTag, LocalVisualizer } from '@/components';
 import { useShortcutKey, useSpeakingWhileMuted } from '@/hook';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
@@ -33,11 +33,10 @@ export default function DeviceButton({
   shortcutKey,
   type,
 }: DeviceButtonProps) {
-  const { deviceEnable, permission, stream } = useDeviceStore(
+  const { deviceEnable, permission } = useDeviceStore(
     useShallow((state) => ({
       deviceEnable: state.deviceEnable,
       permission: state.permission,
-      stream: state.stream,
     })),
   );
 
@@ -90,7 +89,7 @@ export default function DeviceButton({
           >
             <div className='flex size-12 items-center justify-center'>
               {type === 'audio' && enableMute && deviceEnable.audio && (
-                <Visualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' source={stream} />
+                <LocalVisualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' />
               )}
               <Icon.Chevron
                 className={cn(

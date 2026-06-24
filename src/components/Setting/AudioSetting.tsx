@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
-import { DeviceSelectBox, Media, Visualizer } from '@/components';
+import { DeviceSelectBox, LocalVisualizer, Media } from '@/components';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 interface AudioSettingProps {
@@ -14,11 +14,10 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
   const isFirstReference = useRef(true);
   const [isPlay, setIsPlay] = useState(false);
 
-  const { audioOutputId, permission, stream } = useDeviceStore(
+  const { audioOutputId, permission } = useDeviceStore(
     useShallow((state) => ({
       audioOutputId: state.device.audioOutput?.deviceId,
       permission: state.permission,
-      stream: state.stream,
     })),
   );
 
@@ -61,7 +60,7 @@ export default function AudioSetting({ onDisabledClick }: AudioSettingProps) {
             <DeviceSelectBox type='audioInput' onDisabledClick={onDisabledClick} />
           </div>
           <div className='flex w-full flex-1 items-center justify-center'>
-            {permission?.audio === 'granted' && <Visualizer source={stream} />}
+            {permission?.audio === 'granted' && <LocalVisualizer />}
           </div>
         </div>
       </div>
