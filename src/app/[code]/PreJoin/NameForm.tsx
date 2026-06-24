@@ -35,15 +35,16 @@ export default function NameForm() {
     };
 
     try {
-      const { userId } = await register(payload);
       const { value } = await validateRoom(sessionId);
-      const { setUserInfo } = useUserInfoStore.getState();
 
       if (!value) {
         router.push('/');
         addAlert('이미 닫힌 방입니다.');
         return;
       }
+
+      const { userId } = await register(payload);
+      const { setUserInfo } = useUserInfoStore.getState();
 
       setUserInfo(userId, userName, userColor);
     } catch {
