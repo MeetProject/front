@@ -90,6 +90,7 @@ export default function MediaPermissionDialog({ isOpen, onClose }: MediaPermissi
             alt='requestPermission'
             className='mt-4 mb-2 h-50 w-76 max-[600px]:m-0 max-[600px]:h-24 max-[600px]:w-43.75'
             height={176}
+            priority={true}
             src={image.permission}
             width={320}
           />
