@@ -5,6 +5,7 @@ import { PropsWithChildren, useEffect } from 'react';
 import { useDevice, useLocalAnalyser } from '@/hook';
 import { resumeAudioContext } from '@/lib/audioGraph';
 import { getCurrentDeviceInfo } from '@/lib/device';
+import { resumeLocalAnalyser } from '@/lib/localAudio';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
@@ -131,6 +132,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const unlock = () => {
       resumeAudioContext();
+      resumeLocalAnalyser();
     };
 
     window.addEventListener('pointerdown', unlock);

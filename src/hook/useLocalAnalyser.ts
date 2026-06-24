@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { createLocalAnalyser, releaseLocalAnalyser, resumeLocalAnalyser } from '@/lib/localAudio';
+import { createLocalAnalyser, releaseLocalAnalyser } from '@/lib/localAudio';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 const useLocalAnalyser = () => {
@@ -22,20 +22,6 @@ const useLocalAnalyser = () => {
       setLocalAnalyser(null);
     };
   }, [stream, setLocalAnalyser]);
-
-  useEffect(() => {
-    const unlock = () => resumeLocalAnalyser();
-
-    window.addEventListener('pointerdown', unlock);
-    window.addEventListener('keydown', unlock);
-    window.addEventListener('touchend', unlock);
-
-    return () => {
-      window.removeEventListener('pointerdown', unlock);
-      window.removeEventListener('keydown', unlock);
-      window.removeEventListener('touchend', unlock);
-    };
-  }, []);
 };
 
 export default useLocalAnalyser;
