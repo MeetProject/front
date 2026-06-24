@@ -151,6 +151,7 @@ const useWebrtc = () => {
           handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
         });
         currentRoomId.current = roomId;
+        return true;
       } catch {
         const { reset } = useParticipantStore.getState();
         unsubscribeAll();
@@ -159,6 +160,7 @@ const useWebrtc = () => {
         reset();
         useAudioStore.getState().reset();
         currentRoomId.current = null;
+        return false;
       }
     },
     [

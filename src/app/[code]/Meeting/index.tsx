@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -14,6 +14,7 @@ import Screen from './Screen';
 
 import { Loading } from '@/components';
 import { useDevice, useWebrtc } from '@/hook';
+import { useAlertStore } from '@/store/useAlertStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useSignalStore } from '@/store/useSignalStore';
@@ -22,6 +23,7 @@ import { TrackType } from '@/types/deviceType';
 import { API_URL } from '@/util/api';
 
 export default function Meeting() {
+  const router = useRouter();
   const roomId = usePathname().slice(1);
   const isReconnecting = useSignalStore((state) => state.status === 'reconnecting');
   const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
@@ -81,12 +83,19 @@ export default function Meeting() {
 
     const init = async () => {
       await initStream();
-      await joinRoom(roomId);
+      const isJoin = await joinRoom(roomId);
+
+      if (!isJoin) {
+        useAlertStore.getState().addAlert('회의 입장에 실패했습니다. 다시 시도해 주세요.');
+        router.push('/landing');
+        return;
+      }
+
       setIsPending(false);
     };
 
     init();
-  }, [isInit, initStream, joinRoom, roomId]);
+  }, [isInit, initStream, joinRoom, roomId, router]);
 
   useEffect(
     () => () => {
