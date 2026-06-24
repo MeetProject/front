@@ -35,7 +35,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
       try {
         await el.setSinkId(audioOutput.deviceId);
         if (!el.paused && !el.ended && el.readyState) {
-          el.play();
+          el.play().catch(() => {});
         }
       } catch {
         const { changeDevice, changeDeviceList, deviceList } = useDeviceStore.getState();
