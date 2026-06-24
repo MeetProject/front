@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import { cn } from '@/lib/cn';
@@ -12,7 +13,7 @@ interface ChatMessageProps {
   chat: GroupChatType;
 }
 
-export default function ChatMessage({ chat }: ChatMessageProps) {
+function ChatMessage({ chat }: ChatMessageProps) {
   const user = useParticipantStore((state) => state.info.get(chat.userId)) ?? {
     userColor: '#ccc',
     userName: 'Unknown',
@@ -62,3 +63,5 @@ export default function ChatMessage({ chat }: ChatMessageProps) {
     </div>
   );
 }
+
+export default memo(ChatMessage);
