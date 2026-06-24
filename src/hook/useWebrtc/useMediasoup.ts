@@ -40,7 +40,6 @@ export const useMediasoup = (
 
   const consumers = useRef<Map<string, Map<TrackType, Consumer>>>(new Map());
   const screenConsumers = useRef<Map<string, Consumer>>(new Map());
-  const currentScreenSender = useRef<string | null>(null);
 
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
 
@@ -77,9 +76,6 @@ export const useMediasoup = (
 
     if (trackType === 'screen') {
       screenConsumers.current.delete(consumer.id);
-      if (currentScreenSender.current === userId && screenConsumers.current.size === 0) {
-        currentScreenSender.current = null;
-      }
       return;
     }
 
@@ -143,7 +139,6 @@ export const useMediasoup = (
         }
 
         if (trackType === 'screen') {
-          currentScreenSender.current = userId;
           screenConsumers.current.set(consumer.id, consumer);
         }
 
@@ -303,7 +298,6 @@ export const useMediasoup = (
   const removeScreenConsumer = useCallback(() => {
     screenConsumers.current.forEach((c) => c.close());
     screenConsumers.current.clear();
-    currentScreenSender.current = null;
   }, []);
 
   const removeConsumer = useCallback(
@@ -312,7 +306,8 @@ export const useMediasoup = (
         consumers.current.get(userId)?.forEach((c) => c.close());
         consumers.current.delete(userId);
 
-        if (currentScreenSender.current === userId) {
+        const ownsScreen = [...screenConsumers.current.values()].some((c) => (c.appData as AppData).userId === userId);
+        if (ownsScreen) {
           removeScreenConsumer();
         }
         return;
