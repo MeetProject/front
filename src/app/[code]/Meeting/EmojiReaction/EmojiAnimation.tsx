@@ -1,16 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { memo, useEffect } from 'react';
+import { memo } from 'react';
 
 import * as webp from '@/asset/webp';
-import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { EmojiDataType } from '@/types/emojiType';
 
 interface EmojiAnimationProps {
-  emojiId: string;
   emoji: EmojiDataType;
 }
 
@@ -26,18 +24,9 @@ const EMOJI_IMAGE = {
   THUMBUP: webp.thumbUpEmoji,
 };
 
-function EmojiIcon({ emoji, emojiId }: EmojiAnimationProps) {
+function EmojiIcon({ emoji }: EmojiAnimationProps) {
   const userId = useUserInfoStore((state) => state.userId);
   const participantsUserData = useParticipantStore((state) => state.info);
-
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      const { removeEmoji } = useInteractionStore.getState();
-      removeEmoji(emojiId);
-    }, 4000);
-
-    return () => clearTimeout(timerId);
-  }, [emojiId, emoji]);
 
   return (
     <div
