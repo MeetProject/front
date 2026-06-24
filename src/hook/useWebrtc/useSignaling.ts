@@ -137,10 +137,16 @@ export const useSignaling = (url: string) => {
   }, []);
 
   const disconnect = useCallback(() => {
-    const { client, subscription } = useSignalStore.getState();
+    const { client, pendingRequest, subscription } = useSignalStore.getState();
     if (!client) {
       return;
     }
+
+    pendingRequest.forEach((request) => {
+      clearTimeout(request.timeoutId);
+      request.reject(new Error('STOMP disconnected'));
+    });
+    pendingRequest.clear();
 
     subscription.values().forEach((sub) => sub.unsubscribe());
     subscription.clear();
