@@ -42,6 +42,7 @@ export const useMediasoup = (
   const screenConsumers = useRef<Map<string, Consumer>>(new Map());
 
   const resumedConsumer = useRef<Set<string>>(new Set());
+  const consumedProducers = useRef<Set<string>>(new Set());
 
   const recvReadyRef = useRef<Deferred | null>(null);
 
@@ -73,6 +74,8 @@ export const useMediasoup = (
   const handleConsumerClose = useCallback((consumer: Consumer, trackType: TrackType, userId: string) => {
     const { removeTrack } = useParticipantStore.getState();
     const { removeAudioTrack } = useAudioStore.getState();
+
+    consumedProducers.current.delete(consumer.producerId);
 
     if (trackType === 'screen') {
       screenConsumers.current.delete(consumer.id);
@@ -118,6 +121,11 @@ export const useMediasoup = (
         return null;
       }
 
+      if (consumedProducers.current.has(producerId)) {
+        return null;
+      }
+      consumedProducers.current.add(producerId);
+
       try {
         const { consumerParams } = await request<ConsumerParamsResponseType>('/app/signal/consumerParams', {
           producerId,
@@ -155,6 +163,7 @@ export const useMediasoup = (
           track,
         };
       } catch {
+        consumedProducers.current.delete(producerId);
         return null;
       }
     },
@@ -377,6 +386,7 @@ export const useMediasoup = (
     producers.current.clear();
     screenProducers.current.clear();
     resumedConsumer.current.clear();
+    consumedProducers.current.clear();
     recvReadyRef.current = null;
   }, []);
 
