@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
-import { GroupChatType } from '@/types/chatType';
 import { DeviceEnableType, TrackType } from '@/types/deviceType';
 import { EmojiType } from '@/types/emojiType';
 import { AppData, ChatResponseType, ParticipantDataType } from '@/types/session';
 import { UserRegisterPayloadType } from '@/types/userType';
+import { mergeScreenTrack, replaceUserStream, stopStream } from '@/util/stream';
 
 interface StreamInfo {
   userId: string | null;
@@ -18,11 +18,9 @@ interface ParticipantState {
   devices: Map<string, DeviceEnableType>;
   info: Map<string, UserRegisterPayloadType>;
   emoji: Map<string, EmojiType | null>;
-  timer: Map<string, NodeJS.Timeout | null>;
-  chat: GroupChatType[];
+  chat: ChatResponseType[];
 
   addChat: (value: ChatResponseType) => void;
-
   addParticipant: (userData: ParticipantDataType) => void;
   addTrack: (trackInfo: ConsumerResult) => void;
   removeParticipant: (id: string) => void;
@@ -30,6 +28,7 @@ interface ParticipantState {
   toggleDevices: (id: string, value: DeviceEnableType) => void;
   reset: () => void;
   addEmoji: (id: string, value: EmojiType | null) => void;
+  removeEmoji: (id: string) => void;
 }
 
 interface ConsumerResult {
@@ -38,47 +37,15 @@ interface ConsumerResult {
 }
 
 export const useParticipantStore = create<ParticipantState>((set, get) => ({
-  addChat: (data: ChatResponseType) => {
-    set((prev) => {
-      const { userId, ...chatData } = data;
-      const last = prev.chat[prev.chat.length - 1];
+  addChat: (data) => set((prev) => ({ chat: [...prev.chat, data] })),
 
-      if (last && last.userId === userId) {
-        const updatedLast = { ...last, messages: [...last.messages, chatData] };
-        return { chat: [...prev.chat.slice(0, -1), updatedLast] };
-      }
-
-      return { chat: [...prev.chat, { messages: [chatData], userId }] };
-    });
-  },
-  addEmoji: (id, value) => {
-    const existingTimer = get().timer.get(id);
-    if (existingTimer) {
-      clearTimeout(existingTimer);
-    }
-
-    const timerId = setTimeout(() => {
-      set((state) => {
-        const nextTimer = new Map(state.timer);
-        nextTimer.delete(id);
-
-        const nextEmoji = new Map(state.emoji);
-        nextEmoji.delete(id);
-
-        return { emoji: nextEmoji, timer: nextTimer };
-      });
-    }, 8000);
-
+  addEmoji: (id, value) =>
     set((state) => {
-      const nextTimer = new Map(state.timer);
-      nextTimer.set(id, timerId);
-
       const nextEmoji = new Map(state.emoji);
       nextEmoji.set(id, value);
+      return { emoji: nextEmoji };
+    }),
 
-      return { emoji: nextEmoji, timer: nextTimer };
-    });
-  },
   addParticipant: (participant) => {
     set((state) => {
       const {
@@ -106,24 +73,12 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
     set((state) => {
       if (trackType.includes('screen')) {
-        if (state.screenStream.userId !== userId) {
-          state.screenStream.stream?.getTracks().forEach((t) => {
-            t.stop();
-            state.screenStream.stream?.removeTrack(t);
-          });
-        }
-        const newStream = new MediaStream(state.screenStream.stream?.getTracks() ?? []);
-        newStream.addTrack(track);
+        const newStream = mergeScreenTrack(state.screenStream.stream, state.screenStream.userId, userId, track);
         return { screenStream: { stream: newStream, userId } };
       }
 
-      const prev = get().videoStreams.get(userId);
-      if (prev) {
-        prev.getTracks().forEach((t) => t.stop());
-      }
-
       const newStreams = new Map(state.videoStreams);
-      newStreams.set(userId, new MediaStream([track]));
+      newStreams.set(userId, replaceUserStream(state.videoStreams.get(userId), track));
       return { videoStreams: newStreams };
     });
   },
@@ -134,7 +89,16 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
   emoji: new Map(),
   info: new Map(),
   participants: [],
-  removeParticipant: (id: string) =>
+  removeEmoji: (id) =>
+    set((prev) => {
+      if (!prev.emoji.has(id)) {
+        return {};
+      }
+      const nextEmoji = new Map(prev.emoji);
+      nextEmoji.delete(id);
+      return { emoji: nextEmoji };
+    }),
+  removeParticipant: (id) =>
     set((prev) => {
       const newIds = prev.participants.filter((i) => i !== id);
 
@@ -173,10 +137,10 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
         videoStreams: newStreams,
       };
     }),
-  removeTrack: (id: string, trackType: TrackType) =>
+  removeTrack: (id, trackType) =>
     set((prev) => {
       if (trackType === 'screen') {
-        prev.screenStream.stream?.getTracks().forEach((t) => t.stop());
+        stopStream(prev.screenStream.stream);
         return { screenStream: { stream: null, userId: null } };
       }
 
@@ -185,21 +149,17 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       }
 
       const prevStreams = new Map(prev.videoStreams);
-      prevStreams
-        .get(id)
-        ?.getTracks()
-        .forEach((t) => t.stop());
+      stopStream(prevStreams.get(id));
       prevStreams.delete(id);
 
       return { videoStreams: prevStreams };
     }),
+
   reset: () => {
-    get().timer.forEach((t) => t && clearTimeout(t));
     set(useParticipantStore.getInitialState());
   },
 
   screenStream: { stream: null, userId: null },
-  timer: new Map(),
 
   toggleDevices: (id, value) => {
     if (!get().devices.has(id)) {

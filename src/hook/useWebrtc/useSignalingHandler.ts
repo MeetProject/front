@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useAudioStore } from '@/store/useAudioStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
@@ -20,6 +20,8 @@ import {
   TrackResponseType,
 } from '@/types/session';
 
+const EMOJI_DURATION_MS = 8000;
+
 export const useSignalingHandler = (
   subscribe: <T>(destination: string, callback: (response: T) => void | Promise<void>) => void,
   consumeTrack: (
@@ -31,6 +33,8 @@ export const useSignalingHandler = (
   } | null>,
   removeConsumer: (userId: string, trackType?: TrackType) => void,
 ) => {
+  const emojiTimers = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
   const handleToggleDevice = useCallback(async (data: ToggleDeviceEnableResponseType) => {
     const { toggleDevices } = useParticipantStore.getState();
     const { mediaOption, userId } = data;
@@ -45,11 +49,23 @@ export const useSignalingHandler = (
 
   const handleEmoji = useCallback(async (data: EmojiResponseType) => {
     const { addEmoji } = useInteractionStore.getState();
-    const { addEmoji: addEmojiStatus } = useParticipantStore.getState();
+    const { addEmoji: addEmojiStatus, removeEmoji } = useParticipantStore.getState();
     const { id, ...emojiData } = data;
+    const { userId } = emojiData;
 
     addEmoji(id, data);
-    addEmojiStatus(emojiData.userId, emojiData.emoji);
+    addEmojiStatus(userId, emojiData.emoji);
+
+    const existingTimer = emojiTimers.current.get(userId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    const timer = setTimeout(() => {
+      removeEmoji(userId);
+      emojiTimers.current.delete(userId);
+    }, EMOJI_DURATION_MS);
+    emojiTimers.current.set(userId, timer);
   }, []);
 
   const handleChat = useCallback(async (data: ChatResponseType) => {
@@ -150,6 +166,12 @@ export const useSignalingHandler = (
       const { removeParticipant } = useParticipantStore.getState();
       removeParticipant(userId);
       removeConsumer(userId);
+
+      const timer = emojiTimers.current.get(userId);
+      if (timer) {
+        clearTimeout(timer);
+        emojiTimers.current.delete(userId);
+      }
     },
     [removeConsumer],
   );
@@ -180,6 +202,14 @@ export const useSignalingHandler = (
       handleRemoveProducer,
     ],
   );
+
+  useEffect(() => {
+    const timers = emojiTimers.current;
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
 
   return { initSubscribe };
 };
