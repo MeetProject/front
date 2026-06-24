@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useMediasoup } from './useMediasoup';
 import { useSignaling } from './useSignaling';
@@ -51,8 +51,6 @@ const waitForTrackUnmute = (track: MediaStreamTrack, timeout: number): Promise<v
   });
 
 const useWebrtc = () => {
-  const [isPending, setIsPending] = useState<boolean>(false);
-
   const router = useRouter();
 
   const { connect, disconnect, publish, request, subscribe, unsubscribeAll } = useSignaling(WS_URL);
@@ -106,7 +104,6 @@ const useWebrtc = () => {
       const { addParticipant, addTrack } = useParticipantStore.getState();
       const { deviceEnable } = useDeviceStore.getState();
       const { client } = useSignalStore.getState();
-      setIsPending(true);
 
       try {
         if (!client?.active) {
@@ -161,8 +158,6 @@ const useWebrtc = () => {
         clearDevice();
         reset();
         currentRoomId.current = null;
-      } finally {
-        setIsPending(false);
       }
     },
     [
@@ -326,12 +321,10 @@ const useWebrtc = () => {
   }, [reattach]);
 
   return {
-    isPending,
     joinRoom,
     leaveRoom,
     pauseTrack: pauseConsumer,
     removeTrack,
-    replaceProducerTrack,
     replaceTrack: replaceProducerTrack,
     resumeTrack: resumeConsumer,
     sendChat,
