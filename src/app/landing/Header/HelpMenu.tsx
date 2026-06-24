@@ -5,7 +5,7 @@ import IconButton from './IconButton';
 import * as Icon from '@/asset/svg';
 import { useOutsideClick } from '@/hook';
 
-const HELP_URL = 'https://github.com/armd482/meetproejct';
+const HELP_URL = 'https://github.com/MeetProject';
 
 const HELP_BUTTON = [
   { href: HELP_URL, name: '도움말' },
