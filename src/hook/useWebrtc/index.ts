@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useMediasoup } from './useMediasoup';
 import { useSignaling } from './useSignaling';
@@ -219,6 +219,18 @@ const useWebrtc = () => {
     },
     [sendDeviceEnable, toggleProducerTrack],
   );
+
+  useEffect(() => {
+    const prevStatus = { current: useSignalStore.getState().status };
+
+    return useSignalStore.subscribe((state) => {
+      const { status } = state;
+      if (prevStatus.current === 'reconnecting' && status === 'connected' && currentRoomId.current) {
+        initSubscribe(currentRoomId.current);
+      }
+      prevStatus.current = status;
+    });
+  }, [initSubscribe]);
 
   return {
     isPending,

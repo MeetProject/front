@@ -46,7 +46,7 @@ export const useSignaling = (url: string) => {
           ...config,
           brokerURL: undefined,
           onConnect: (frame: IFrame) => {
-            useSignalStore.setState({ client: newClient });
+            useSignalStore.setState({ client: newClient, status: 'connected' });
 
             const repliesSub = newClient.subscribe('/user/queue/replies', handleReply);
             subscription.set('replies', repliesSub);
@@ -63,12 +63,15 @@ export const useSignaling = (url: string) => {
 
             if (evt?.code === 1000) {
               newClient.deactivate();
+              useSignalStore.setState({ status: 'closed' });
               resolve(newClient);
               return;
             }
 
+            useSignalStore.setState({ status: 'reconnecting' });
             reject(new Error('WebSocket connection closed'));
           },
+          reconnectDelay: 3000,
           webSocketFactory: () =>
             new SockJS(`${url}?userId=${userId}`, null, {
               timeout: 5000,
@@ -139,7 +142,7 @@ export const useSignaling = (url: string) => {
     subscription.clear();
 
     client.deactivate();
-    useSignalStore.setState({ client: null });
+    useSignalStore.setState({ client: null, status: 'closed' });
   }, []);
 
   const request = useCallback(
