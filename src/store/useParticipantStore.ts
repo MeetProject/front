@@ -208,10 +208,6 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
     set((prev) => {
       const newDevices = new Map(prev.devices);
-      const prevData = prev.devices.get(id);
-      if (!prevData) {
-        return {};
-      }
       newDevices.set(id, value);
       return { devices: newDevices };
     });
