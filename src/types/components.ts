@@ -1,6 +1,8 @@
-export interface Alert {
+export interface AlertType {
   id: string;
   message: string;
+  duration: number;
+  onClose?: () => void;
 }
 
 export type FeedbackCategoryType = 'suggest' | 'report' | null;
