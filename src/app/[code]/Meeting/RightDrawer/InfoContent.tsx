@@ -16,11 +16,11 @@ export default function InfoContent() {
   const handleClipboardButtonClick = async () => {
     const { addAlert } = useAlertStore.getState();
     try {
-      setIsCopied(true);
       await navigator.clipboard.writeText(url);
-      if (isCopied) {
+      if (!isCopied) {
         addAlert('회의 링크 복사됨');
       }
+      setIsCopied(true);
     } catch {
       addAlert('회의 링크 복사 실패');
     } finally {
@@ -29,6 +29,7 @@ export default function InfoContent() {
       }
       timerRef.current = setTimeout(() => {
         setIsCopied(false);
+        timerRef.current = null;
       }, 4000);
     }
   };
