@@ -40,15 +40,15 @@ interface ConsumerResult {
 export const useParticipantStore = create<ParticipantState>((set, get) => ({
   addChat: (data: ChatResponseType) => {
     set((prev) => {
-      const newChat = [...prev.chat];
       const { userId, ...chatData } = data;
-      if (newChat.length !== 0 && newChat[newChat.length - 1].userId === userId) {
-        newChat[newChat.length - 1].messages.push(chatData);
-        return { chat: newChat };
+      const last = prev.chat[prev.chat.length - 1];
+
+      if (last && last.userId === userId) {
+        const updatedLast = { ...last, messages: [...last.messages, chatData] };
+        return { chat: [...prev.chat.slice(0, -1), updatedLast] };
       }
 
-      newChat.push({ messages: [chatData], userId: data.userId });
-      return { chat: newChat };
+      return { chat: [...prev.chat, { messages: [chatData], userId }] };
     });
   },
   addEmoji: (id, value) => {
