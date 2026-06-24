@@ -41,7 +41,7 @@ export const useMediasoup = (
   const consumers = useRef<Map<string, Map<TrackType, Consumer>>>(new Map());
   const screenConsumers = useRef<Map<string, Consumer>>(new Map());
 
-  const resumedConsumer = useRef<Map<string, boolean>>(new Map());
+  const resumedConsumer = useRef<Set<string>>(new Set());
 
   const recvReadyRef = useRef<Deferred | null>(null);
 
@@ -135,7 +135,7 @@ export const useMediasoup = (
           await publish('/app/consumer/resume', {
             consumerId: consumer.id,
           });
-          resumedConsumer.current.set(consumer.id, true);
+          resumedConsumer.current.add(consumer.id);
         }
 
         if (trackType === 'screen') {
@@ -171,14 +171,14 @@ export const useMediasoup = (
 
       const consumerId = consumers.current.get(userId)?.get(trackType)?.id;
 
-      if (!consumerId || resumedConsumer.current.get(consumerId)) {
+      if (!consumerId || resumedConsumer.current.has(consumerId)) {
         return;
       }
 
       await publish('/app/consumer/resume', {
         consumerId,
       });
-      resumedConsumer.current.set(consumerId, true);
+      resumedConsumer.current.add(consumerId);
     },
     [publish],
   );
@@ -193,7 +193,7 @@ export const useMediasoup = (
 
       const consumerId = consumers.current.get(userId)?.get(trackType)?.id;
 
-      if (!consumerId || !resumedConsumer.current.get(consumerId)) {
+      if (!consumerId || !resumedConsumer.current.has(consumerId)) {
         return;
       }
 
