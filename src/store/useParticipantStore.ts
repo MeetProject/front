@@ -59,21 +59,24 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
 
     const timerId = setTimeout(() => {
       set((state) => {
-        state.timer.delete(id);
+        const nextTimer = new Map(state.timer);
+        nextTimer.delete(id);
 
         const nextEmoji = new Map(state.emoji);
         nextEmoji.delete(id);
 
-        return { emoji: nextEmoji };
+        return { emoji: nextEmoji, timer: nextTimer };
       });
     }, 8000);
 
     set((state) => {
-      state.timer.set(id, timerId);
+      const nextTimer = new Map(state.timer);
+      nextTimer.set(id, timerId);
+
       const nextEmoji = new Map(state.emoji);
       nextEmoji.set(id, value);
 
-      return { emoji: nextEmoji };
+      return { emoji: nextEmoji, timer: nextTimer };
     });
   },
   addParticipant: (participant) => {
