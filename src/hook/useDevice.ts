@@ -30,14 +30,14 @@ const useDevice = () => {
     });
   }, []);
 
-  const syncEnable = useCallback((stream: MediaStream, constranint: Record<DeviceKindType, boolean>) => {
+  const syncEnable = useCallback((stream: MediaStream, constraint: Record<DeviceKindType, boolean>) => {
     const { deviceEnable } = useDeviceStore.getState();
 
-    if (constranint.audio && !deviceEnable.audio) {
+    if (constraint.audio && !deviceEnable.audio) {
       stream.getAudioTracks().forEach((track) => (track.enabled = false));
     }
 
-    if (constranint.video && !deviceEnable.video) {
+    if (constraint.video && !deviceEnable.video) {
       stream.getVideoTracks().forEach((track) => {
         track.stop();
         stream.removeTrack(track);

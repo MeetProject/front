@@ -12,7 +12,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
   const [chat, setChat] = useState<string>('');
   const [isPending, setIsPending] = useState<boolean>(false);
 
-  const handleInputChage = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setChat(e.target.value);
 
     if (!inputRef.current) {
@@ -70,7 +70,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
           ref={inputRef}
           rows={1}
           value={chat}
-          onChange={handleInputChage}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
         />
         <div>
