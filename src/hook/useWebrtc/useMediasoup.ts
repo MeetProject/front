@@ -12,6 +12,21 @@ import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { AppData, ConsumerParamsResponseType, Direction, DtlsReponseType } from '@/types/session';
 
+const RECV_READY_TIMEOUT = 10000;
+
+interface Deferred {
+  promise: Promise<void>;
+  resolve: () => void;
+}
+
+const createDeferred = (): Deferred => {
+  const handlers: { resolve: () => void } = { resolve: () => {} };
+  const promise = new Promise<void>((resolve) => {
+    handlers.resolve = resolve;
+  });
+  return { promise, resolve: () => handlers.resolve() };
+};
+
 export const useMediasoup = (
   publish: <T>(destination: string, payload?: T | undefined) => void,
   request: <T>(destination: string, payload: any) => Promise<T>,
@@ -28,6 +43,15 @@ export const useMediasoup = (
   const currentScreenSender = useRef<string | null>(null);
 
   const resumedConsumer = useRef<Map<string, boolean>>(new Map());
+
+  const recvReadyRef = useRef<Deferred | null>(null);
+
+  const ensureRecvReady = useCallback(() => {
+    if (!recvReadyRef.current) {
+      recvReadyRef.current = createDeferred();
+    }
+    return recvReadyRef.current;
+  }, []);
 
   const initDevice = useCallback(async (capabilities: RtpCapabilities) => {
     if (deviceRef.current) {
@@ -82,9 +106,19 @@ export const useMediasoup = (
   const consumeTrack = useCallback(
     async (targetId: string, producerId: string) => {
       const { userId: id } = useUserInfoStore.getState();
+
+      if (targetId === id) {
+        return null;
+      }
+
+      await Promise.race([
+        ensureRecvReady().promise,
+        new Promise<void>((resolve) => setTimeout(resolve, RECV_READY_TIMEOUT)),
+      ]);
+
       const device = deviceRef.current;
 
-      if (!recvTransport.current || !device || targetId === id) {
+      if (!recvTransport.current || !device) {
         return null;
       }
 
@@ -129,7 +163,7 @@ export const useMediasoup = (
         return null;
       }
     },
-    [request, publish, handleConsumerClose],
+    [request, publish, handleConsumerClose, ensureRecvReady],
   );
 
   const resumeConsumer = useCallback(
@@ -205,6 +239,7 @@ export const useMediasoup = (
 
       if (direction === 'recv') {
         recvTransport.current = transport;
+        ensureRecvReady().resolve();
         return;
       }
 
@@ -223,7 +258,7 @@ export const useMediasoup = (
       });
       sendTransport.current = transport;
     },
-    [request],
+    [request, ensureRecvReady],
   );
 
   const produceTrack = useCallback(async (track: MediaStreamTrack, trackType: TrackType) => {
@@ -341,6 +376,7 @@ export const useMediasoup = (
     recvTransport.current?.close();
     sendTransport.current = null;
     recvTransport.current = null;
+    recvReadyRef.current = null;
   }, []);
 
   return {
