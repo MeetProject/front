@@ -67,6 +67,7 @@ export default function InteractionButton({
           isActive && 'bg-primary-container hover:bg-primary-container-hover rounded-xl',
           'max-[850px]:size-14 max-[850px]:rounded-full',
           !isActive && 'bg-surface-elevated hover:bg-action-hover max-[850px]:bg-surface-base',
+          'disabled:cursor-not-allowed',
         )}
         disabled={disabled}
         type='button'
