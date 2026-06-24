@@ -13,8 +13,17 @@ const useStreamAnalyser = (stream: MediaStream | null) => {
       return;
     }
 
-    const created = createStreamAnalyser(stream);
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      setAnalyser(null);
+      return;
+    }
+
+    const analysisStream = new MediaStream(audioTracks.map((track) => track.clone()));
+
+    const created = createStreamAnalyser(analysisStream);
     if (!created) {
+      analysisStream.getTracks().forEach((track) => track.stop());
       return;
     }
 
@@ -25,6 +34,7 @@ const useStreamAnalyser = (stream: MediaStream | null) => {
       setAnalyser(null);
       source.disconnect();
       streamAnalyser.disconnect();
+      analysisStream.getTracks().forEach((track) => track.stop());
       if (audioContext.state !== 'closed') {
         audioContext.close();
       }
