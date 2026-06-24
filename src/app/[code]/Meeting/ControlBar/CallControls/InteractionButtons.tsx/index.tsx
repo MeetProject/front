@@ -7,6 +7,7 @@ import * as Icon from '@/asset/svg';
 import { ButtonTag } from '@/components';
 import { useOutsideClick } from '@/hook';
 import { cn } from '@/lib/cn';
+import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
@@ -27,14 +28,12 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
   );
 
   const handsUp = useInteractionStore((state) => state.handsUp.has(userId ?? ''));
+  const isScreenSharing = useDeviceStore((state) => Boolean(state.screenStream));
 
   const screenOwnerId = useParticipantStore((state) => state.screenStream.userId);
   const isScreenSharingByOther = screenOwnerId !== null && screenOwnerId !== userId;
 
   const [isOpenOption, setIsOpenOption] = useState<boolean>(false);
-  const [active, setActive] = useState<Record<'screenShare', boolean>>({
-    screenShare: false,
-  });
 
   const handleOptionButtonClick = () => {
     setIsOpenOption((prev) => !prev);
@@ -45,7 +44,6 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
   }, []);
 
   const handleScreenShareButtonClick = useCallback(async () => {
-    setActive((prev) => ({ ...prev, screenShare: !prev.screenShare }));
     await shareScreen();
     handleOptionClose();
   }, [handleOptionClose, shareScreen]);
@@ -76,8 +74,8 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
     {
       disabled: isScreenSharingByOther,
       icon: Icon.ScreenShare,
-      isActive: active.screenShare || isScreenSharingByOther,
-      name: isScreenSharingByOther ? '다른 참가자가 화면 공유 중' : active.screenShare ? '화면 공유 중지' : '화면 공유',
+      isActive: isScreenSharing || isScreenSharingByOther,
+      name: isScreenSharingByOther ? '다른 참가자가 화면 공유 중' : isScreenSharing ? '화면 공유 중지' : '화면 공유',
       onClick: handleScreenShareButtonClick,
     },
     { icon: Icon.Emoji, isActive: emoji, name: '반응 보내기', onClick: handleEmojiButtonClick },
