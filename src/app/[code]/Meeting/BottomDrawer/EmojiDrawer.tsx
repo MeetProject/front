@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import EmojiButton from './EmojiButton';
 
 import * as image from '@/asset/image';
-import * as wepb from '@/asset/webp';
+import * as webp from '@/asset/webp';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { EmojiType } from '@/types/emojiType';
 
@@ -12,15 +12,15 @@ interface EmojiDrawerProps {
 }
 
 const EMOJI_BUTTON = [
-  { hoverSrc: wepb.heartEmoji, name: 'HEART', src: image.heartEmoji },
-  { hoverSrc: wepb.thumbUpEmoji, name: 'THUMBUP', src: image.thumbUpEmoji },
-  { hoverSrc: wepb.partyPoperEmoji, name: 'PARTYPOPPER', src: image.partyPoperEmoji },
-  { hoverSrc: wepb.clapEmoji, name: 'CLAP', src: image.clapEmoji },
-  { hoverSrc: wepb.laughterEmoji, name: 'LAUGHTER', src: image.laughterEmoji },
-  { hoverSrc: wepb.surpriceEmoji, name: 'SURPRISE', src: image.surpriceEmoji },
-  { hoverSrc: wepb.sadEmoji, name: 'SAD', src: image.sadEmoji },
-  { hoverSrc: wepb.curiousEmoji, name: 'CURIOUS', src: image.curiousEmoji },
-  { hoverSrc: wepb.thumbDownEmoji, name: 'THUMBDOWN', src: image.thumbDownEmoji },
+  { hoverSrc: webp.heartEmoji, name: 'HEART', src: image.heartEmoji },
+  { hoverSrc: webp.thumbUpEmoji, name: 'THUMBUP', src: image.thumbUpEmoji },
+  { hoverSrc: webp.partyPopperEmoji, name: 'PARTYPOPPER', src: image.partyPopperEmoji },
+  { hoverSrc: webp.clapEmoji, name: 'CLAP', src: image.clapEmoji },
+  { hoverSrc: webp.laughterEmoji, name: 'LAUGHTER', src: image.laughterEmoji },
+  { hoverSrc: webp.surpriseEmoji, name: 'SURPRISE', src: image.surpriseEmoji },
+  { hoverSrc: webp.sadEmoji, name: 'SAD', src: image.sadEmoji },
+  { hoverSrc: webp.curiousEmoji, name: 'CURIOUS', src: image.curiousEmoji },
+  { hoverSrc: webp.thumbDownEmoji, name: 'THUMBDOWN', src: image.thumbDownEmoji },
 ];
 
 export default function EmojiDrawer({ onEmojiClick }: EmojiDrawerProps) {

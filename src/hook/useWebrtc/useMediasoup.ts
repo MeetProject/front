@@ -10,7 +10,7 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
-import { AppData, ConsumerParamsResponseType, Direction, DtlsReponseType } from '@/types/session';
+import { AppData, ConsumerParamsResponseType, Direction, DtlsResponseType } from '@/types/session';
 
 const RECV_READY_TIMEOUT = 10000;
 
@@ -213,7 +213,7 @@ export const useMediasoup = (
         return;
       }
 
-      const { options } = await request<DtlsReponseType>('/app/signal/dtls', {
+      const { options } = await request<DtlsResponseType>('/app/signal/dtls', {
         direction,
       });
 

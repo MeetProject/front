@@ -14,7 +14,7 @@ export type AppData = PrimitiveAppData & {
   userId: string;
 };
 
-export interface DtlsReponseType {
+export interface DtlsResponseType {
   options: TransportOptions<AppData>;
 }
 

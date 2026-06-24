@@ -17,9 +17,9 @@ const EMOJI_IMAGE = {
   CURIOUS: webp.curiousEmoji,
   HEART: webp.heartEmoji,
   LAUGHTER: webp.laughterEmoji,
-  PARTYPOPPER: webp.partyPoperEmoji,
+  PARTYPOPPER: webp.partyPopperEmoji,
   SAD: webp.sadEmoji,
-  SURPRISE: webp.surpriceEmoji,
+  SURPRISE: webp.surpriseEmoji,
   THUMBDOWN: webp.thumbDownEmoji,
   THUMBUP: webp.thumbUpEmoji,
 };
