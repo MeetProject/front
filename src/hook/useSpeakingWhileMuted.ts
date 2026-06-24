@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { subscribeAudioTick } from '@/lib/audioTicker';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 interface Options {
@@ -24,8 +25,6 @@ const useSpeakingWhileMuted = (active: boolean, options: Options = {}) => {
   const showAlertRef = useRef(false);
   const cooldownUntilRef = useRef(0);
   const speakingMsRef = useRef(0);
-  const rafRef = useRef<number | null>(null);
-  const lastTsRef = useRef(0);
 
   const updateShowAlert = useCallback((value: boolean) => {
     showAlertRef.current = value;
@@ -47,34 +46,25 @@ const useSpeakingWhileMuted = (active: boolean, options: Options = {}) => {
       return;
     }
 
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-    lastTsRef.current = performance.now();
+    const timeState = { last: performance.now() };
 
-    const tick = (ts: number) => {
-      const dt = ts - lastTsRef.current;
-      lastTsRef.current = ts;
+    const unsubscribe = subscribeAudioTick({
+      getAnalyser: () => analyser,
+      onValue: (avg) => {
+        const now = performance.now();
+        const dt = now - timeState.last;
+        timeState.last = now;
 
-      analyser.getByteFrequencyData(dataArray);
-      const avg = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+        speakingMsRef.current =
+          avg > threshold ? speakingMsRef.current + dt : Math.max(0, speakingMsRef.current - dt * 0.5);
 
-      speakingMsRef.current =
-        avg > threshold ? speakingMsRef.current + dt : Math.max(0, speakingMsRef.current - dt * 0.5);
+        if (!showAlertRef.current && speakingMsRef.current >= sustainMs && Date.now() >= cooldownUntilRef.current) {
+          updateShowAlert(true);
+        }
+      },
+    });
 
-      if (!showAlertRef.current && speakingMsRef.current >= sustainMs && Date.now() >= cooldownUntilRef.current) {
-        updateShowAlert(true);
-      }
-
-      rafRef.current = requestAnimationFrame(tick);
-    };
-
-    rafRef.current = requestAnimationFrame(tick);
-
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
+    return unsubscribe;
   }, [active, analyser, threshold, sustainMs, updateShowAlert]);
 
   return { dismiss, showAlert };
