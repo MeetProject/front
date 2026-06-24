@@ -11,19 +11,21 @@ const STOMP_TIMEOUT = 10000;
 
 export const useSignaling = (url: string) => {
   const handleReply = useCallback((message: IMessage) => {
-    const { pendingRequest } = useSignalStore.getState();
-    const { correlationId, ...data } = JSON.parse(message.body);
+    try {
+      const { pendingRequest } = useSignalStore.getState();
+      const { correlationId, ...data } = JSON.parse(message.body);
 
-    const request = pendingRequest.get(correlationId);
+      const request = pendingRequest.get(correlationId);
 
-    if (!request) {
-      return;
-    }
+      if (!request) {
+        return;
+      }
 
-    clearTimeout(request.timeoutId);
-    pendingRequest.delete(correlationId);
+      clearTimeout(request.timeoutId);
+      pendingRequest.delete(correlationId);
 
-    request.resolve(data);
+      request.resolve(data);
+    } catch {}
   }, []);
 
   const connect = useCallback(
@@ -103,8 +105,10 @@ export const useSignaling = (url: string) => {
     }
 
     const sub = client.subscribe(destination, async (message: Message) => {
-      const data = JSON.parse(message.body) as T;
-      await callback(data);
+      try {
+        const data = JSON.parse(message.body) as T;
+        await callback(data);
+      } catch {}
     });
 
     subscription.set(destination, sub);
