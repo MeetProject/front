@@ -47,7 +47,7 @@ export default function ChatContent({ sendChat }: ChatContentProps) {
         ) : (
           <div className='flex-1'>
             {chatData.map((el) => (
-              <ChatMessage chat={el} key={el.userId + el.messages[0].timestamp} />
+              <ChatMessage chat={el} key={el.messages[0].id} />
             ))}
           </div>
         )}
