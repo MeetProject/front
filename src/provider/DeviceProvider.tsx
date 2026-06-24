@@ -3,8 +3,8 @@
 import { PropsWithChildren, useEffect } from 'react';
 
 import { useDevice } from '@/hook';
+import { resumeAudioContext } from '@/lib/audioGraph';
 import { getCurrentDeviceInfo } from '@/lib/device';
-import { useAudioStore } from '@/store/useAudioStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
@@ -128,7 +128,6 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const unlock = () => {
-      const { resumeAudioContext } = useAudioStore.getState();
       resumeAudioContext();
     };
 
