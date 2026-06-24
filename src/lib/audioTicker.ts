@@ -7,18 +7,20 @@ interface AudioTickSubscriber {
 
 const subscribers = new Set<AudioTickSubscriber>();
 const latest = new Map<AnalyserNode, number>();
-const buffer = new Uint8Array(1024);
+const buffer = { data: new Uint8Array(0) };
 const state = { lastTime: 0, rafId: 0 };
 
 const readAverage = (analyser: AnalyserNode): number => {
-  const bins = Math.min(analyser.frequencyBinCount, buffer.length);
+  const bins = analyser.frequencyBinCount;
   if (bins === 0) {
     return 0;
   }
 
-  analyser.getByteFrequencyData(buffer);
-  const sum = buffer.subarray(0, bins).reduce((acc, value) => acc + value, 0);
-  return sum / bins;
+  if (buffer.data.length !== bins) {
+    buffer.data = new Uint8Array(bins);
+  }
+  analyser.getByteFrequencyData(buffer.data);
+  return buffer.data.reduce((sum, value) => sum + value, 0) / bins;
 };
 
 const tick = (timestamp: number) => {
