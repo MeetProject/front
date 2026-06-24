@@ -1,7 +1,7 @@
 'use client';
 
 import * as Icon from '@/asset/svg';
-import { useStreamAnalyser, useVolumeMeter } from '@/hook';
+import { useVolumeMeter } from '@/hook';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { mapBarWidth } from '@/util/audio';
@@ -11,8 +11,7 @@ interface DeviceVolumeProps {
 }
 
 export default function DeviceVolume({ color }: DeviceVolumeProps) {
-  const stream = useDeviceStore((state) => state.stream);
-  const analyser = useStreamAnalyser(stream);
+  const analyser = useDeviceStore((state) => state.localAnalyser);
 
   const barRef = useVolumeMeter<HTMLDivElement>(analyser, mapBarWidth);
 

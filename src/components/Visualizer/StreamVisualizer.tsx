@@ -1,14 +1,15 @@
+'use client';
+
 import VisualizerContent from './VisualizerContent';
 
-import { useStreamAnalyser } from '@/hook';
+import { useDeviceStore } from '@/store/useDeviceStore';
 
 interface StreamVisualizerProps {
-  stream: MediaStream | null;
   className?: string;
   color?: string;
 }
 
-export default function StreamVisualizer({ className, color, stream }: StreamVisualizerProps) {
-  const analyser = useStreamAnalyser(stream);
+export default function StreamVisualizer({ className, color }: StreamVisualizerProps) {
+  const analyser = useDeviceStore((state) => state.localAnalyser);
   return <VisualizerContent analyser={analyser} className={className} color={color} />;
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { createStreamAnalyser } from '@/util/audio';
+import { useDeviceStore } from '@/store/useDeviceStore';
 
 interface Options {
   threshold?: number;
@@ -14,8 +14,10 @@ const DEFAULT_THRESHOLD = 12;
 const DEFAULT_SUSTAIN_MS = 1500;
 const DEFAULT_COOLDOWN_MS = 3 * 60 * 1000;
 
-const useSpeakingWhileMuted = (stream: MediaStream | null, active: boolean, options: Options = {}) => {
+const useSpeakingWhileMuted = (active: boolean, options: Options = {}) => {
   const { cooldownMs = DEFAULT_COOLDOWN_MS, sustainMs = DEFAULT_SUSTAIN_MS, threshold = DEFAULT_THRESHOLD } = options;
+
+  const analyser = useDeviceStore((state) => state.localAnalyser);
 
   const [showAlert, setShowAlert] = useState(false);
 
@@ -37,19 +39,13 @@ const useSpeakingWhileMuted = (stream: MediaStream | null, active: boolean, opti
   }, [cooldownMs, updateShowAlert]);
 
   useEffect(() => {
-    if (!active || !stream || stream.getAudioTracks().length === 0) {
+    if (!active || !analyser) {
       speakingMsRef.current = 0;
       if (showAlertRef.current) {
         updateShowAlert(false);
       }
       return;
     }
-
-    const created = createStreamAnalyser(stream);
-    if (!created) {
-      return;
-    }
-    const { analyser, audioContext, source } = created;
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
     lastTsRef.current = performance.now();
@@ -78,13 +74,8 @@ const useSpeakingWhileMuted = (stream: MediaStream | null, active: boolean, opti
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
-      source.disconnect();
-      analyser.disconnect();
-      if (audioContext.state !== 'closed') {
-        audioContext.close().catch(() => {});
-      }
     };
-  }, [active, stream, threshold, sustainMs, updateShowAlert]);
+  }, [active, analyser, threshold, sustainMs, updateShowAlert]);
 
   return { dismiss, showAlert };
 };

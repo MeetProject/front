@@ -60,10 +60,7 @@ export default function DeviceButton({
   const enableMute = permission[type] === 'granted';
 
   const isSpeakingDetectActive = type === 'audio' && enableMute && !deviceEnable.audio;
-  const { dismiss: dismissSpeakingAlert, showAlert: showSpeakingAlert } = useSpeakingWhileMuted(
-    stream,
-    isSpeakingDetectActive,
-  );
+  const { dismiss: dismissSpeakingAlert, showAlert: showSpeakingAlert } = useSpeakingWhileMuted(isSpeakingDetectActive);
 
   const ICON = {
     audio: {

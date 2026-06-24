@@ -13,5 +13,5 @@ export default function Visualizer({ className, color, source }: VisualizerPrope
   if (typeof source === 'string') {
     return <ParticipantVisualizer className={className} color={color} source={source} />;
   }
-  return <StreamVisualizer className={className} color={color} stream={source} />;
+  return <StreamVisualizer className={className} color={color} />;
 }

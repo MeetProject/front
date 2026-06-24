@@ -15,10 +15,13 @@ interface DeviceState {
   stream: MediaStream | null;
   screenStream: MediaStream | null;
 
+  localAnalyser: AnalyserNode | null;
+
   changeDevice: (type: DeviceType, value: MediaDeviceInfo) => void;
   changeDeviceList: (type: DeviceType, value: MediaDeviceInfo[]) => void;
   toggleDeviceEnable: (type: DeviceKindType) => void;
   updatePermission: (type: DeviceKindType, value: PermissionState) => void;
+  setLocalAnalyser: (analyser: AnalyserNode | null) => void;
 }
 export const useDeviceStore = create<DeviceState>((set) => ({
   changeDevice: (type, value) => set((state) => ({ device: { ...state.device, [type]: value } })),
@@ -39,8 +42,10 @@ export const useDeviceStore = create<DeviceState>((set) => ({
     videoInput: [],
   },
   isInit: false,
+  localAnalyser: null,
   permission: { audio: 'prompt', video: 'prompt' },
   screenStream: null,
+  setLocalAnalyser: (analyser) => set({ localAnalyser: analyser }),
   status: null,
   stream: null,
 
