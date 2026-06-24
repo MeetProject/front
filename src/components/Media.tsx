@@ -19,7 +19,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
   useImperativeHandle(ref, () => {
     const el = tag === 'audio' ? audioRef.current : videoRef.current;
     return el as HTMLMediaElement;
-  });
+  }, [tag]);
 
   useEffect(() => {
     const el = tag === 'audio' ? audioRef.current : videoRef.current;
