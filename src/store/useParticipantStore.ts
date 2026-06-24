@@ -92,7 +92,9 @@ export const useParticipantStore = create<ParticipantState>((set, get) => ({
       const newDevices = new Map(state.devices);
       newDevices.set(userId, mediaOption);
 
-      return { devices: newDevices, info: newInfo, participants: [...state.participants, userId] };
+      const participants = state.participants.includes(userId) ? state.participants : [...state.participants, userId];
+
+      return { devices: newDevices, info: newInfo, participants };
     });
   },
 
