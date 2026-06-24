@@ -82,5 +82,5 @@ export const charMatcher = (search = '') => {
     search,
   );
 
-  return new RegExp(`(${regex})`, 'g');
+  return new RegExp(`(${regex})`);
 };
