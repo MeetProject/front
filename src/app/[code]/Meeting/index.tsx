@@ -82,7 +82,7 @@ export default function Meeting() {
     }
 
     const init = async () => {
-      await initStream();
+      await initStream(true);
       const isJoin = await joinRoom(roomId);
 
       if (!isJoin) {
