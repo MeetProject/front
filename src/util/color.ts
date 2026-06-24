@@ -1,5 +1,8 @@
 export const parseRGB = (hex: string) => {
-  const [r, g, b] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map((x) => parseInt(x, 16));
+  const [r, g, b] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map((x) => {
+    const value = parseInt(x, 16);
+    return Number.isNaN(value) ? 0 : value;
+  });
   return { b, g, r };
 };
 
