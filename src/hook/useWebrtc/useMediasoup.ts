@@ -238,11 +238,11 @@ export const useMediasoup = (
         return;
       }
 
-      transport.on('produce', async ({ appData, rtpParameters }, callback, errback) => {
+      transport.on('produce', async ({ appData, kind, rtpParameters }, callback, errback) => {
         try {
           const { producerId } = await request<Record<'producerId', string>>('/app/signal/rtls', {
             appData,
-            kind: appData.trackType === 'audio' || appData.trackType === 'screenAudio' ? 'audio' : 'video',
+            kind,
             rtpParameters,
             transportId: transport.id,
           });
