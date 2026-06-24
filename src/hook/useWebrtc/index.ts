@@ -18,6 +18,31 @@ import { DeviceKindType, TrackType } from '@/types/deviceType';
 import { CapabilitiesResponseType, JoinRoomResponseType } from '@/types/session';
 import { WS_URL } from '@/util/api';
 
+const VIDEO_READY_TIMEOUT = 3000;
+
+const waitForTrackUnmute = (track: MediaStreamTrack, timeout: number): Promise<void> =>
+  new Promise((resolve) => {
+    if (!track.muted) {
+      resolve();
+      return;
+    }
+
+    const cleanup = () => {
+      track.removeEventListener('unmute', handleUnmute);
+      clearTimeout(timer);
+    };
+    const handleUnmute = () => {
+      cleanup();
+      resolve();
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      resolve();
+    }, timeout);
+
+    track.addEventListener('unmute', handleUnmute);
+  });
+
 const useWebrtc = () => {
   const [isPending, setIsPending] = useState<boolean>(false);
 
@@ -107,6 +132,14 @@ const useWebrtc = () => {
           addTrack(t);
         });
 
+        const videoTracks = tracksInfo.filter((t) => t !== null && t.appData.trackType === 'video');
+        await Promise.all(
+          videoTracks.map(async (t) => {
+            await resumeConsumer(t!.appData.userId, 'video');
+            await waitForTrackUnmute(t!.track, VIDEO_READY_TIMEOUT);
+          }),
+        );
+
         useInteractionStore.setState({
           handsUp: new Set(participants.filter((item) => item.isHandUp).map(({ user: { userId } }) => userId)),
         });
@@ -122,7 +155,17 @@ const useWebrtc = () => {
         setIsPending(false);
       }
     },
-    [consumeTrack, initSubscribe, request, connect, initWebrtc, unsubscribeAll, disconnectTransport, clearDevice],
+    [
+      consumeTrack,
+      initSubscribe,
+      request,
+      connect,
+      initWebrtc,
+      unsubscribeAll,
+      disconnectTransport,
+      clearDevice,
+      resumeConsumer,
+    ],
   );
 
   const leaveRoom = useCallback(() => {

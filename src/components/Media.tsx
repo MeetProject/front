@@ -66,8 +66,20 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
       return;
     }
 
+    const kind = tag === 'audio' ? 'audio' : 'video';
+
+    const hasSameTracks = () => {
+      const current = el.srcObject;
+      if (!(current instanceof MediaStream)) {
+        return false;
+      }
+      const currentTracks = current.getTracks().filter((track) => track.kind === kind);
+      const nextTracks = stream.getTracks().filter((track) => track.kind === kind);
+      return currentTracks.length === nextTracks.length && nextTracks.every((track) => currentTracks.includes(track));
+    };
+
     const updateStreamSrc = () => {
-      if (el.srcObject === stream) {
+      if (el.srcObject === stream || hasSameTracks()) {
         return;
       }
       el.srcObject = stream;

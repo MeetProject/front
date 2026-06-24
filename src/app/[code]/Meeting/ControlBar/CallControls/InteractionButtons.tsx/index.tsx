@@ -9,6 +9,7 @@ import { useOutsideClick } from '@/hook';
 import { cn } from '@/lib/cn';
 import { useDrawerStore } from '@/store/useDrawer';
 import { useInteractionStore } from '@/store/useInteractionStore';
+import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 interface InteractionButtonsProps {
@@ -26,6 +27,9 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
   );
 
   const handsUp = useInteractionStore((state) => state.handsUp.has(userId ?? ''));
+
+  const screenOwnerId = useParticipantStore((state) => state.screenStream.userId);
+  const isScreenSharingByOther = screenOwnerId !== null && screenOwnerId !== userId;
 
   const [isOpenOption, setIsOpenOption] = useState<boolean>(false);
   const [active, setActive] = useState<Record<'screenShare', boolean>>({
@@ -70,9 +74,10 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
 
   const BUTTON = [
     {
+      disabled: isScreenSharingByOther,
       icon: Icon.ScreenShare,
-      isActive: active.screenShare,
-      name: active.screenShare ? '화면 공유 중지' : '화면 공유',
+      isActive: active.screenShare || isScreenSharingByOther,
+      name: isScreenSharingByOther ? '다른 참가자가 화면 공유 중' : active.screenShare ? '화면 공유 중지' : '화면 공유',
       onClick: handleScreenShareButtonClick,
     },
     { icon: Icon.Emoji, isActive: emoji, name: '반응 보내기', onClick: handleEmojiButtonClick },
