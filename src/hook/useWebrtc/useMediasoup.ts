@@ -371,6 +371,12 @@ export const useMediasoup = (
     recvTransport.current?.close();
     sendTransport.current = null;
     recvTransport.current = null;
+
+    consumers.current.clear();
+    screenConsumers.current.clear();
+    producers.current.clear();
+    screenProducers.current.clear();
+    resumedConsumer.current.clear();
     recvReadyRef.current = null;
   }, []);
 
