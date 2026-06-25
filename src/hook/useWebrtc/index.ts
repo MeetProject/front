@@ -127,23 +127,23 @@ const useWebrtc = () => {
           others.flatMap(({ producerIds, user: { userId } }) => producerIds.map((id) => consumeTrack(userId, id))),
         );
         const { addAudioTrack } = useAudioStore.getState();
-        const tracksInfo = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+        const tracksInfo = results
+          .filter((r) => r.status === 'fulfilled')
+          .map((r) => r.value)
+          .filter((t) => t !== null);
         tracksInfo.forEach((t) => {
-          if (!t) {
-            return;
-          }
           if (t.appData.trackType === 'audio') {
             addAudioTrack(t);
-            return;
+          } else {
+            addTrack(t);
           }
-          addTrack(t);
         });
 
-        const videoTracks = tracksInfo.filter((t) => t !== null && t.appData.trackType === 'video');
+        const videoTracks = tracksInfo.filter((t) => t.appData.trackType === 'video');
         await Promise.all(
           videoTracks.map(async (t) => {
-            await resumeConsumer(t!.appData.userId, 'video');
-            await waitForTrackUnmute(t!.track, VIDEO_READY_TIMEOUT);
+            await resumeConsumer(t.appData.userId, 'video');
+            await waitForTrackUnmute(t.track, VIDEO_READY_TIMEOUT);
           }),
         );
 
@@ -153,12 +153,13 @@ const useWebrtc = () => {
         currentRoomId.current = roomId;
         return true;
       } catch {
-        const { reset } = useParticipantStore.getState();
+        const { reset: participantReset } = useParticipantStore.getState();
+        const { reset: audioReset } = useAudioStore.getState();
         unsubscribeAll();
         disconnectTransport();
         clearDevice();
-        reset();
-        useAudioStore.getState().reset();
+        participantReset();
+        audioReset();
         currentRoomId.current = null;
         return false;
       }
@@ -191,15 +192,13 @@ const useWebrtc = () => {
       results
         .filter((result) => result.status === 'fulfilled')
         .map((result) => result.value)
+        .filter((trackInfo) => trackInfo !== null)
         .forEach((trackInfo) => {
-          if (!trackInfo) {
-            return;
-          }
           if (trackInfo.appData.trackType === 'audio') {
             addAudioTrack(trackInfo);
-            return;
+          } else {
+            addTrack(trackInfo);
           }
-          addTrack(trackInfo);
         });
     },
     [consumeTrack],
@@ -220,19 +219,23 @@ const useWebrtc = () => {
       isReattaching.current = true;
 
       try {
-        const { participants, rejoinRequired } = await request<ResyncResponseType>('/app/signal/resync', { roomId });
+        const { participants, rejoinRequired: isRejoinRequired } = await request<ResyncResponseType>(
+          '/app/signal/resync',
+          { roomId },
+        );
 
-        if (rejoinRequired) {
+        if (isRejoinRequired) {
           handleSessionLost();
           return;
         }
 
         const { userId: selfId } = useUserInfoStore.getState();
-        const { addParticipant, reset } = useParticipantStore.getState();
+        const { addParticipant, reset: participantReset } = useParticipantStore.getState();
+        const { reset: audioReset } = useAudioStore.getState();
 
         disconnectTransport();
-        useAudioStore.getState().reset();
-        reset();
+        audioReset();
+        participantReset();
 
         initSubscribe(roomId);
         participants
@@ -260,12 +263,13 @@ const useWebrtc = () => {
 
   const leaveRoom = useCallback(() => {
     sendLeave();
-    const { reset } = useParticipantStore.getState();
+    const { reset: participantReset } = useParticipantStore.getState();
+    const { reset: audioReset } = useAudioStore.getState();
     unsubscribeAll();
     disconnectTransport();
     clearDevice();
-    reset();
-    useAudioStore.getState().reset();
+    participantReset();
+    audioReset();
   }, [unsubscribeAll, disconnectTransport, sendLeave, clearDevice]);
 
   const shareScreen = useCallback(async () => {
