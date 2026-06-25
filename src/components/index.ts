@@ -8,5 +8,4 @@ export { default as MediaPermissionDeniedDialog } from './MediaPermissionDeniedD
 export { default as MediaPermissionDialog } from './MediaPermissionDialog';
 export { default as Profile } from './Profile';
 export { default as Setting } from './Setting';
-export { default as LocalVisualizer } from './Visualizer/LocalVisualizer';
-export { default as ParticipantVisualizer } from './Visualizer/ParticipantVisualizer';
+export { default as Visualizer } from './Visualizer';

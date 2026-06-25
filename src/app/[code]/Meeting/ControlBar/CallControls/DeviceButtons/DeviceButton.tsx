@@ -4,7 +4,7 @@ import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import * as Icon from '@/asset/svg';
-import { ButtonTag, LocalVisualizer } from '@/components';
+import { ButtonTag, Visualizer } from '@/components';
 import { useShortcutKey } from '@/hook';
 import { subscribeAudioTick } from '@/lib/audioTicker';
 import { cn } from '@/lib/cn';
@@ -144,7 +144,7 @@ export default function DeviceButton({
           >
             <div className='flex size-12 items-center justify-center'>
               {type === 'audio' && enableMute && deviceEnable.audio && (
-                <LocalVisualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' />
+                <Visualizer className='bg-transparent group-hover:hidden' color='#a8c7fa' />
               )}
               <Icon.Chevron
                 className={cn(
