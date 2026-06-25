@@ -10,7 +10,7 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { useWebrtcStore } from '@/store/useWebrtcStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
-import { AppData, ConsumerParamsResponseType, Direction, DtlsReponseType } from '@/types/session';
+import { AppData, ConsumerParamsResponseType, Direction, DtlsResponseType } from '@/types/session';
 
 const RECV_READY_TIMEOUT = 10000;
 
@@ -42,6 +42,7 @@ export const useMediasoup = (
   const screenConsumers = useRef<Map<string, Consumer>>(new Map());
 
   const resumedConsumer = useRef<Set<string>>(new Set());
+  const consumedProducers = useRef<Set<string>>(new Set());
 
   const recvReadyRef = useRef<Deferred | null>(null);
 
@@ -73,6 +74,8 @@ export const useMediasoup = (
   const handleConsumerClose = useCallback((consumer: Consumer, trackType: TrackType, userId: string) => {
     const { removeTrack } = useParticipantStore.getState();
     const { removeAudioTrack } = useAudioStore.getState();
+
+    consumedProducers.current.delete(consumer.producerId);
 
     if (trackType === 'screen') {
       screenConsumers.current.delete(consumer.id);
@@ -118,6 +121,11 @@ export const useMediasoup = (
         return null;
       }
 
+      if (consumedProducers.current.has(producerId)) {
+        return null;
+      }
+      consumedProducers.current.add(producerId);
+
       try {
         const { consumerParams } = await request<ConsumerParamsResponseType>('/app/signal/consumerParams', {
           producerId,
@@ -132,7 +140,7 @@ export const useMediasoup = (
         const { trackType, userId } = appData as AppData;
 
         if (trackType !== 'video') {
-          await publish('/app/consumer/resume', {
+          publish('/app/consumer/resume', {
             consumerId: consumer.id,
           });
           resumedConsumer.current.add(consumer.id);
@@ -155,6 +163,7 @@ export const useMediasoup = (
           track,
         };
       } catch {
+        consumedProducers.current.delete(producerId);
         return null;
       }
     },
@@ -175,7 +184,7 @@ export const useMediasoup = (
         return;
       }
 
-      await publish('/app/consumer/resume', {
+      publish('/app/consumer/resume', {
         consumerId,
       });
       resumedConsumer.current.add(consumerId);
@@ -197,7 +206,7 @@ export const useMediasoup = (
         return;
       }
 
-      await publish('/app/consumer/pause', {
+      publish('/app/consumer/pause', {
         consumerId,
       });
 
@@ -213,7 +222,7 @@ export const useMediasoup = (
         return;
       }
 
-      const { options } = await request<DtlsReponseType>('/app/signal/dtls', {
+      const { options } = await request<DtlsResponseType>('/app/signal/dtls', {
         direction,
       });
 
@@ -238,11 +247,11 @@ export const useMediasoup = (
         return;
       }
 
-      transport.on('produce', async ({ appData, rtpParameters }, callback, errback) => {
+      transport.on('produce', async ({ appData, kind, rtpParameters }, callback, errback) => {
         try {
           const { producerId } = await request<Record<'producerId', string>>('/app/signal/rtls', {
             appData,
-            kind: appData.trackType === 'audio' || appData.trackType === 'screenAudio' ? 'audio' : 'video',
+            kind,
             rtpParameters,
             transportId: transport.id,
           });
@@ -371,6 +380,13 @@ export const useMediasoup = (
     recvTransport.current?.close();
     sendTransport.current = null;
     recvTransport.current = null;
+
+    consumers.current.clear();
+    screenConsumers.current.clear();
+    producers.current.clear();
+    screenProducers.current.clear();
+    resumedConsumer.current.clear();
+    consumedProducers.current.clear();
     recvReadyRef.current = null;
   }, []);
 

@@ -2,15 +2,18 @@
 
 import { PropsWithChildren, useEffect } from 'react';
 
-import { useDevice } from '@/hook';
+import { useDevice, useLocalAnalyser } from '@/hook';
+import { resumeAudioContext } from '@/lib/audioGraph';
 import { getCurrentDeviceInfo } from '@/lib/device';
-import { useAudioStore } from '@/store/useAudioStore';
+import { resumeLocalAnalyser } from '@/lib/localAudio';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
 export default function DeviceProvider({ children }: PropsWithChildren) {
   const { initStream } = useDevice();
   const stream = useDeviceStore((state) => state.stream);
+
+  useLocalAnalyser();
 
   useEffect(() => {
     const statuses: PermissionStatus[] = [];
@@ -128,8 +131,8 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const unlock = () => {
-      const { resumeAudioContext } = useAudioStore.getState();
       resumeAudioContext();
+      resumeLocalAnalyser();
     };
 
     window.addEventListener('pointerdown', unlock);

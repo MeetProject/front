@@ -19,7 +19,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
   useImperativeHandle(ref, () => {
     const el = tag === 'audio' ? audioRef.current : videoRef.current;
     return el as HTMLMediaElement;
-  });
+  }, [tag]);
 
   useEffect(() => {
     const el = tag === 'audio' ? audioRef.current : videoRef.current;
@@ -35,7 +35,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
       try {
         await el.setSinkId(audioOutput.deviceId);
         if (!el.paused && !el.ended && el.readyState) {
-          el.play();
+          el.play().catch(() => {});
         }
       } catch {
         const { changeDevice, changeDeviceList, deviceList } = useDeviceStore.getState();
@@ -102,7 +102,7 @@ const Media = forwardRef<HTMLMediaElement, MediaProps>(({ stream, tag, ...props 
   if (tag === 'audio') {
     return <audio ref={audioRef} {...props} />;
   }
-  return <video ref={videoRef} style={{ transform: 'scaleX(-1)' }} {...props} />;
+  return <video ref={videoRef} {...props} />;
 });
 
 Media.displayName = 'Media';

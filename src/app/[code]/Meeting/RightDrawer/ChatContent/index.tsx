@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import ChatInput from './ChatInput';
 import ChatMessage from './ChatMessage';
@@ -9,13 +9,15 @@ import ChatMessage from './ChatMessage';
 import * as image from '@/asset/image';
 import * as Icon from '@/asset/svg';
 import { useParticipantStore } from '@/store/useParticipantStore';
+import { groupMessages } from '@/util/chat';
 
 interface ChatContentProps {
   sendChat: (message: string) => void;
 }
 
 export default function ChatContent({ sendChat }: ChatContentProps) {
-  const chatData = useParticipantStore((state) => state.chat);
+  const messages = useParticipantStore((state) => state.chat);
+  const chatData = useMemo(() => groupMessages(messages), [messages]);
 
   const handleChatSubmit = useCallback(
     (value: string) => {
@@ -45,7 +47,7 @@ export default function ChatContent({ sendChat }: ChatContentProps) {
         ) : (
           <div className='flex-1'>
             {chatData.map((el) => (
-              <ChatMessage chat={el} key={el.userId + el.messages[0].timestamp} />
+              <ChatMessage chat={el} key={el.messages[0].id} />
             ))}
           </div>
         )}

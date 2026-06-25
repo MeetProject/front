@@ -11,19 +11,21 @@ const STOMP_TIMEOUT = 10000;
 
 export const useSignaling = (url: string) => {
   const handleReply = useCallback((message: IMessage) => {
-    const { pendingRequest } = useSignalStore.getState();
-    const { correlationId, ...data } = JSON.parse(message.body);
+    try {
+      const { pendingRequest } = useSignalStore.getState();
+      const { correlationId, ...data } = JSON.parse(message.body);
 
-    const request = pendingRequest.get(correlationId);
+      const request = pendingRequest.get(correlationId);
 
-    if (!request) {
-      return;
-    }
+      if (!request) {
+        return;
+      }
 
-    clearTimeout(request.timeoutId);
-    pendingRequest.delete(correlationId);
+      clearTimeout(request.timeoutId);
+      pendingRequest.delete(correlationId);
 
-    request.resolve(data);
+      request.resolve(data);
+    } catch {}
   }, []);
 
   const connect = useCallback(
@@ -46,7 +48,7 @@ export const useSignaling = (url: string) => {
           ...config,
           brokerURL: undefined,
           onConnect: (frame: IFrame) => {
-            useSignalStore.setState({ client: newClient });
+            useSignalStore.setState({ client: newClient, status: 'connected' });
 
             const repliesSub = newClient.subscribe('/user/queue/replies', handleReply);
             subscription.set('replies', repliesSub);
@@ -63,12 +65,15 @@ export const useSignaling = (url: string) => {
 
             if (evt?.code === 1000) {
               newClient.deactivate();
+              useSignalStore.setState({ status: 'closed' });
               resolve(newClient);
               return;
             }
 
+            useSignalStore.setState({ status: 'reconnecting' });
             reject(new Error('WebSocket connection closed'));
           },
+          reconnectDelay: 3000,
           webSocketFactory: () =>
             new SockJS(`${url}?userId=${userId}`, null, {
               timeout: 5000,
@@ -100,8 +105,10 @@ export const useSignaling = (url: string) => {
     }
 
     const sub = client.subscribe(destination, async (message: Message) => {
-      const data = JSON.parse(message.body) as T;
-      await callback(data);
+      try {
+        const data = JSON.parse(message.body) as T;
+        await callback(data);
+      } catch {}
     });
 
     subscription.set(destination, sub);
@@ -130,16 +137,22 @@ export const useSignaling = (url: string) => {
   }, []);
 
   const disconnect = useCallback(() => {
-    const { client, subscription } = useSignalStore.getState();
+    const { client, pendingRequest, subscription } = useSignalStore.getState();
     if (!client) {
       return;
     }
+
+    pendingRequest.forEach((request) => {
+      clearTimeout(request.timeoutId);
+      request.reject(new Error('STOMP disconnected'));
+    });
+    pendingRequest.clear();
 
     subscription.values().forEach((sub) => sub.unsubscribe());
     subscription.clear();
 
     client.deactivate();
-    useSignalStore.setState({ client: null });
+    useSignalStore.setState({ client: null, status: 'closed' });
   }, []);
 
   const request = useCallback(

@@ -17,7 +17,7 @@ export default function Volume() {
     <>
       {deviceEnable.audio && permission.audio === 'granted' && stream && (
         <div className='absolute bottom-4 left-4 z-3'>
-          <Visualizer source={stream} />
+          <Visualizer />
         </div>
       )}
     </>

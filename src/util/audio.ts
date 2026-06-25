@@ -7,35 +7,6 @@ export const createAudioContext = (): AudioContext | null => {
   return AudioContextClass ? new AudioContextClass() : null;
 };
 
-interface StreamAnalyser {
-  audioContext: AudioContext;
-  analyser: AnalyserNode;
-  source: MediaStreamAudioSourceNode;
-}
-
-export const createStreamAnalyser = (stream: MediaStream, fftSize = 256): StreamAnalyser | null => {
-  if (stream.getAudioTracks().length === 0) {
-    return null;
-  }
-
-  const audioContext = createAudioContext();
-  if (!audioContext) {
-    return null;
-  }
-
-  if (audioContext.state === 'suspended') {
-    audioContext.resume().catch(() => {});
-  }
-
-  const analyser = audioContext.createAnalyser();
-  analyser.fftSize = fftSize;
-
-  const source = audioContext.createMediaStreamSource(stream);
-  source.connect(analyser);
-
-  return { analyser, audioContext, source };
-};
-
 export const mapBarHeight = (value: number): number => {
   const THRESHOLD = 3;
   if (value <= THRESHOLD) {

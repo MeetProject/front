@@ -22,7 +22,3 @@ export const validateRoom = async (roomId: string) => {
   const data = (await response.json()) as RoomValidateResponseType;
   return data;
 };
-
-export const leaveRoom = async (roomId: string, userId: string) => {
-  await fetch(`${API_URL}/api/rooms/${roomId}/leave?userId=${userId}`);
-};

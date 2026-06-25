@@ -41,7 +41,7 @@ export default function RaisedHandsDropDown({ keyword }: RaisedHandsDropDownProp
       <div className='size-full px-4 py-2'>
         <p className='text-on-surface-dark mb-2 text-xs'>(손 든 순서대로)</p>
         {handsUpUser.map(([id, name]) => (
-          <ParticipantCard isMe={userId === id} key={userId} name={name} userId={id} />
+          <ParticipantCard isMe={userId === id} key={id} name={name} userId={id} />
         ))}
       </div>
     </ParticipantDropDown>

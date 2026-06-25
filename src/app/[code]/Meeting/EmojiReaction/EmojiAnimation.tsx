@@ -1,16 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { memo, useEffect } from 'react';
+import { memo, useMemo } from 'react';
 
 import * as webp from '@/asset/webp';
-import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { EmojiDataType } from '@/types/emojiType';
 
 interface EmojiAnimationProps {
-  emojiId: string;
   emoji: EmojiDataType;
 }
 
@@ -19,35 +17,35 @@ const EMOJI_IMAGE = {
   CURIOUS: webp.curiousEmoji,
   HEART: webp.heartEmoji,
   LAUGHTER: webp.laughterEmoji,
-  PARTYPOPPER: webp.partyPoperEmoji,
+  PARTYPOPPER: webp.partyPopperEmoji,
   SAD: webp.sadEmoji,
-  SURPRISE: webp.surpriceEmoji,
+  SURPRISE: webp.surpriseEmoji,
   THUMBDOWN: webp.thumbDownEmoji,
-  THUMBUP: webp.thumbDownEmoji,
+  THUMBUP: webp.thumbUpEmoji,
 };
 
-function EmojiIcon({ emoji, emojiId }: EmojiAnimationProps) {
+function EmojiIcon({ emoji }: EmojiAnimationProps) {
   const userId = useUserInfoStore((state) => state.userId);
   const participantsUserData = useParticipantStore((state) => state.info);
 
-  useEffect(() => {
-    setTimeout(() => {
-      const { removeEmoji } = useInteractionStore.getState();
-      removeEmoji(emojiId);
-    }, 4000);
-  }, [emojiId, emoji]);
+  const isMe = emoji.userId === userId;
+  const name = isMe ? '나' : participantsUserData.get(emoji.userId)?.userName;
+
+  const leftPercent = useMemo(() => 20 + Math.random() * 60, []);
 
   return (
     <div
-      className='animate-move-bottom-up absolute bottom-0 z-9999 flex flex-col items-center justify-center gap-2'
-      style={{ left: `${Math.random() * 264}px` }}
+      className='animate-move-bottom-up absolute bottom-0 z-9999 flex -translate-x-1/2 flex-col items-center justify-center gap-2'
+      style={{ left: `${leftPercent}%` }}
     >
       <Image alt={emoji.emoji} height={36} src={EMOJI_IMAGE[emoji.emoji]} unoptimized={true} width={36} />
-      <div
-        className={`max-w-28 truncate rounded-full px-2 text-sm ${emoji.userId === userId ? 'bg-primary-light text-black' : 'bg-surface-base text-white'} `}
-      >
-        {userId === emoji.userId ? '나' : participantsUserData.get(emoji.userId)?.userName}
-      </div>
+      {name && (
+        <div
+          className={`max-w-28 truncate rounded-full px-2 text-sm ${isMe ? 'bg-primary-light text-black' : 'bg-surface-base text-white'} `}
+        >
+          {name}
+        </div>
+      )}
     </div>
   );
 }

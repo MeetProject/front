@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
+import { measureAverage, peekAverage } from '@/lib/audioTicker';
 import { useActiveSpeakerStore } from '@/store/useActiveSpeakerStore';
 import { useAudioStore } from '@/store/useAudioStore';
 import { resolveActiveSpeakers, SpeakerDetectionConfig, SpeakerDetectionState } from '@/util/audio';
@@ -39,8 +40,6 @@ const useActiveSpeakerDetector = (enabled: boolean, maxSpeakers: number) => {
       return;
     }
 
-    const buf = new Uint8Array(1024);
-
     const tick = () => {
       if (document.hidden) {
         return;
@@ -50,11 +49,7 @@ const useActiveSpeakerDetector = (enabled: boolean, maxSpeakers: number) => {
       const volumes = new Map<string, number>();
 
       audio.forEach(({ analyser }, userId) => {
-        const bins = Math.min(analyser.frequencyBinCount, buf.length);
-        analyser.getByteFrequencyData(buf);
-
-        const avg = buf.subarray(0, bins).reduce((sum, value) => sum + value, 0) / bins;
-        volumes.set(userId, avg);
+        volumes.set(userId, peekAverage(analyser) ?? measureAverage(analyser));
       });
 
       const promoted = resolveActiveSpeakers(volumes, state, performance.now(), maxSpeakers, CONFIG);

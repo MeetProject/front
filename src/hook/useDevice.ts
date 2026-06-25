@@ -30,14 +30,14 @@ const useDevice = () => {
     });
   }, []);
 
-  const syncEnable = useCallback((stream: MediaStream, constranint: Record<DeviceKindType, boolean>) => {
+  const syncEnable = useCallback((stream: MediaStream, constraint: Record<DeviceKindType, boolean>) => {
     const { deviceEnable } = useDeviceStore.getState();
 
-    if (constranint.audio && !deviceEnable.audio) {
+    if (constraint.audio && !deviceEnable.audio) {
       stream.getAudioTracks().forEach((track) => (track.enabled = false));
     }
 
-    if (constranint.video && !deviceEnable.video) {
+    if (constraint.video && !deviceEnable.video) {
       stream.getVideoTracks().forEach((track) => {
         track.stop();
         stream.removeTrack(track);
@@ -50,12 +50,12 @@ const useDevice = () => {
     return {
       ...(config.audio && {
         audio: {
-          ...(device.audioInput && { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput } }),
+          ...(device.audioInput && { deviceId: { [isExact ? 'exact' : 'ideal']: device.audioInput.deviceId } }),
           ...AUDIO_PROCESSING,
         },
       }),
       ...(config.video && {
-        video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput } } : true,
+        video: device.videoInput ? { deviceId: { [isExact ? 'exact' : 'ideal']: device.videoInput.deviceId } } : true,
       }),
     } as MediaStreamConstraints;
   }, []);
@@ -100,7 +100,7 @@ const useDevice = () => {
       } catch (e) {
         const error = e as DOMException;
         if ((error.name === 'OverconstrainedError' || error.name === 'NotFoundError') && isExact) {
-          return getStream(constraint, false, isLast);
+          return getStream(constraint, false, isLast, isSyncEnable);
         }
 
         if (error.name === 'NotAllowedError' && !isLast) {

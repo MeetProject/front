@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -14,19 +14,23 @@ import Screen from './Screen';
 
 import { Loading } from '@/components';
 import { useDevice, useWebrtc } from '@/hook';
+import { useAlertStore } from '@/store/useAlertStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { useDrawerStore } from '@/store/useDrawer';
+import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
 import { API_URL } from '@/util/api';
 
 export default function Meeting() {
+  const router = useRouter();
   const roomId = usePathname().slice(1);
+  const isReconnecting = useSignalStore((state) => state.status === 'reconnecting');
   const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
-  const { isInit, screenStreams } = useDeviceStore(
+  const { isInit, screenStream } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
-      screenStreams: state.screenStream,
+      screenStream: state.screenStream,
     })),
   );
 
@@ -49,9 +53,9 @@ export default function Meeting() {
   const audioControl = useMemo(() => ({ toggleMute: toggleParticipantAudio }), [toggleParticipantAudio]);
 
   const handleScreenShare = useCallback(async () => {
-    const { screenStream } = useDeviceStore.getState();
+    const { screenStream: currentScreenStream } = useDeviceStore.getState();
 
-    if (screenStream) {
+    if (currentScreenStream) {
       removeTrack('screen');
       stopScreenStream();
       return;
@@ -78,13 +82,20 @@ export default function Meeting() {
     }
 
     const init = async () => {
-      await initStream();
-      await joinRoom(roomId);
+      await initStream(true);
+      const isJoin = await joinRoom(roomId);
+
+      if (!isJoin) {
+        useAlertStore.getState().addAlert('회의 입장에 실패했습니다. 다시 시도해 주세요.');
+        router.push('/landing');
+        return;
+      }
+
       setIsPending(false);
     };
 
     init();
-  }, [isInit, initStream, joinRoom, roomId]);
+  }, [isInit, initStream, joinRoom, roomId, router]);
 
   useEffect(
     () => () => {
@@ -116,11 +127,11 @@ export default function Meeting() {
   }, [leaveRoom, roomId]);
 
   useEffect(() => {
-    if (!screenStreams) {
+    if (!screenStream) {
       return;
     }
 
-    const videoTrack = screenStreams.getVideoTracks()[0];
+    const videoTrack = screenStream.getVideoTracks()[0];
     if (!videoTrack) {
       return;
     }
@@ -133,7 +144,7 @@ export default function Meeting() {
     return () => {
       videoTrack.onended = null;
     };
-  }, [screenStreams, removeTrack, stopScreenStream]);
+  }, [screenStream, removeTrack, stopScreenStream]);
 
   if (isPending) {
     return <Loading isPending={isPending} />;
@@ -142,6 +153,11 @@ export default function Meeting() {
   return (
     <ParticipantAudioControlProvider value={audioControl}>
       <div className='bg-surface-deep relative flex h-svh w-svw flex-col overflow-hidden select-none'>
+        {isReconnecting && (
+          <div className='absolute top-3 left-1/2 z-50 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-sm text-white'>
+            재연결 중…
+          </div>
+        )}
         <Header />
         <div className='flex flex-1 flex-col'>
           <div className='relative flex flex-1 flex-col'>

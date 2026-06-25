@@ -33,7 +33,7 @@ export default function RaisedHandsInfo({ onClick }: RaisedHandsInfoProps) {
           <p className='text-on-surface-white text-xs'>처음부터 끝까지</p>
           <div className='mt-4 flex w-full flex-col gap-4'>
             {[...handsUp.values()].slice(0, 4).map((id) => (
-              <div className='itesm-center flex gap-4' key={id}>
+              <div className='flex items-center gap-4' key={id}>
                 <Profile className='size-10' id={id} isMe={userId === id} />
                 <div className='flex flex-1 items-center'>
                   <p className='text-outline-light font-google-sans truncate align-middle'>

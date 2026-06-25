@@ -83,8 +83,8 @@ export default function Header() {
       <Link className='flex h-10 items-center gap-2 whitespace-nowrap' href='/'>
         <Icon.Logo height={36} width={36} />
         <div className='flex justify-center max-[360px]:hidden'>
-          <p className='text-1.5xl font-semibold text-gray-600'>Meet</p>
-          <p className='text-1.5xl font-medium text-gray-600'>Project</p>
+          <p className='text-1.5xl font-semibold text-gray-600'>Project</p>
+          <p className='text-1.5xl font-medium text-gray-600'>Meet</p>
         </div>
       </Link>
       <div className='z-10 flex items-center bg-white whitespace-nowrap'>

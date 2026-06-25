@@ -25,7 +25,7 @@ export default function Page() {
             Project Meet에 관해{' '}
             <Link
               className='border-primary-vivid text-primary-vivid border-solid hover:border-b'
-              href='https://github.com/armd482/meetproejct'
+              href='https://github.com/MeetProject'
             >
               자세히 알아보세요.
             </Link>

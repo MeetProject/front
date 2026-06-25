@@ -1,5 +1,8 @@
 export const parseRGB = (hex: string) => {
-  const [r, g, b] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map((x) => parseInt(x, 16));
+  const [r, g, b] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map((x) => {
+    const value = parseInt(x, 16);
+    return Number.isNaN(value) ? 0 : value;
+  });
   return { b, g, r };
 };
 
@@ -11,13 +14,9 @@ export const getHue = (r: number, g: number, b: number) => {
     return 0;
   }
 
-  const segment = {
-    [b]: (r - g) / d + 4,
-    [g]: (b - r) / d + 2,
-    [r]: (g - b) / d + (g < b ? 6 : 0),
-  };
+  const hue = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
 
-  return Math.round(segment[max] * 60);
+  return Math.round(hue * 60);
 };
 
 export const getSaturation = (r: number, g: number, b: number) => {
@@ -49,9 +48,9 @@ const getRandomValue = (start: number, end: number) => Math.floor(Math.random() 
 
 export const getRandomHexColor = (): string => {
   const HEX = '0123456789abcdef';
-  const rr = `${HEX[getRandomValue(0, 15)]}${HEX[getRandomValue(0, 15)]}`;
-  const gg = `${HEX[getRandomValue(0, 15)]}${HEX[getRandomValue(0, 15)]}`;
-  const bb = `${HEX[getRandomValue(0, 15)]}${HEX[getRandomValue(0, 15)]}`;
+  const rr = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
+  const gg = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
+  const bb = `${HEX[getRandomValue(0, 16)]}${HEX[getRandomValue(0, 16)]}`;
 
   return `#${rr}${gg}${bb}`;
 };

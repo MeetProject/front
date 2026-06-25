@@ -27,8 +27,9 @@ export default function ParticipateMeetingForm() {
       const { value: isValid } = await validateRoom(roomId);
 
       if (!isValid) {
-        alert('이미 닫힌 회의방입니다.');
-        throw new Error('유효하지 않은 id');
+        const { addAlert } = useAlertStore.getState();
+        addAlert('이미 닫힌 회의방입니다.');
+        return;
       }
       router.push(`/${roomId}`);
     } catch {

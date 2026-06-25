@@ -1,26 +1,18 @@
 import { create } from 'zustand';
 
+import { AttachedAudio, attachAudio, detachAudio, resetAudio } from '@/lib/audioGraph';
 import { AppData } from '@/types/session';
-import { createAudioContext } from '@/util/audio';
 
 interface ConsumerResult {
   appData: AppData;
   track: MediaStreamTrack;
 }
 
-interface AudioEntry {
-  stream: MediaStream;
-  analysisStream: MediaStream;
-  source: MediaStreamAudioSourceNode;
-  analyser: AnalyserNode;
-}
-
 interface AudioState {
-  audio: Map<string, AudioEntry>;
-  audioContext: AudioContext | null;
+  audio: Map<string, AttachedAudio>;
   addAudioTrack: (trackInfo: ConsumerResult) => void;
   removeAudioTrack: (id: string) => void;
-  resumeAudioContext: () => Promise<void>;
+  reset: () => void;
 }
 
 export const useAudioStore = create<AudioState>((set, get) => ({
@@ -30,47 +22,24 @@ export const useAudioStore = create<AudioState>((set, get) => ({
       track,
     } = trackInfo;
 
-    const audioContext = get().audioContext ?? createAudioContext();
-    if (!audioContext) {
+    const attached = attachAudio(userId, track);
+    if (!attached) {
       return;
     }
-
-    if (audioContext.state === 'suspended') {
-      audioContext.resume().catch(() => {});
-    }
-
-    const previous = get().audio.get(userId);
-    if (previous) {
-      previous.source.disconnect();
-      previous.analyser.disconnect();
-      previous.analysisStream.getTracks().forEach((t) => t.stop());
-    }
-
-    const stream = new MediaStream([track]);
-    const analysisStream = new MediaStream([track.clone()]);
-    const source = audioContext.createMediaStreamSource(analysisStream);
-    const analyser = audioContext.createAnalyser();
-    source.connect(analyser);
 
     const newAudioMap = new Map(get().audio);
-    newAudioMap.set(userId, { analyser, analysisStream, source, stream });
+    newAudioMap.set(userId, attached);
 
-    set({ audio: newAudioMap, audioContext });
+    set({ audio: newAudioMap });
   },
   audio: new Map(),
-  audioContext: null,
 
-  removeAudioTrack: (id: string) => {
-    const entry = get().audio.get(id);
-    if (!entry) {
+  removeAudioTrack: (id) => {
+    if (!get().audio.has(id)) {
       return;
     }
 
-    const { analyser, analysisStream, source } = entry;
-
-    source.disconnect();
-    analyser.disconnect();
-    analysisStream.getTracks().forEach((t) => t.stop());
+    detachAudio(id);
 
     const newAudioMap = new Map(get().audio);
     newAudioMap.delete(id);
@@ -78,12 +47,8 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     set({ audio: newAudioMap });
   },
 
-  resumeAudioContext: async () => {
-    const audioContext = get().audioContext;
-    if (audioContext && audioContext.state === 'suspended') {
-      try {
-        await audioContext.resume();
-      } catch {}
-    }
+  reset: () => {
+    resetAudio();
+    set({ audio: new Map() });
   },
 }));
