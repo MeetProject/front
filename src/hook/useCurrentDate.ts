@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+const MINUTE_MS = 60000;
+
 const useCurrentDate = () => {
   const [time, setTime] = useState<Date>(new Date());
   const timerReference = useRef<NodeJS.Timeout | null>(null);
@@ -29,9 +31,9 @@ const useCurrentDate = () => {
       timerReference.current = setTimeout(
         () => {
           updateTime();
-          intervalReference.current = setInterval(updateTime, 60000);
+          intervalReference.current = setInterval(updateTime, MINUTE_MS);
         },
-        60000 - (now.getTime() % 60000),
+        MINUTE_MS - (now.getTime() % MINUTE_MS),
       );
     };
 
