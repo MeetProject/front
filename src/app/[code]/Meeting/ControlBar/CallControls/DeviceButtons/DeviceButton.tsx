@@ -1,11 +1,12 @@
 'use client';
 
-import { MouseEvent, useCallback } from 'react';
+import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
 import * as Icon from '@/asset/svg';
 import { ButtonTag, LocalVisualizer } from '@/components';
-import { useShortcutKey, useSpeakingWhileMuted } from '@/hook';
+import { useShortcutKey } from '@/hook';
+import { subscribeAudioTick } from '@/lib/audioTicker';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
@@ -25,6 +26,10 @@ const BUTTON_PROPS = {
   width: 24,
 };
 
+const SPEAKING_THRESHOLD = 12;
+const SPEAKING_SUSTAIN_MS = 1500;
+const SPEAKING_COOLDOWN_MS = 3 * 60 * 1000;
+
 export default function DeviceButton({
   isOptionOpen,
   onChevronClick,
@@ -33,8 +38,9 @@ export default function DeviceButton({
   shortcutKey,
   type,
 }: DeviceButtonProps) {
-  const { deviceEnable, permission } = useDeviceStore(
+  const { analyser, deviceEnable, permission } = useDeviceStore(
     useShallow((state) => ({
+      analyser: state.localAnalyser,
       deviceEnable: state.deviceEnable,
       permission: state.permission,
     })),
@@ -59,7 +65,56 @@ export default function DeviceButton({
   const enableMute = permission[type] === 'granted';
 
   const isSpeakingDetectActive = type === 'audio' && enableMute && !deviceEnable.audio;
-  const { dismiss: dismissSpeakingAlert, showAlert: showSpeakingAlert } = useSpeakingWhileMuted(isSpeakingDetectActive);
+
+  const [showSpeakingAlert, setShowSpeakingAlert] = useState(false);
+  const showSpeakingAlertRef = useRef(false);
+  const cooldownUntilRef = useRef(0);
+  const speakingMsRef = useRef(0);
+
+  const updateShowSpeakingAlert = useCallback((value: boolean) => {
+    showSpeakingAlertRef.current = value;
+    setShowSpeakingAlert(value);
+  }, []);
+
+  const dismissSpeakingAlert = useCallback(() => {
+    cooldownUntilRef.current = Date.now() + SPEAKING_COOLDOWN_MS;
+    speakingMsRef.current = 0;
+    updateShowSpeakingAlert(false);
+  }, [updateShowSpeakingAlert]);
+
+  useEffect(() => {
+    if (!isSpeakingDetectActive || !analyser) {
+      speakingMsRef.current = 0;
+      if (showSpeakingAlertRef.current) {
+        updateShowSpeakingAlert(false);
+      }
+      return;
+    }
+
+    const timeState = { last: performance.now() };
+
+    const unsubscribe = subscribeAudioTick({
+      getAnalyser: () => analyser,
+      onValue: (avg) => {
+        const now = performance.now();
+        const dt = now - timeState.last;
+        timeState.last = now;
+
+        speakingMsRef.current =
+          avg > SPEAKING_THRESHOLD ? speakingMsRef.current + dt : Math.max(0, speakingMsRef.current - dt * 0.5);
+
+        if (
+          !showSpeakingAlertRef.current &&
+          speakingMsRef.current >= SPEAKING_SUSTAIN_MS &&
+          Date.now() >= cooldownUntilRef.current
+        ) {
+          updateShowSpeakingAlert(true);
+        }
+      },
+    });
+
+    return unsubscribe;
+  }, [isSpeakingDetectActive, analyser, updateShowSpeakingAlert]);
 
   const ICON = {
     audio: {

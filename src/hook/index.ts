@@ -5,7 +5,6 @@ export { default as useLocalAnalyser } from './useLocalAnalyser';
 export { default as useOutsideClick } from './useOutsideClick';
 export { default as useResizeObserver } from './useResizeObserver';
 export { default as useShortcutKey } from './useShortcutKey';
-export { default as useSpeakingWhileMuted } from './useSpeakingWhileMuted';
 export { default as useStagedLayout } from './useStagedLayout';
 export { default as useTiledLayout } from './useTiledLayout';
 export { default as useVolumeMeter } from './useVolumeMeter';
