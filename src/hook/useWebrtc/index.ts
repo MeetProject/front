@@ -18,12 +18,19 @@ import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { DeviceKindType, TrackType } from '@/types/deviceType';
 import {
+  AppData,
   CapabilitiesResponseType,
   JoinRoomResponseType,
   ParticipantDataType,
   ResyncResponseType,
 } from '@/types/session';
 import { WS_URL } from '@/util/api';
+
+type ConsumeResult = { appData: AppData; track: MediaStreamTrack };
+
+const isConsumedTrack = (
+  result: PromiseSettledResult<ConsumeResult | null>,
+): result is PromiseFulfilledResult<ConsumeResult> => result.status === 'fulfilled' && result.value !== null;
 
 const VIDEO_READY_TIMEOUT = 3000;
 
@@ -127,10 +134,7 @@ const useWebrtc = () => {
           others.flatMap(({ producerIds, user: { userId } }) => producerIds.map((id) => consumeTrack(userId, id))),
         );
         const { addAudioTrack } = useAudioStore.getState();
-        const tracksInfo = results
-          .filter((r) => r.status === 'fulfilled')
-          .map((r) => r.value)
-          .filter((t) => t !== null);
+        const tracksInfo = results.filter(isConsumedTrack).map((r) => r.value);
         tracksInfo.forEach((t) => {
           if (t.appData.trackType === 'audio') {
             addAudioTrack(t);
@@ -190,9 +194,8 @@ const useWebrtc = () => {
       );
 
       results
-        .filter((result) => result.status === 'fulfilled')
+        .filter(isConsumedTrack)
         .map((result) => result.value)
-        .filter((trackInfo) => trackInfo !== null)
         .forEach((trackInfo) => {
           if (trackInfo.appData.trackType === 'audio') {
             addAudioTrack(trackInfo);
