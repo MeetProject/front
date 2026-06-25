@@ -10,11 +10,12 @@ export interface AttachedAudio {
   analyser: AnalyserNode;
 }
 
-let audioContext: AudioContext | null = null;
+const state: { audioContext: AudioContext | null } = { audioContext: null };
 const nodes = new Map<string, AudioNodes>();
 
 export const attachAudio = (userId: string, track: MediaStreamTrack): AttachedAudio | null => {
-  audioContext = audioContext ?? createAudioContext();
+  state.audioContext = state.audioContext ?? createAudioContext();
+  const audioContext = state.audioContext;
   if (!audioContext) {
     return null;
   }
@@ -60,6 +61,7 @@ export const resetAudio = () => {
 };
 
 export const resumeAudioContext = async () => {
+  const { audioContext } = state;
   if (audioContext && audioContext.state === 'suspended') {
     try {
       await audioContext.resume();

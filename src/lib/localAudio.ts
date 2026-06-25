@@ -2,14 +2,17 @@ import { createAudioContext } from '@/util/audio';
 
 const FFT_SIZE = 256;
 
-let audioContext: AudioContext | null = null;
-let source: MediaStreamAudioSourceNode | null = null;
-let analyser: AnalyserNode | null = null;
+const state: {
+  analyser: AnalyserNode | null;
+  audioContext: AudioContext | null;
+  source: MediaStreamAudioSourceNode | null;
+} = { analyser: null, audioContext: null, source: null };
 
 export const createLocalAnalyser = (stream: MediaStream): AnalyserNode | null => {
   releaseLocalAnalyser();
 
-  audioContext = createAudioContext();
+  const audioContext = createAudioContext();
+  state.audioContext = audioContext;
   if (!audioContext) {
     return null;
   }
@@ -18,28 +21,32 @@ export const createLocalAnalyser = (stream: MediaStream): AnalyserNode | null =>
     audioContext.resume().catch(() => {});
   }
 
-  analyser = audioContext.createAnalyser();
+  const analyser = audioContext.createAnalyser();
   analyser.fftSize = FFT_SIZE;
 
-  source = audioContext.createMediaStreamSource(stream);
+  const source = audioContext.createMediaStreamSource(stream);
   source.connect(analyser);
+
+  state.analyser = analyser;
+  state.source = source;
 
   return analyser;
 };
 
 export const releaseLocalAnalyser = () => {
-  source?.disconnect();
-  analyser?.disconnect();
-  if (audioContext && audioContext.state !== 'closed') {
-    audioContext.close().catch(() => {});
+  state.source?.disconnect();
+  state.analyser?.disconnect();
+  if (state.audioContext && state.audioContext.state !== 'closed') {
+    state.audioContext.close().catch(() => {});
   }
 
-  source = null;
-  analyser = null;
-  audioContext = null;
+  state.analyser = null;
+  state.audioContext = null;
+  state.source = null;
 };
 
 export const resumeLocalAnalyser = () => {
+  const { audioContext } = state;
   if (audioContext && audioContext.state === 'suspended') {
     audioContext.resume().catch(() => {});
   }
