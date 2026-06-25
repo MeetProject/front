@@ -73,6 +73,13 @@ export default [
       "ts/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true }],
       "no-shadow": "error",
       "prefer-const": "error",
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "VariableDeclaration[kind='let']",
+          message: "let 사용 금지: const를 사용하세요.",
+        },
+      ],
       curly: ["error", "all"],
       "arrow-body-style": ["error", "as-needed"],
       "no-param-reassign": "error",
