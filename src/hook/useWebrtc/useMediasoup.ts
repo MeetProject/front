@@ -140,7 +140,7 @@ export const useMediasoup = (
         const { trackType, userId } = appData as AppData;
 
         if (trackType !== 'video') {
-          await publish('/app/consumer/resume', {
+          publish('/app/consumer/resume', {
             consumerId: consumer.id,
           });
           resumedConsumer.current.add(consumer.id);
@@ -184,7 +184,7 @@ export const useMediasoup = (
         return;
       }
 
-      await publish('/app/consumer/resume', {
+      publish('/app/consumer/resume', {
         consumerId,
       });
       resumedConsumer.current.add(consumerId);
@@ -206,7 +206,7 @@ export const useMediasoup = (
         return;
       }
 
-      await publish('/app/consumer/pause', {
+      publish('/app/consumer/pause', {
         consumerId,
       });
 
