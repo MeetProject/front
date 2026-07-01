@@ -24,6 +24,11 @@ export const useSignaling = (url: string) => {
       clearTimeout(request.timeoutId);
       pendingRequest.delete(correlationId);
 
+      if ('code' in data) {
+        request.reject(new Error(data.message));
+        return;
+      }
+
       request.resolve(data);
     } catch {}
   }, []);
