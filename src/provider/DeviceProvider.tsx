@@ -3,14 +3,18 @@
 import { PropsWithChildren, useEffect } from 'react';
 
 import { useDevice, useLocalAnalyser } from '@/hook';
+import { useSignaling } from '@/hook/useWebrtc/useSignaling';
 import { resumeAudioContext } from '@/lib/audioGraph';
 import { getCurrentDeviceInfo } from '@/lib/device';
 import { resumeLocalAnalyser } from '@/lib/localAudio';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
+import { DevicePayloadType } from '@/types/session';
+import { WS_URL } from '@/util/api';
 
 export default function DeviceProvider({ children }: PropsWithChildren) {
   const { initStream } = useDevice();
+  const { publish } = useSignaling(WS_URL);
   const stream = useDeviceStore((state) => state.stream);
 
   useLocalAnalyser();
@@ -92,9 +96,14 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
     };
 
     const setDeviceEnable = (type: DeviceKindType, value: boolean) => {
-      useDeviceStore.setState((state) => ({
-        deviceEnable: { ...state.deviceEnable, [type]: value },
-      }));
+      const { deviceEnable } = useDeviceStore.getState();
+      if (deviceEnable[type] === value) {
+        return;
+      }
+
+      const mediaOption = { ...deviceEnable, [type]: value };
+      useDeviceStore.setState({ deviceEnable: mediaOption });
+      publish<DevicePayloadType>('/app/device', { mediaOption });
     };
 
     const handleAudioMute = () => setDeviceEnable('audio', false);
@@ -127,7 +136,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
         track.removeEventListener('unmute', handleVideoUnmute);
       });
     };
-  }, [stream, initStream]);
+  }, [stream, initStream, publish]);
 
   useEffect(() => {
     const unlock = () => {
