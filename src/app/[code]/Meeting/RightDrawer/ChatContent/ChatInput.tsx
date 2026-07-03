@@ -23,7 +23,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
   };
 
   const handleChatSubmit = async () => {
-    if (isPending) {
+    if (isPending || !chat.trim()) {
       return;
     }
     setIsPending(true);
