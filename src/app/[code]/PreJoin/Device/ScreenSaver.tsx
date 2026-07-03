@@ -23,7 +23,7 @@ export default function ScreenSaver({ onClickButton }: ScreenSaverProps) {
     }
 
     if (permission.audio === 'denied' && permission.video === 'denied') {
-      return '카메라 및 비디오 장치 권한이 차단되었습니다.';
+      return '카메라 및 마이크 장치 권한이 차단되었습니다.';
     }
 
     if (permission.video === 'denied') {

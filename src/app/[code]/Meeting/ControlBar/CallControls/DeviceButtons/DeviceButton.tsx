@@ -187,7 +187,7 @@ export default function DeviceButton({
           className={cn(enableMute && '-translate-x-14')}
           name={
             enableMute
-              ? `${type === 'audio' ? '오디오' : '마이크'} ${deviceEnable[type] ? '끄기' : '켜기'}${parseShortcut}`
+              ? `${type === 'audio' ? '오디오' : '비디오'} ${deviceEnable[type] ? '끄기' : '켜기'}${parseShortcut}`
               : '권한 필요'
           }
           position='top'
