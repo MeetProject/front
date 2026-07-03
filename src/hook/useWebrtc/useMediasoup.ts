@@ -57,14 +57,10 @@ export const useMediasoup = (
     if (deviceRef.current) {
       return deviceRef.current;
     }
-    try {
-      const device = new Device();
-      await device.load({ routerRtpCapabilities: capabilities });
-      deviceRef.current = device;
-      return device;
-    } catch {
-      return null;
-    }
+    const device = new Device();
+    await device.load({ routerRtpCapabilities: capabilities });
+    deviceRef.current = device;
+    return device;
   }, []);
 
   const clearDevice = useCallback(() => {
