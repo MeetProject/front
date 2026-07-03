@@ -24,6 +24,11 @@ export const useSignaling = (url: string) => {
       clearTimeout(request.timeoutId);
       pendingRequest.delete(correlationId);
 
+      if ('code' in data) {
+        request.reject(new Error(data.message));
+        return;
+      }
+
       request.resolve(data);
     } catch {}
   }, []);
@@ -126,7 +131,7 @@ export const useSignaling = (url: string) => {
 
   const unsubscribeAll = useCallback(() => {
     const { subscription } = useSignalStore.getState();
-    subscription.keys().forEach((path) => {
+    [...subscription.keys()].forEach((path) => {
       if (path === 'replies') {
         return;
       }
@@ -148,7 +153,7 @@ export const useSignaling = (url: string) => {
     });
     pendingRequest.clear();
 
-    subscription.values().forEach((sub) => sub.unsubscribe());
+    subscription.forEach((sub) => sub.unsubscribe());
     subscription.clear();
 
     client.deactivate();

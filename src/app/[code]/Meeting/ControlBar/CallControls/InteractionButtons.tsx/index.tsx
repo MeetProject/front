@@ -14,7 +14,7 @@ import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 
 interface InteractionButtonsProps {
-  sendHandUp: (value: boolean) => void;
+  sendHandUp: () => void;
   shareScreen: () => Promise<void>;
 }
 
@@ -61,12 +61,11 @@ export default function InteractionButtons({ sendHandUp, shareScreen }: Interact
   }, [handleOptionClose]);
 
   const handleHandUpButtonClick = useCallback(() => {
-    const { handsUp: currentHandUp } = useInteractionStore.getState();
     if (!userId) {
       return;
     }
 
-    sendHandUp(!currentHandUp.has(userId));
+    sendHandUp();
     handleOptionClose();
   }, [handleOptionClose, userId, sendHandUp]);
 

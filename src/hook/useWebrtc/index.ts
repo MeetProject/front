@@ -268,11 +268,15 @@ const useWebrtc = () => {
     sendLeave();
     const { reset: participantReset } = useParticipantStore.getState();
     const { reset: audioReset } = useAudioStore.getState();
+    const { reset: interactionReset } = useInteractionStore.getState();
+    const { reset: localMuteReset } = useLocalMuteStore.getState();
     unsubscribeAll();
     disconnectTransport();
     clearDevice();
     participantReset();
     audioReset();
+    interactionReset();
+    localMuteReset();
   }, [unsubscribeAll, disconnectTransport, sendLeave, clearDevice]);
 
   const shareScreen = useCallback(async () => {

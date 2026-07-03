@@ -86,11 +86,12 @@ const useDevice = () => {
           });
         }
 
+        const { permission: prevPermission } = useDeviceStore.getState();
         useDeviceStore.setState({
           ...deviceInfo,
           permission: {
-            audio: constraint.audio ? 'granted' : 'denied',
-            video: constraint.video ? 'granted' : 'denied',
+            audio: constraint.audio ? 'granted' : prevPermission.audio,
+            video: constraint.video ? 'granted' : prevPermission.video,
           },
           status: 'success',
           stream,
@@ -107,12 +108,13 @@ const useDevice = () => {
           throw e;
         }
 
+        const { permission: prevPermission } = useDeviceStore.getState();
         useDeviceStore.setState({
           device: { audioInput: null, audioOutput: null, videoInput: null },
           deviceList: { audioInput: [], audioOutput: [], videoInput: [] },
           permission: {
-            audio: constraint.audio && error.name !== 'NotAllowedError' ? 'granted' : 'denied',
-            video: constraint.video && error.name !== 'NotAllowedError' ? 'granted' : 'denied',
+            audio: constraint.audio ? (error.name === 'NotAllowedError' ? 'denied' : 'granted') : prevPermission.audio,
+            video: constraint.video ? (error.name === 'NotAllowedError' ? 'denied' : 'granted') : prevPermission.video,
           },
           status: error.name === 'NotAllowedError' ? 'rejected' : 'failed',
           stream: null,

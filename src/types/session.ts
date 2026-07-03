@@ -63,11 +63,6 @@ export interface ToggleDeviceEnableResponseType {
   mediaOption: DeviceEnableType;
 }
 
-export interface TrackResponseType {
-  produceId: string[];
-  userId: string;
-}
-
 export interface ProducerResponseType {
   userId: string;
   producerId: string;
@@ -112,10 +107,6 @@ export interface DevicePayloadType {
 
 export interface EmojiPayloadType {
   emoji: EmojiType;
-}
-
-export interface HandUpPayloadType {
-  value: boolean;
 }
 
 export interface ProducerRemovePayloadType {

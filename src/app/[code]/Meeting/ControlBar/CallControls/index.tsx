@@ -14,7 +14,7 @@ interface CallControllsProps {
   onTrackChange: (trackType: DeviceKindType, track: MediaStreamTrack | null) => Promise<void>;
   onTrackMute: (trackType: DeviceKindType, value?: boolean) => Promise<void> | void;
   onScreenShare: () => Promise<void>;
-  sendHandUp: (value: boolean) => void;
+  sendHandUp: () => void;
 }
 
 export default function CallControlls({ onScreenShare, onTrackChange, onTrackMute, sendHandUp }: CallControllsProps) {

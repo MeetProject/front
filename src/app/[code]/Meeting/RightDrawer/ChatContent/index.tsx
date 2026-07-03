@@ -41,7 +41,7 @@ export default function ChatContent({ sendChat }: ChatContentProps) {
       <div className='flex size-full flex-1 py-2'>
         {chatData.length === 0 ? (
           <div className='flex flex-1 flex-col items-center justify-center'>
-            <Image alt='chat' height={208} src={image.chat} width={208} />
+            <Image alt='chat' className='h-auto w-52' src={image.chat} />
             <p className='text-on-surface mt-8 text-sm'>아직 채팅 메시지가 없습니다.</p>
           </div>
         ) : (

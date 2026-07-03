@@ -17,7 +17,6 @@ import {
   ProducerResponseType,
   ToggleDeviceEnableResponseType,
   ToggleHandsUpResponseType,
-  TrackResponseType,
 } from '@/types/session';
 
 const EMOJI_DURATION_MS = 8000;
@@ -139,36 +138,6 @@ export const useSignalingHandler = (
     [removeConsumer],
   );
 
-  const handleConsumeTrack = useCallback(
-    async (data: TrackResponseType) => {
-      const { userId } = useUserInfoStore.getState();
-      const { addTrack } = useParticipantStore.getState();
-      const { addAudioTrack } = useAudioStore.getState();
-
-      const { produceId, userId: target } = data;
-      if (userId === target) {
-        return;
-      }
-
-      const consumeResult = await Promise.allSettled(produceId.map((id) => consumeTrack(target, id)));
-      const successResult = consumeResult
-        .filter((result) => result.status === 'fulfilled')
-        .map((result) => result.value);
-
-      successResult.forEach((r) => {
-        if (!r) {
-          return;
-        }
-        if (r.appData.trackType === 'audio') {
-          addAudioTrack(r);
-          return;
-        }
-        addTrack(r);
-      });
-    },
-    [consumeTrack],
-  );
-
   const handleLeave = useCallback(
     async ({ userId }: LeaveResponseType) => {
       const { removeParticipant } = useParticipantStore.getState();
@@ -187,7 +156,6 @@ export const useSignalingHandler = (
   const initSubscribe = useCallback(
     async (roomId: string) => {
       subscribe(`/topic/room/${roomId}/participant`, (data: ParticipantResponseType) => handleParticipant(data));
-      subscribe(`/topic/room/${roomId}/track`, (data: TrackResponseType) => handleConsumeTrack(data));
       subscribe(`/topic/room/${roomId}/rtls`, handleProducer);
       subscribe(`/topic/room/${roomId}/producer/remove`, handleRemoveProducer);
       subscribe(`/topic/room/${roomId}/leave`, (data: LeaveResponseType) => handleLeave(data));
@@ -203,7 +171,6 @@ export const useSignalingHandler = (
       handleToggleDevice,
       handleToggleHandsUp,
       subscribe,
-      handleConsumeTrack,
       handleLeave,
       handleParticipant,
       handleProducer,

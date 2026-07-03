@@ -9,7 +9,7 @@ interface ControlBarProps {
   onTrackChange: (trackType: DeviceKindType, track: MediaStreamTrack | null) => Promise<void>;
   onTrackMute: (trackType: DeviceKindType, value?: boolean) => Promise<void>;
   onScreenShare: () => Promise<void>;
-  sendHandUp: (value: boolean) => void;
+  sendHandUp: () => void;
 }
 
 export default function ControlBar({ onScreenShare, onTrackChange, onTrackMute, sendHandUp }: ControlBarProps) {

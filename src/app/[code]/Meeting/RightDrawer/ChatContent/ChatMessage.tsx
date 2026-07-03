@@ -48,7 +48,7 @@ function ChatMessage({ chat }: ChatMessageProps) {
         {chat.messages.map(({ id: messageId, message }, i) => (
           <div
             className={cn(
-              'text-on-surface-bright font-google-sans bg-primary-dark hover:bg-primary-navy-hover max-w-61 rounded-[20px] p-3 text-[12px] wrap-break-word',
+              'text-on-surface-bright font-google-sans bg-primary-dark hover:bg-primary-navy-hover max-w-61 rounded-[20px] p-3 text-[12px] wrap-break-word whitespace-pre-wrap',
               isMe && i !== chat.messages.length - 1 && 'rounded-br-sm',
               isMe && i !== 0 && 'rounded-tr-sm',
               !isMe && i !== chat.messages.length - 1 && 'rounded-bl-sm',

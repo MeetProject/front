@@ -10,7 +10,7 @@ import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { UserRegisterPayloadType } from '@/types/userType';
 import { getRandomHexColor } from '@/util/color';
 
-const MAX_SIZE = 60;
+const MAX_SIZE = 20;
 
 export default function NameForm() {
   const router = useRouter();

@@ -77,7 +77,7 @@ export default function CaptureButton({ imgSrc, onImageChange, onVisible }: Capt
         <>
           <p>첨부된 스크린샷</p>
           <div className='border-on-surface-muted overflow-hidden rounded border border-solid'>
-            <Image alt='capturedImage' height={240} src={imgSrc} width={372} />
+            <Image alt='capturedImage' className='h-auto w-full' height={240} src={imgSrc} width={372} />
           </div>
           <div />
           <div className='absolute top-6 right-0'>
