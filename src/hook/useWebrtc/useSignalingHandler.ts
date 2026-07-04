@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { useAudioStore } from '@/store/useAudioStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
+import { useLocalMuteStore } from '@/store/useLocalMuteStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';
@@ -141,8 +142,16 @@ export const useSignalingHandler = (
   const handleLeave = useCallback(
     async ({ userId }: LeaveResponseType) => {
       const { removeParticipant } = useParticipantStore.getState();
+      const { handsUp, toggleHandsUp } = useInteractionStore.getState();
+      const { unmute } = useLocalMuteStore.getState();
+
       removeParticipant(userId);
       removeConsumer(userId);
+
+      if (handsUp.has(userId)) {
+        toggleHandsUp(userId);
+      }
+      unmute(userId);
 
       const timer = emojiTimers.current.get(userId);
       if (timer) {
