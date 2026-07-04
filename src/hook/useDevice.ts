@@ -5,12 +5,22 @@ import { useCallback } from 'react';
 import { getCurrentDeviceInfo } from '@/lib/device';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
+import { inferPermissionFromDevices, queryDevicePermission } from '@/util/env';
 
 const AUDIO_PROCESSING: MediaTrackConstraints & { voiceIsolation?: boolean } = {
   autoGainControl: true,
   echoCancellation: true,
   noiseSuppression: true,
   voiceIsolation: true,
+};
+
+const resolveUnrequestedPermission = async (
+  type: DeviceKindType,
+  devices: MediaDeviceInfo[],
+  fallback: PermissionState,
+): Promise<PermissionState> => {
+  const queried = await queryDevicePermission(type);
+  return queried ?? inferPermissionFromDevices(devices) ?? fallback;
 };
 
 const useDevice = () => {
@@ -90,8 +100,12 @@ const useDevice = () => {
         useDeviceStore.setState({
           ...deviceInfo,
           permission: {
-            audio: constraint.audio ? 'granted' : prevPermission.audio,
-            video: constraint.video ? 'granted' : prevPermission.video,
+            audio: constraint.audio
+              ? 'granted'
+              : await resolveUnrequestedPermission('audio', deviceInfo.deviceList.audioInput, prevPermission.audio),
+            video: constraint.video
+              ? 'granted'
+              : await resolveUnrequestedPermission('video', deviceInfo.deviceList.videoInput, prevPermission.video),
           },
           status: 'success',
           stream,
@@ -113,8 +127,16 @@ const useDevice = () => {
           device: { audioInput: null, audioOutput: null, videoInput: null },
           deviceList: { audioInput: [], audioOutput: [], videoInput: [] },
           permission: {
-            audio: constraint.audio ? (error.name === 'NotAllowedError' ? 'denied' : 'granted') : prevPermission.audio,
-            video: constraint.video ? (error.name === 'NotAllowedError' ? 'denied' : 'granted') : prevPermission.video,
+            audio: constraint.audio
+              ? error.name === 'NotAllowedError'
+                ? 'denied'
+                : 'granted'
+              : ((await queryDevicePermission('audio')) ?? prevPermission.audio),
+            video: constraint.video
+              ? error.name === 'NotAllowedError'
+                ? 'denied'
+                : 'granted'
+              : ((await queryDevicePermission('video')) ?? prevPermission.video),
           },
           status: error.name === 'NotAllowedError' ? 'rejected' : 'failed',
           stream: null,

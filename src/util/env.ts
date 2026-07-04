@@ -16,6 +16,13 @@ export const queryDevicePermission = async (type: DeviceKindType): Promise<Permi
   }
 };
 
+export const inferPermissionFromDevices = (devices: MediaDeviceInfo[]): PermissionState | null => {
+  if (devices.length === 0) {
+    return null;
+  }
+  return devices.some((device) => device.label) ? 'granted' : 'prompt';
+};
+
 export const isChromium = () => {
   if (navigator.userAgentData) {
     return navigator.userAgentData.brands.some((data) => data.brand === 'Chromium');
