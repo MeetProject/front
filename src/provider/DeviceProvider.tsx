@@ -11,21 +11,120 @@ import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 import { DevicePayloadType } from '@/types/session';
 import { WS_URL } from '@/util/api';
+import { inferPermissionFromDevices, queryDevicePermission } from '@/util/env';
+
+const DEVICE_KINDS = ['audio', 'video'] as const;
+
+const recheckPermissions = async () => {
+  const { permission: current, status } = useDeviceStore.getState();
+  if (status === null || status === 'pending') {
+    return;
+  }
+
+  const targets = DEVICE_KINDS.filter((type) => current[type] !== 'granted');
+  if (targets.length === 0) {
+    return;
+  }
+
+  const queried = await Promise.all(targets.map((type) => queryDevicePermission(type)));
+  const needInfer = queried.some((value) => value === null);
+  const devices = needInfer ? await navigator.mediaDevices.enumerateDevices().catch(() => []) : [];
+
+  const { updatePermission } = useDeviceStore.getState();
+  targets.forEach((type, index) => {
+    const value = queried[index];
+    if (value) {
+      if (value !== current[type]) {
+        updatePermission(type, value);
+      }
+      return;
+    }
+
+    const kind = type === 'audio' ? 'audioinput' : 'videoinput';
+    const inferred = inferPermissionFromDevices(devices.filter((device) => device.kind === kind));
+
+    if (inferred === 'granted') {
+      updatePermission(type, 'granted');
+    }
+  });
+};
+
+const handleFocusRecheck = () => {
+  if (document.hidden) {
+    return;
+  }
+  recheckPermissions();
+};
 
 export default function DeviceProvider({ children }: PropsWithChildren) {
-  const { initStream } = useDevice();
+  const { initStream, replaceTrack } = useDevice();
   const { publish } = useSignaling(WS_URL);
   const stream = useDeviceStore((state) => state.stream);
 
   useLocalAnalyser();
 
   useEffect(() => {
+    const acquisition = { queue: Promise.resolve() };
+
+    const acquireTrack = async (type: DeviceKindType) => {
+      const { device, deviceEnable } = useDeviceStore.getState();
+      const target = device[type === 'audio' ? 'audioInput' : 'videoInput'];
+
+      try {
+        const newTrack = target ? await replaceTrack(target) : await replaceTrack(null, type);
+
+        if (type === 'audio' && newTrack && !deviceEnable.audio) {
+          newTrack.enabled = false;
+        }
+      } catch {}
+    };
+
+    const handlePermissionChange = (
+      next: Record<DeviceKindType, PermissionState>,
+      prev: Record<DeviceKindType, PermissionState>,
+    ) => {
+      const { deviceEnable, status, stream: currentStream } = useDeviceStore.getState();
+
+      if (status === null || status === 'pending') {
+        return;
+      }
+
+      const missing = DEVICE_KINDS.filter((type) => {
+        if (prev[type] === 'granted' || next[type] !== 'granted') {
+          return false;
+        }
+        if (type === 'video' && !deviceEnable.video) {
+          return false;
+        }
+        const tracks = type === 'audio' ? currentStream?.getAudioTracks() : currentStream?.getVideoTracks();
+        return !tracks || tracks.length === 0;
+      });
+
+      missing.forEach((type) => {
+        acquisition.queue = acquisition.queue.then(() => acquireTrack(type));
+      });
+    };
+
+    const unsubscribe = useDeviceStore.subscribe((state, prevState) => {
+      if (state.permission !== prevState.permission) {
+        handlePermissionChange(state.permission, prevState.permission);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [replaceTrack]);
+
+  useEffect(() => {
     const statuses: PermissionStatus[] = [];
 
     const initPermission = async () => {
       try {
-        const audio = await navigator.permissions.query({ name: 'microphone' });
-        const video = await navigator.permissions.query({ name: 'camera' });
+        const [audio, video] = await Promise.all([
+          navigator.permissions.query({ name: 'microphone' }),
+          navigator.permissions.query({ name: 'camera' }),
+        ]);
 
         const syncDevice = async () => {
           const { permission: prev, status } = useDeviceStore.getState();
@@ -36,9 +135,7 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
           useDeviceStore.setState({ isInit: true, permission: { audio: audio.state, video: video.state } });
         };
 
-        useDeviceStore.setState({
-          permission: { audio: audio.state, video: video.state },
-        });
+        syncDevice();
 
         if (!('onchange' in audio) || !('onchange' in video)) {
           throw new Error('permission API 미지원');
@@ -48,6 +145,8 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
         video.onchange = syncDevice;
         statuses.push(audio, video);
       } catch {
+        window.addEventListener('focus', handleFocusRecheck);
+        document.addEventListener('visibilitychange', handleFocusRecheck);
       } finally {
         useDeviceStore.setState({
           isInit: true,
@@ -61,30 +160,24 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
       statuses.forEach((status) => {
         status.onchange = null;
       });
+
+      window.removeEventListener('focus', handleFocusRecheck);
+      document.removeEventListener('visibilitychange', handleFocusRecheck);
     };
   }, []);
 
   useEffect(() => {
+    if (!stream) {
+      return;
+    }
+
     const handleDeviceChange = async () => {
-      if (!stream) {
-        return;
-      }
       const deviceInfo = await getCurrentDeviceInfo(stream);
       useDeviceStore.setState({
         device: deviceInfo.device,
         deviceList: deviceInfo.deviceList,
       });
     };
-    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
-    return () => {
-      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
-    };
-  }, [stream]);
-
-  useEffect(() => {
-    if (!stream) {
-      return;
-    }
 
     const handleTrackEnded = () => {
       const { status } = useDeviceStore.getState();
@@ -92,48 +185,38 @@ export default function DeviceProvider({ children }: PropsWithChildren) {
         return;
       }
       stream.getTracks().forEach((track) => track.removeEventListener('ended', handleTrackEnded));
-      initStream();
+      initStream(true);
     };
 
-    const setDeviceEnable = (type: DeviceKindType, value: boolean) => {
-      const { deviceEnable } = useDeviceStore.getState();
+    const handleMuteChange = (e: Event) => {
+      const track = e.target as MediaStreamTrack;
+      const type: DeviceKindType = track.kind === 'audio' ? 'audio' : 'video';
+      const value = e.type === 'unmute';
+
+      const { deviceEnable, toggleDeviceEnable } = useDeviceStore.getState();
       if (deviceEnable[type] === value) {
         return;
       }
 
-      const mediaOption = { ...deviceEnable, [type]: value };
-      useDeviceStore.setState({ deviceEnable: mediaOption });
-      publish<DevicePayloadType>('/app/device', { mediaOption });
+      toggleDeviceEnable(type);
+      publish<DevicePayloadType>('/app/device', { mediaOption: { ...deviceEnable, [type]: value } });
     };
 
-    const handleAudioMute = () => setDeviceEnable('audio', false);
-    const handleAudioUnmute = () => setDeviceEnable('audio', true);
-    const handleVideoMute = () => setDeviceEnable('video', false);
-    const handleVideoUnmute = () => setDeviceEnable('video', true);
+    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange);
 
-    stream.getTracks().forEach((track) => track.addEventListener('ended', handleTrackEnded, { once: true }));
-
-    stream.getAudioTracks().forEach((track) => {
-      track.addEventListener('mute', handleAudioMute);
-      track.addEventListener('unmute', handleAudioUnmute);
-    });
-
-    stream.getVideoTracks().forEach((track) => {
-      track.addEventListener('mute', handleVideoMute);
-      track.addEventListener('unmute', handleVideoUnmute);
+    stream.getTracks().forEach((track) => {
+      track.addEventListener('ended', handleTrackEnded, { once: true });
+      track.addEventListener('mute', handleMuteChange);
+      track.addEventListener('unmute', handleMuteChange);
     });
 
     return () => {
-      stream.getTracks().forEach((track) => track.removeEventListener('ended', handleTrackEnded));
+      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
 
-      stream.getAudioTracks().forEach((track) => {
-        track.removeEventListener('mute', handleAudioMute);
-        track.removeEventListener('unmute', handleAudioUnmute);
-      });
-
-      stream.getVideoTracks().forEach((track) => {
-        track.removeEventListener('mute', handleVideoMute);
-        track.removeEventListener('unmute', handleVideoUnmute);
+      stream.getTracks().forEach((track) => {
+        track.removeEventListener('ended', handleTrackEnded);
+        track.removeEventListener('mute', handleMuteChange);
+        track.removeEventListener('unmute', handleMuteChange);
       });
     };
   }, [stream, initStream, publish]);
