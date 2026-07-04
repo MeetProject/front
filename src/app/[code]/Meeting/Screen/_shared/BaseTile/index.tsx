@@ -29,21 +29,34 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
 
   const isLocallyMuted = useLocalMuteStore((state) => !isMe && state.mutedIds.has(id));
 
+  const videoTrack = stream?.getVideoTracks()[0] ?? null;
+  const prevVideoTrackRef = useRef(videoTrack);
+
   useEffect(() => {
-    if (device.video) {
-      timerRef.current = setTimeout(() => setIsReady(true), 200);
-      return () => {
-        if (timerRef.current) {
-          clearTimeout(timerRef.current);
-        }
-      };
-    }
+    const isTrackChanged = prevVideoTrackRef.current !== videoTrack;
+    prevVideoTrackRef.current = videoTrack;
 
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
-    setIsReady(false);
-  }, [device.video]);
+
+    if (!device.video) {
+      setIsReady(false);
+      return;
+    }
+
+    if (isTrackChanged) {
+      setIsReady(false);
+      return;
+    }
+
+    timerRef.current = setTimeout(() => setIsReady(true), 200);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [device.video, videoTrack]);
 
   const handlePlaying = useCallback(() => {
     if (timerRef.current) {
@@ -51,6 +64,28 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
     }
     timerRef.current = setTimeout(() => setIsReady(true), 200);
   }, []);
+
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+
+  useEffect(() => {
+    if (!videoTrack) {
+      setIsVideoMuted(false);
+      return;
+    }
+
+    const syncMuted = () => {
+      setIsVideoMuted(videoTrack.muted);
+    };
+    syncMuted();
+
+    videoTrack.addEventListener('mute', syncMuted);
+    videoTrack.addEventListener('unmute', syncMuted);
+
+    return () => {
+      videoTrack.removeEventListener('mute', syncMuted);
+      videoTrack.removeEventListener('unmute', syncMuted);
+    };
+  }, [videoTrack]);
 
   return (
     <div className='@container-size relative flex size-full min-h-0 min-w-0 items-center justify-center overflow-hidden p-1'>
@@ -65,7 +100,7 @@ export default function BaseTile({ color, device, emoji, id, isMe, name, stream 
           />
         </div>
 
-        {(!device.video || !isReady || stream?.getVideoTracks().length === 0) && (
+        {(!device.video || !isReady || isVideoMuted || !videoTrack) && (
           <div className='absolute inset-0 z-1'>
             <VideoOffOverlay color={color} name={name} />
           </div>
