@@ -68,6 +68,13 @@ export const useSignaling = (url: string) => {
           onWebSocketClose: (evt: CloseEvent) => {
             config?.onWebSocketClose?.(evt);
 
+            const { pendingRequest } = useSignalStore.getState();
+            pendingRequest.forEach((pending) => {
+              clearTimeout(pending.timeoutId);
+              pending.reject(new Error('WebSocket connection closed'));
+            });
+            pendingRequest.clear();
+
             if (evt?.code === 1000) {
               newClient.deactivate();
               useSignalStore.setState({ status: 'closed' });

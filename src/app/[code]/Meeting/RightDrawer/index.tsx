@@ -9,7 +9,7 @@ import InfoContent from './InfoContent';
 import ParticipantContent from './ParticipantContent';
 
 import { cn } from '@/lib/cn';
-import { useDrawerStore } from '@/store/useDrawer';
+import { useDrawerStore } from '@/store/useDrawerStore';
 import { RightDrawerKeyType } from '@/types/drawerType';
 
 interface RightDrawerProps {

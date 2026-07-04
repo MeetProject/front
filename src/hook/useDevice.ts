@@ -5,12 +5,23 @@ import { useCallback } from 'react';
 import { getCurrentDeviceInfo } from '@/lib/device';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
+import { inferPermissionFromDevices, queryDevicePermission } from '@/util/env';
+import { applyDeviceEnable } from '@/util/stream';
 
 const AUDIO_PROCESSING: MediaTrackConstraints & { voiceIsolation?: boolean } = {
   autoGainControl: true,
   echoCancellation: true,
   noiseSuppression: true,
   voiceIsolation: true,
+};
+
+const resolveUnrequestedPermission = async (
+  type: DeviceKindType,
+  devices: MediaDeviceInfo[],
+  fallback: PermissionState,
+): Promise<PermissionState> => {
+  const queried = await queryDevicePermission(type);
+  return queried ?? inferPermissionFromDevices(devices) ?? fallback;
 };
 
 const useDevice = () => {
@@ -28,21 +39,6 @@ const useDevice = () => {
       status: 'success',
       stream,
     });
-  }, []);
-
-  const syncEnable = useCallback((stream: MediaStream, constraint: Record<DeviceKindType, boolean>) => {
-    const { deviceEnable } = useDeviceStore.getState();
-
-    if (constraint.audio && !deviceEnable.audio) {
-      stream.getAudioTracks().forEach((track) => (track.enabled = false));
-    }
-
-    if (constraint.video && !deviceEnable.video) {
-      stream.getVideoTracks().forEach((track) => {
-        track.stop();
-        stream.removeTrack(track);
-      });
-    }
   }, []);
 
   const getConstraints = useCallback((config: { audio: boolean; video: boolean }, isExact: boolean) => {
@@ -67,7 +63,7 @@ const useDevice = () => {
         const deviceInfo = await getCurrentDeviceInfo(stream);
 
         if (isSyncEnable) {
-          syncEnable(stream, constraint);
+          applyDeviceEnable(stream, useDeviceStore.getState().deviceEnable);
         }
 
         const audioTracks = stream.getAudioTracks();
@@ -90,8 +86,12 @@ const useDevice = () => {
         useDeviceStore.setState({
           ...deviceInfo,
           permission: {
-            audio: constraint.audio ? 'granted' : prevPermission.audio,
-            video: constraint.video ? 'granted' : prevPermission.video,
+            audio: constraint.audio
+              ? 'granted'
+              : await resolveUnrequestedPermission('audio', deviceInfo.deviceList.audioInput, prevPermission.audio),
+            video: constraint.video
+              ? 'granted'
+              : await resolveUnrequestedPermission('video', deviceInfo.deviceList.videoInput, prevPermission.video),
           },
           status: 'success',
           stream,
@@ -109,12 +109,19 @@ const useDevice = () => {
         }
 
         const { permission: prevPermission } = useDeviceStore.getState();
+        const resolveFailedPermission = async (type: DeviceKindType): Promise<PermissionState> => {
+          if (constraint[type] && error.name === 'NotAllowedError') {
+            return 'denied';
+          }
+          return (await queryDevicePermission(type)) ?? prevPermission[type];
+        };
+
         useDeviceStore.setState({
           device: { audioInput: null, audioOutput: null, videoInput: null },
           deviceList: { audioInput: [], audioOutput: [], videoInput: [] },
           permission: {
-            audio: constraint.audio ? (error.name === 'NotAllowedError' ? 'denied' : 'granted') : prevPermission.audio,
-            video: constraint.video ? (error.name === 'NotAllowedError' ? 'denied' : 'granted') : prevPermission.video,
+            audio: await resolveFailedPermission('audio'),
+            video: await resolveFailedPermission('video'),
           },
           status: error.name === 'NotAllowedError' ? 'rejected' : 'failed',
           stream: null,
@@ -122,7 +129,7 @@ const useDevice = () => {
         return null;
       }
     },
-    [getConstraints, syncEnable],
+    [getConstraints],
   );
 
   const initStream = useCallback(
@@ -220,9 +227,37 @@ const useDevice = () => {
         return null;
       }
       const deviceType = device.kind === 'audioinput' ? 'audio' : 'video';
+
+      if (deviceType === 'video') {
+        const { changeDevice, deviceEnable } = useDeviceStore.getState();
+        if (!deviceEnable.video) {
+          changeDevice('videoInput', device);
+          return null;
+        }
+      }
+
       return await replaceNewTrack(deviceType, device.deviceId, true);
     },
     [replaceNewTrack],
+  );
+
+  const acquireTrack = useCallback(
+    async (type: DeviceKindType) => {
+      const { device, deviceEnable } = useDeviceStore.getState();
+      const target = device[type === 'audio' ? 'audioInput' : 'videoInput'];
+
+      try {
+        const newTrack = target ? await replaceTrack(target) : await replaceTrack(null, type);
+
+        if (type === 'audio' && newTrack && !deviceEnable.audio) {
+          newTrack.enabled = false;
+        }
+        return newTrack;
+      } catch {
+        return null;
+      }
+    },
+    [replaceTrack],
   );
 
   const toggleAudioTrack = useCallback(() => {
@@ -300,6 +335,7 @@ const useDevice = () => {
   }, []);
 
   return {
+    acquireTrack,
     initScreenStream,
     initStream,
     replaceTrack,

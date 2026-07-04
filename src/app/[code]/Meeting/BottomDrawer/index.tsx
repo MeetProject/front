@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/shallow';
 import EmojiDrawer from './EmojiDrawer';
 
 import { cn } from '@/lib/cn';
-import { useDrawerStore } from '@/store/useDrawer';
+import { useDrawerStore } from '@/store/useDrawerStore';
 import { EmojiType } from '@/types/emojiType';
 
 interface BottomDrawerProps {

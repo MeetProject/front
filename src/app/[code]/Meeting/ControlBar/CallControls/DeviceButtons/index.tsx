@@ -64,20 +64,32 @@ export default function DeviceButtons({ onSettingButtonClick, onTrackChange, onT
       }
 
       const { deviceEnable, toggleDeviceEnable } = useDeviceStore.getState();
+      const nextEnable = !deviceEnable[trackType];
 
       if (trackType === 'video') {
-        const newVideoTrack = await toggleVideoTrack();
+        try {
+          const newVideoTrack = await toggleVideoTrack();
 
-        if (!deviceEnable[trackType]) {
-          await onTrackChange?.(trackType, newVideoTrack);
+          if (nextEnable) {
+            await onTrackChange?.(trackType, newVideoTrack);
+          }
+
+          await onTrackMute('video', nextEnable);
+        } catch {
+          const { deviceEnable: current, toggleDeviceEnable: rollback } = useDeviceStore.getState();
+          if (current.video === nextEnable) {
+            rollback('video');
+          }
         }
-
-        await onTrackMute('video', !deviceEnable[trackType]);
         return;
       }
 
-      await onTrackMute(trackType, !deviceEnable[trackType]);
       toggleDeviceEnable(trackType);
+      try {
+        await onTrackMute(trackType, nextEnable);
+      } catch {
+        toggleDeviceEnable(trackType);
+      }
     },
     [onTrackMute, onTrackChange, toggleVideoTrack],
   );

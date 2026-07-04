@@ -10,7 +10,7 @@ import PermissionButton from './PermissionButton';
 
 import * as image from '@/asset/image';
 import { useDeviceStore } from '@/store/useDeviceStore';
-import { DeviceKindType } from '@/types/deviceType';
+import { DEVICE_KINDS, DeviceKindType } from '@/types/deviceType';
 
 const CONTENT = {
   audio: {
@@ -54,7 +54,7 @@ export default function MediaPermissionDialog({ isOpen, onClose }: MediaPermissi
   const handleContinueWithout = () => {
     const { updatePermission } = useDeviceStore.getState();
 
-    const targets: DeviceKindType[] = status === 'both' ? ['audio', 'video'] : [status];
+    const targets: DeviceKindType[] = status === 'both' ? [...DEVICE_KINDS] : [status];
     targets.forEach((device) => updatePermission(device, 'denied'));
 
     onClose();

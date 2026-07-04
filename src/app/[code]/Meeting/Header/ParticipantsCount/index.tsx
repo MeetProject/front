@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import ParticipantInfo from './ParticipantInfo';
 import ParticipantTileCluster from './ParticipantTileCluster';
 
-import { useDrawerStore } from '@/store/useDrawer';
+import { useDrawerStore } from '@/store/useDrawerStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 
 export default function ParticipantCount() {

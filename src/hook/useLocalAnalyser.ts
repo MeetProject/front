@@ -1,27 +1,32 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 import { createLocalAnalyser, releaseLocalAnalyser } from '@/lib/localAudio';
 import { useDeviceStore } from '@/store/useDeviceStore';
 
 const useLocalAnalyser = () => {
-  const stream = useDeviceStore((state) => state.stream);
-  const setLocalAnalyser = useDeviceStore((state) => state.setLocalAnalyser);
+  const { audioTrack, setLocalAnalyser } = useDeviceStore(
+    useShallow((state) => ({
+      audioTrack: state.stream?.getAudioTracks()[0] ?? null,
+      setLocalAnalyser: state.setLocalAnalyser,
+    })),
+  );
 
   useEffect(() => {
-    if (!stream || stream.getAudioTracks().length === 0) {
+    if (!audioTrack) {
       setLocalAnalyser(null);
       return;
     }
 
-    setLocalAnalyser(createLocalAnalyser(stream));
+    setLocalAnalyser(createLocalAnalyser(new MediaStream([audioTrack])));
 
     return () => {
       releaseLocalAnalyser();
       setLocalAnalyser(null);
     };
-  }, [stream, setLocalAnalyser]);
+  }, [audioTrack, setLocalAnalyser]);
 };
 
 export default useLocalAnalyser;

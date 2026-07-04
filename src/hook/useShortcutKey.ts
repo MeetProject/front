@@ -10,7 +10,20 @@ const useShortcutKey = (combination: string[], callback: () => void) => {
       return;
     }
 
+    const hasSystemModifier = combination.some((key) => {
+      const lower = key.toLowerCase();
+      return lower === 'control' || lower === 'ctrl' || lower === 'meta' || lower === 'command' || lower === 'cmd';
+    });
+
+    const isEditableTarget = (target: EventTarget | null) =>
+      target instanceof HTMLElement &&
+      (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!hasSystemModifier && isEditableTarget(e.target)) {
+        return;
+      }
+
       keyPressed.current['meta'] = e.metaKey;
       keyPressed.current['control'] = e.ctrlKey;
       keyPressed.current['alt'] = e.altKey;

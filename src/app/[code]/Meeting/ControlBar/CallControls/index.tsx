@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 
 import CallEndButton from './CallEndButton';
 import DeviceButtons from './DeviceButtons';
-import InteractionButtons from './InteractionButtons.tsx';
+import InteractionButtons from './InteractionButtons';
 import OptionButton from './OptionButton';
 
 import { Feedback, Setting } from '@/components';

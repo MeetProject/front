@@ -11,6 +11,7 @@ import { MediaPermissionDeniedDialog, MediaPermissionDialog } from '@/components
 import { useDevice } from '@/hook';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { queryDevicePermission } from '@/util/env';
+import { applyDeviceEnable } from '@/util/stream';
 
 export default function Device() {
   const { initStream, stopStream } = useDevice();
@@ -28,7 +29,14 @@ export default function Device() {
     const [audio, video] = await Promise.all([queryDevicePermission('audio'), queryDevicePermission('video')]);
 
     if (audio === null && video === null) {
-      setIsDeniedDialogOpen(true);
+      const { permission: currentPermission } = useDeviceStore.getState();
+
+      if (currentPermission.audio === 'denied' || currentPermission.video === 'denied') {
+        setIsDeniedDialogOpen(true);
+        return;
+      }
+
+      await initStream(true);
       return;
     }
 
@@ -81,20 +89,7 @@ export default function Device() {
       return;
     }
 
-    const { deviceEnable } = useDeviceStore.getState();
-
-    if (!deviceEnable.audio) {
-      stream.getAudioTracks().forEach((track) => {
-        track.enabled = false;
-      });
-    }
-
-    if (!deviceEnable.video) {
-      stream.getVideoTracks().forEach((track) => {
-        track.stop();
-        stream.removeTrack(track);
-      });
-    }
+    applyDeviceEnable(stream, useDeviceStore.getState().deviceEnable);
   }, [stream, isInit]);
 
   useEffect(() => () => stopStream(), [stopStream]);
