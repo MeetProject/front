@@ -323,8 +323,8 @@ const useWebrtc = () => {
       const { deviceEnable } = useDeviceStore.getState();
 
       const updatedOption = { ...deviceEnable, [trackType]: value !== undefined ? value : !deviceEnable[trackType] };
-      sendDeviceEnable(updatedOption);
       await toggleProducerTrack(trackType, value);
+      sendDeviceEnable(updatedOption);
     },
     [sendDeviceEnable, toggleProducerTrack],
   );

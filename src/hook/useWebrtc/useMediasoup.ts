@@ -408,7 +408,16 @@ export const useMediasoup = (
         producer.pause();
       }
 
-      await request(endPoint, { producerId: producer.id });
+      try {
+        await request(endPoint, { producerId: producer.id });
+      } catch (e) {
+        if (shouldResume) {
+          producer.pause();
+        } else {
+          producer.resume();
+        }
+        throw e;
+      }
     },
     [request],
   );
