@@ -28,7 +28,14 @@ export default function Device() {
     const [audio, video] = await Promise.all([queryDevicePermission('audio'), queryDevicePermission('video')]);
 
     if (audio === null && video === null) {
-      setIsDeniedDialogOpen(true);
+      const { permission: currentPermission } = useDeviceStore.getState();
+
+      if (currentPermission.audio === 'denied' || currentPermission.video === 'denied') {
+        setIsDeniedDialogOpen(true);
+        return;
+      }
+
+      await initStream(true);
       return;
     }
 
