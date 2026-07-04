@@ -16,7 +16,7 @@ import { Loading } from '@/components';
 import { useDevice, useWebrtc } from '@/hook';
 import { useAlertStore } from '@/store/useAlertStore';
 import { useDeviceStore } from '@/store/useDeviceStore';
-import { useDrawerStore } from '@/store/useDrawer';
+import { useDrawerStore } from '@/store/useDrawerStore';
 import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
 import { TrackType } from '@/types/deviceType';

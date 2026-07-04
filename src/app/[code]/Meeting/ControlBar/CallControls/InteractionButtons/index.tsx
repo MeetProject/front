@@ -8,7 +8,7 @@ import { ButtonTag } from '@/components';
 import { useOutsideClick } from '@/hook';
 import { cn } from '@/lib/cn';
 import { useDeviceStore } from '@/store/useDeviceStore';
-import { useDrawerStore } from '@/store/useDrawer';
+import { useDrawerStore } from '@/store/useDrawerStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';

@@ -7,15 +7,15 @@ interface DeviceSelectorProps {
   onOpenDialog: () => void;
 }
 
-interface DeviceSetorType {
+interface DeviceSelectorItemType {
   type: DeviceType;
-  positionY: 'right' | 'center' | 'left';
+  positionX: 'right' | 'center' | 'left';
   volume?: boolean;
 }
-const DEVICE: DeviceSetorType[] = [
-  { positionY: 'left', type: 'audioInput', volume: true },
-  { positionY: 'center', type: 'audioOutput', volume: true },
-  { positionY: 'right', type: 'videoInput' },
+const DEVICE: DeviceSelectorItemType[] = [
+  { positionX: 'left', type: 'audioInput', volume: true },
+  { positionX: 'center', type: 'audioOutput', volume: true },
+  { positionX: 'right', type: 'videoInput' },
 ];
 
 export default function DeviceSelector({ onOpenDialog }: DeviceSelectorProps) {
@@ -25,7 +25,7 @@ export default function DeviceSelector({ onOpenDialog }: DeviceSelectorProps) {
         <div className='h-7.5 w-42' key={device.type}>
           <DeviceSelectBox
             className='rounded-4xl'
-            selectorPositionX={device.positionY}
+            selectorPositionX={device.positionX}
             selectorPositionY='top'
             type={device.type}
             volume={device.volume}

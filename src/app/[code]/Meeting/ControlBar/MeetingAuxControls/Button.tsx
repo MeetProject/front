@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/shallow';
 
 import * as Icon from '@/asset/svg';
 import { ButtonTag } from '@/components';
-import { useDrawerStore } from '@/store/useDrawer';
+import { useDrawerStore } from '@/store/useDrawerStore';
 import { RightDrawerKeyType } from '@/types/drawerType';
 
 interface SingleButtonProps {

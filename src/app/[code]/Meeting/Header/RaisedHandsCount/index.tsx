@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import RaisedHandsInfo from './RaisedHandsInfo';
 
 import * as Icon from '@/asset/svg';
-import { useDrawerStore } from '@/store/useDrawer';
+import { useDrawerStore } from '@/store/useDrawerStore';
 import { useInteractionStore } from '@/store/useInteractionStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
