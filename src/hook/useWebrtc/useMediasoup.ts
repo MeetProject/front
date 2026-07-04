@@ -365,6 +365,9 @@ export const useMediasoup = (
               newProducer.pause();
               await request('/app/signal/producer/pause', { producerId: newProducer.id });
             }
+            if (trackType === 'audio') {
+              newTrack.enabled = true;
+            }
             return;
           }
 

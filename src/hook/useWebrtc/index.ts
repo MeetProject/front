@@ -16,7 +16,7 @@ import { useLocalMuteStore } from '@/store/useLocalMuteStore';
 import { useParticipantStore } from '@/store/useParticipantStore';
 import { useSignalStore } from '@/store/useSignalStore';
 import { useUserInfoStore } from '@/store/useUserInfoStore';
-import { DeviceKindType, TrackType } from '@/types/deviceType';
+import { DEVICE_KINDS, DeviceKindType, TrackType } from '@/types/deviceType';
 import {
   AppData,
   CapabilitiesResponseType,
@@ -102,9 +102,16 @@ const useWebrtc = () => {
 
     await Promise.all([createTransport('send'), createTransport('recv')]);
 
-    const { stream } = useDeviceStore.getState();
-    return Promise.all((stream?.getTracks() ?? []).map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')));
-  }, [createTransport, initDevice, produceTrack, request]);
+    const { deviceEnable, stream } = useDeviceStore.getState();
+    const tracks = stream?.getTracks() ?? [];
+    await Promise.all(tracks.map((t) => produceTrack(t, t.kind === 'audio' ? 'audio' : 'video')));
+
+    await Promise.all(
+      DEVICE_KINDS.filter((kind) => !deviceEnable[kind]).map((kind) => toggleProducerTrack(kind, false)),
+    );
+
+    tracks.filter((t) => t.kind === 'audio').forEach((t) => (t.enabled = true));
+  }, [createTransport, initDevice, produceTrack, request, toggleProducerTrack]);
 
   const joinRoom = useCallback(
     async (roomId: string) => {
