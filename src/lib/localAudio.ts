@@ -9,9 +9,13 @@ const state: {
 } = { analyser: null, audioContext: null, source: null };
 
 export const createLocalAnalyser = (stream: MediaStream): AnalyserNode | null => {
-  releaseLocalAnalyser();
+  state.source?.disconnect();
+  state.analyser?.disconnect();
+  state.source = null;
+  state.analyser = null;
 
-  const audioContext = createAudioContext();
+  const audioContext =
+    state.audioContext && state.audioContext.state !== 'closed' ? state.audioContext : createAudioContext();
   state.audioContext = audioContext;
   if (!audioContext) {
     return null;
