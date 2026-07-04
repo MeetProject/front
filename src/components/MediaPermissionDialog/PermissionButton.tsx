@@ -7,7 +7,6 @@ import ButtonTag from '../ButtonTag';
 import * as Icon from '@/asset/svg';
 import { useDevice } from '@/hook';
 import { cn } from '@/lib/cn';
-import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 
 interface PermissionButtonProps {
@@ -51,7 +50,7 @@ const BUTTON: ButtonType[] = [
 
 export default function PermissionButton({ type }: PermissionButtonProps) {
   const [isOpenOption, setIsOpenOption] = useState(false);
-  const { initStream, replaceTrack } = useDevice();
+  const { acquireTrack, initStream } = useDevice();
 
   const status = CONTENT[type];
 
@@ -64,8 +63,7 @@ export default function PermissionButton({ type }: PermissionButtonProps) {
       await initStream();
       return;
     }
-    const { device } = useDeviceStore.getState();
-    await replaceTrack(device[deviceType === 'audio' ? 'audioInput' : 'videoInput'], deviceType);
+    await acquireTrack(deviceType);
     setIsOpenOption(false);
   };
 

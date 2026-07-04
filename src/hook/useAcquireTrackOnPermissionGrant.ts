@@ -5,28 +5,13 @@ import { useEffect } from 'react';
 import useDevice from './useDevice';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
-import { DeviceKindType } from '@/types/deviceType';
-
-const DEVICE_KINDS = ['audio', 'video'] as const;
+import { DEVICE_KINDS, DeviceKindType } from '@/types/deviceType';
 
 const useAcquireTrackOnPermissionGrant = () => {
-  const { replaceTrack } = useDevice();
+  const { acquireTrack } = useDevice();
 
   useEffect(() => {
     const acquisition = { queue: Promise.resolve() };
-
-    const acquireMissingTrack = async (type: DeviceKindType) => {
-      const { device, deviceEnable } = useDeviceStore.getState();
-      const target = device[type === 'audio' ? 'audioInput' : 'videoInput'];
-
-      try {
-        const newTrack = target ? await replaceTrack(target) : await replaceTrack(null, type);
-
-        if (type === 'audio' && newTrack && !deviceEnable.audio) {
-          newTrack.enabled = false;
-        }
-      } catch {}
-    };
 
     const getNewlyGrantedTypes = (
       next: Record<DeviceKindType, PermissionState>,
@@ -56,14 +41,16 @@ const useAcquireTrackOnPermissionGrant = () => {
       }
 
       getNewlyGrantedTypes(state.permission, prevState.permission).forEach((type) => {
-        acquisition.queue = acquisition.queue.then(() => acquireMissingTrack(type));
+        acquisition.queue = acquisition.queue.then(async () => {
+          await acquireTrack(type);
+        });
       });
     });
 
     return () => {
       unsubscribe();
     };
-  }, [replaceTrack]);
+  }, [acquireTrack]);
 };
 
 export default useAcquireTrackOnPermissionGrant;

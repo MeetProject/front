@@ -4,16 +4,17 @@ import { useEffect } from 'react';
 
 import useDevice from './useDevice';
 import { useSignaling } from './useWebrtc/useSignaling';
+import { useSignalSender } from './useWebrtc/useSignalSender';
 
 import { getCurrentDeviceInfo } from '@/lib/device';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
-import { DevicePayloadType } from '@/types/session';
 import { WS_URL } from '@/util/api';
 
 const useSyncStreamTrackEvents = () => {
   const { initStream } = useDevice();
   const { publish } = useSignaling(WS_URL);
+  const { sendDeviceEnable } = useSignalSender(publish);
   const stream = useDeviceStore((state) => state.stream);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ const useSyncStreamTrackEvents = () => {
       }
 
       toggleDeviceEnable(type);
-      publish<DevicePayloadType>('/app/device', { mediaOption: { ...deviceEnable, [type]: value } });
+      sendDeviceEnable({ ...deviceEnable, [type]: value });
     };
 
     navigator.mediaDevices.addEventListener('devicechange', refreshDeviceInfo);
@@ -69,7 +70,7 @@ const useSyncStreamTrackEvents = () => {
         track.removeEventListener('unmute', syncDeviceEnableWithMute);
       });
     };
-  }, [stream, initStream, publish]);
+  }, [stream, initStream, sendDeviceEnable]);
 };
 
 export default useSyncStreamTrackEvents;

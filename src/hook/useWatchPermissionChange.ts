@@ -3,9 +3,8 @@
 import { useEffect } from 'react';
 
 import { useDeviceStore } from '@/store/useDeviceStore';
+import { DEVICE_KINDS } from '@/types/deviceType';
 import { inferPermissionFromDevices, queryDevicePermission } from '@/util/env';
-
-const DEVICE_KINDS = ['audio', 'video'] as const;
 
 const refreshUngrantedPermissions = async () => {
   const { permission: current, status } = useDeviceStore.getState();

@@ -256,6 +256,25 @@ const useDevice = () => {
     [replaceNewTrack],
   );
 
+  const acquireTrack = useCallback(
+    async (type: DeviceKindType) => {
+      const { device, deviceEnable } = useDeviceStore.getState();
+      const target = device[type === 'audio' ? 'audioInput' : 'videoInput'];
+
+      try {
+        const newTrack = target ? await replaceTrack(target) : await replaceTrack(null, type);
+
+        if (type === 'audio' && newTrack && !deviceEnable.audio) {
+          newTrack.enabled = false;
+        }
+        return newTrack;
+      } catch {
+        return null;
+      }
+    },
+    [replaceTrack],
+  );
+
   const toggleAudioTrack = useCallback(() => {
     const { deviceEnable, stream, toggleDeviceEnable } = useDeviceStore.getState();
     if (!stream) {
@@ -331,6 +350,7 @@ const useDevice = () => {
   }, []);
 
   return {
+    acquireTrack,
     initScreenStream,
     initStream,
     replaceTrack,
