@@ -27,10 +27,11 @@ export default function Meeting() {
   const roomId = usePathname().slice(1);
   const isReconnecting = useSignalStore((state) => state.status === 'reconnecting');
   const { initScreenStream, initStream, stopScreenStream, stopStream } = useDevice();
-  const { isInit, screenStream } = useDeviceStore(
+  const { isInit, screenStream, stream } = useDeviceStore(
     useShallow((state) => ({
       isInit: state.isInit,
       screenStream: state.screenStream,
+      stream: state.stream,
     })),
   );
 
@@ -96,6 +97,19 @@ export default function Meeting() {
 
     init();
   }, [isInit, initStream, joinRoom, roomId, router]);
+
+  useEffect(() => {
+    if (isPending || !stream) {
+      return;
+    }
+
+    const syncProducers = async () => {
+      await replaceTrack('audio', stream.getAudioTracks()[0] ?? null);
+      await replaceTrack('video', stream.getVideoTracks()[0] ?? null);
+    };
+
+    syncProducers();
+  }, [stream, isPending, replaceTrack]);
 
   useEffect(
     () => () => {
