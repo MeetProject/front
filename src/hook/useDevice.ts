@@ -6,6 +6,7 @@ import { getCurrentDeviceInfo } from '@/lib/device';
 import { useDeviceStore } from '@/store/useDeviceStore';
 import { DeviceKindType } from '@/types/deviceType';
 import { inferPermissionFromDevices, queryDevicePermission } from '@/util/env';
+import { applyDeviceEnable } from '@/util/stream';
 
 const AUDIO_PROCESSING: MediaTrackConstraints & { voiceIsolation?: boolean } = {
   autoGainControl: true,
@@ -40,21 +41,6 @@ const useDevice = () => {
     });
   }, []);
 
-  const syncEnable = useCallback((stream: MediaStream, constraint: Record<DeviceKindType, boolean>) => {
-    const { deviceEnable } = useDeviceStore.getState();
-
-    if (constraint.audio && !deviceEnable.audio) {
-      stream.getAudioTracks().forEach((track) => (track.enabled = false));
-    }
-
-    if (constraint.video && !deviceEnable.video) {
-      stream.getVideoTracks().forEach((track) => {
-        track.stop();
-        stream.removeTrack(track);
-      });
-    }
-  }, []);
-
   const getConstraints = useCallback((config: { audio: boolean; video: boolean }, isExact: boolean) => {
     const { device } = useDeviceStore.getState();
     return {
@@ -77,7 +63,7 @@ const useDevice = () => {
         const deviceInfo = await getCurrentDeviceInfo(stream);
 
         if (isSyncEnable) {
-          syncEnable(stream, constraint);
+          applyDeviceEnable(stream, useDeviceStore.getState().deviceEnable);
         }
 
         const audioTracks = stream.getAudioTracks();
@@ -143,7 +129,7 @@ const useDevice = () => {
         return null;
       }
     },
-    [getConstraints, syncEnable],
+    [getConstraints],
   );
 
   const initStream = useCallback(
