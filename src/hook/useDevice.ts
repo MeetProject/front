@@ -123,20 +123,19 @@ const useDevice = () => {
         }
 
         const { permission: prevPermission } = useDeviceStore.getState();
+        const resolveFailedPermission = async (type: DeviceKindType): Promise<PermissionState> => {
+          if (constraint[type] && error.name === 'NotAllowedError') {
+            return 'denied';
+          }
+          return (await queryDevicePermission(type)) ?? prevPermission[type];
+        };
+
         useDeviceStore.setState({
           device: { audioInput: null, audioOutput: null, videoInput: null },
           deviceList: { audioInput: [], audioOutput: [], videoInput: [] },
           permission: {
-            audio: constraint.audio
-              ? error.name === 'NotAllowedError'
-                ? 'denied'
-                : 'granted'
-              : ((await queryDevicePermission('audio')) ?? prevPermission.audio),
-            video: constraint.video
-              ? error.name === 'NotAllowedError'
-                ? 'denied'
-                : 'granted'
-              : ((await queryDevicePermission('video')) ?? prevPermission.video),
+            audio: await resolveFailedPermission('audio'),
+            video: await resolveFailedPermission('video'),
           },
           status: error.name === 'NotAllowedError' ? 'rejected' : 'failed',
           stream: null,
