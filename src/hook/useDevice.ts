@@ -242,6 +242,15 @@ const useDevice = () => {
         return null;
       }
       const deviceType = device.kind === 'audioinput' ? 'audio' : 'video';
+
+      if (deviceType === 'video') {
+        const { changeDevice, deviceEnable } = useDeviceStore.getState();
+        if (!deviceEnable.video) {
+          changeDevice('videoInput', device);
+          return null;
+        }
+      }
+
       return await replaceNewTrack(deviceType, device.deviceId, true);
     },
     [replaceNewTrack],
